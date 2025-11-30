@@ -1,0 +1,63 @@
+features:
+  - id: ARCH_OVERVIEW
+    title: "Architecture documentation and project overview"
+    status: done
+    spec: "overview.md"
+    owner: bart
+    tests: []
+
+  - id: CLI_INIT
+    title: "Project bootstrap command"
+    status: todo
+    spec: "commands/init.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/init_test.go"
+      - "test/e2e/init_smoke_test.go"
+
+  - id: CORE_CONFIG
+    title: "Config loading and validation"
+    status: todo
+    spec: "core/config.md"
+    owner: bart
+    tests:
+      - "pkg/config/config_test.go"
+
+  - id: CORE_PLAN
+    title: "Deployment planning engine"
+    status: todo
+    spec: "core/plan.md"
+    owner: bart
+    tests:
+      - "internal/core/plan_test.go"
+
+  - id: DRIVER_DO
+    title: "DigitalOcean driver"
+    status: todo
+    spec: "drivers/do.md"
+    owner: bart
+    tests:
+      - "internal/drivers/do/do_test.go"
+
+  - id: CLI_PLAN
+    title: "Plan command (dry-run)"
+    status: todo
+    spec: "commands/plan.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/plan_test.go"
+
+  - id: CLI_DEPLOY
+    title: "Deploy command"
+    status: todo
+    spec: "commands/deploy.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/deploy_test.go"
+
+  - id: DOCS_ADR
+    title: "ADR process and initial decisions"
+    status: done
+    spec: "adr/0001-architecture.md"
+    owner: bart
+    tests: []

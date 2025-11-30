@@ -1,0 +1,53 @@
+package cli
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+
+	"stagecraft/internal/cli/commands"
+	//"stagecraft/spec" // optional; see note below
+	//"github.com/bartekus/stagecraft/internal/cli/commands"
+	//"github.com/bartekus/stagecraft/spec" // optional; see note below
+)
+
+// NOTE: The import above for github.com/bartekus/stagecraft/spec is optional.
+// You can remove it for now or replace it with whatever you prefer.
+// It’s shown here mainly to reinforce the idea that the CLI is aligned with spec/.
+
+// NewRootCommand constructs the Stagecraft root Cobra command.
+// This command wires subcommands like `init`, `plan`, `deploy`, etc.
+//
+// Feature: ARCH_OVERVIEW
+// Spec: spec/overview.md
+func NewRootCommand() *cobra.Command {
+	version := os.Getenv("STAGECRAFT_VERSION")
+	if version == "" {
+		version = "0.0.0-dev"
+	}
+
+	cmd := &cobra.Command{
+		Use:           "stagecraft",
+		Short:         "Stagecraft – deployment and infrastructure orchestration CLI",
+		Long:          "Stagecraft is a Go-based CLI that orchestrates application deployment and infrastructure workflows.",
+		SilenceUsage:  true, // don't dump usage on user errors
+		SilenceErrors: true, // centralize error printing in main()
+	}
+
+	cmd.PersistentFlags().BoolP("verbose", "v", false, "enable verbose output")
+
+	// Version command – simple and explicit.
+	cmd.AddCommand(&cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of Stagecraft",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Fprintf(cmd.OutOrStdout(), "Stagecraft version %s\n", version)
+		},
+	})
+
+	// Subcommands
+	cmd.AddCommand(commands.NewInitCommand())
+
+	return cmd
+}
