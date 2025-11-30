@@ -70,6 +70,14 @@ This repository is both a **production-grade tool** and a **public portfolio pie
         - Implement the interface (`BackendProvider` or `Engine`)
         - Add provider/engine-specific config under the scoped namespace
         - Do not modify core validation logic
+    - **Registry wiring requirements**
+        - Any change to provider or migration engine registration/validation MUST reference:
+            - `CORE_BACKEND_REGISTRY` for backend provider changes
+            - `CORE_MIGRATION_REGISTRY` for migration engine changes
+            - `CORE_BACKEND_PROVIDER_CONFIG_SCHEMA` for config schema changes
+        - Update the corresponding spec before changing the implementation
+        - Ensure providers/engines are imported in `pkg/config/config.go` so they register before validation
+        - Never bypass the registry with hardcoded checks, even in tests
 
 ## Workflow Expectations
 

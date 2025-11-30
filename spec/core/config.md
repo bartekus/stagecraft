@@ -25,20 +25,19 @@ project:
   registry: ghcr.io/your-org/platform
 
 backend:
-  provider: encore-ts
-  dev:
-    env_file: .env.local
-    listen: "0.0.0.0:4000"
-    disable_telemetry: true
-    node_extra_ca_certs: "./.local-infra/certs/mkcert-rootCA.pem"
-    encore_secrets:
-      types: ["dev", "preview", "local"]
-      from_env:
-        - DOMAIN
-        - API_DOMAIN
-        - LOGTO_DOMAIN
-        - WEB_DOMAIN
-        # ... more secrets
+  provider: generic
+  providers:
+    generic:
+      dev:
+        command: ["npm", "run", "dev"]
+        workdir: "./backend"
+    encore-ts:
+      dev:
+        secrets:
+          types: ["dev", "preview", "local"]
+          from_env:
+            - DOMAIN
+            - API_DOMAIN
 
 frontend:
   provider: generic-dev-command
@@ -77,15 +76,15 @@ services:
 databases:
   primary:
     migrations:
-      engine: drizzle
+      engine: raw
       path: ./migrations
       strategy: pre_deploy
     connection_env: DATABASE_URL
   # Additional databases can be defined here
   # analytics:
   #   migrations:
-  #     engine: prisma
-  #     path: ./prisma/migrations
+  #     engine: drizzle
+  #     path: ./drizzle/migrations
   #     strategy: post_deploy
 
 environments:
@@ -154,18 +153,24 @@ environments:
 - `project.registry` must be valid registry URL (if present)
 
 #### Backend
-- `backend.provider` must be one of: `encore-ts`, `generic`
-- `backend.dev.env_file` must be non-empty (if present)
-- `backend.dev.listen` must be valid address format (if present)
+- `backend.provider` is required and must be a registered backend provider ID
+- `backend.providers` is required and must be a map
+- `backend.providers[backend.provider]` must exist
+- Validation checks that the provider exists in the backend provider registry
+- Stagecraft core does not validate provider-specific fields; validation is delegated to the provider
 
 #### Frontend
-- `frontend.provider` must be one of: `generic-dev-command`, `vite`
-- `frontend.dev.workdir` must be non-empty (if present)
-- `frontend.dev.command` must be non-empty array (if present)
+- `frontend.provider` is required and must be a registered frontend provider ID (when implemented)
+- `frontend.providers` is required and must be a map (when implemented)
+- `frontend.providers[frontend.provider]` must exist (when implemented)
+- Validation will check that the provider exists in the frontend provider registry (when implemented)
+- **Note**: Frontend provider registry not yet implemented; will follow same pattern as backend providers
 
 #### Network
-- `network.provider` must be one of: `tailscale`, `headscale`
-- `network.tailscale.auth_key_env` must be non-empty (if tailscale)
+- `network.provider` is required and must be a registered network provider ID (when implemented)
+- Network provider-specific config will be namespaced under `network.providers.<id>` (when implemented)
+- Validation will check that the provider exists in the network provider registry (when implemented)
+- **Note**: Network provider registry not yet implemented; will follow same pattern as backend providers
 
 #### Hosts
 - At least one host role must be defined
@@ -178,9 +183,10 @@ environments:
 #### Databases (Migration Configuration)
 - `databases` is optional (only needed if migrations are used)
 - Each database must have:
-  - `migrations.engine` must be one of: `drizzle`, `prisma`, `knex`, `raw`
+  - `migrations.engine` is required and must be a registered migration engine ID
   - `migrations.path` must be a valid path (relative to project root)
-  - `migrations.strategy` must be one of: `pre_deploy`, `post_deploy`, `manual`
+  - `migrations.strategy` must be one of: `pre_deploy`, `post_deploy`, `manual` (if present)
+- Validation checks that the engine exists in the migration engine registry
 - `connection_env` must be a valid environment variable name
 - Environment-specific overrides can override migration strategy per environment
 

@@ -6,6 +6,14 @@ import (
 	"os"
 
 	"gopkg.in/yaml.v3"
+
+	// Import providers to ensure they register themselves
+	_ "stagecraft/internal/providers/backend/generic"
+	_ "stagecraft/internal/providers/backend/encorets"
+	_ "stagecraft/internal/providers/migration/raw"
+
+	backendproviders "stagecraft/pkg/providers/backend"
+	migrationengines "stagecraft/pkg/providers/migration"
 )
 
 // Feature: CORE_CONFIG
@@ -17,6 +25,8 @@ var ErrConfigNotFound = errors.New("stagecraft config not found")
 // Config represents the top-level Stagecraft configuration.
 type Config struct {
 	Project      ProjectConfig                `yaml:"project"`
+	Backend      *BackendConfig                `yaml:"backend,omitempty"`
+	Databases    map[string]DatabaseConfig     `yaml:"databases,omitempty"`
 	Environments map[string]EnvironmentConfig `yaml:"environments"`
 }
 
@@ -25,10 +35,50 @@ type ProjectConfig struct {
 	Name string `yaml:"name"`
 }
 
+// BackendConfig describes backend provider configuration.
+type BackendConfig struct {
+	Provider  string         `yaml:"provider"`
+	Providers map[string]any `yaml:"providers"`
+}
+
+// DatabaseConfig describes database configuration including migrations.
+type DatabaseConfig struct {
+	Migrations    *MigrationConfig `yaml:"migrations,omitempty"`
+	ConnectionEnv string           `yaml:"connection_env"`
+}
+
+// MigrationConfig describes migration engine configuration.
+type MigrationConfig struct {
+	Engine   string `yaml:"engine"`
+	Path     string `yaml:"path"`
+	Strategy string `yaml:"strategy"` // pre_deploy, post_deploy, manual
+}
+
 // EnvironmentConfig describes per-environment settings.
 type EnvironmentConfig struct {
 	Driver string `yaml:"driver"`
 	// Future: region, registry, etc.
+}
+
+// GetProviderConfig returns the config for the selected backend provider.
+func (c *BackendConfig) GetProviderConfig() (any, error) {
+	if c.Provider == "" {
+		return nil, fmt.Errorf("backend.provider is required")
+	}
+
+	if c.Providers == nil {
+		return nil, fmt.Errorf("backend.providers is required")
+	}
+
+	cfg, ok := c.Providers[c.Provider]
+	if !ok {
+		return nil, fmt.Errorf(
+			"backend.providers.%s is missing; provider-specific config is required",
+			c.Provider,
+		)
+	}
+
+	return cfg, nil
 }
 
 // DefaultConfigPath returns the default config path for the current working directory.
@@ -86,12 +136,97 @@ func validate(cfg *Config) error {
 		return errors.New("config: project.name must be non-empty")
 	}
 
+	// Validate backend configuration (if present)
+	if cfg.Backend != nil {
+		if err := validateBackend(cfg.Backend); err != nil {
+			return err
+		}
+	}
+
+	// Validate database configurations (if present)
+	for dbName, dbCfg := range cfg.Databases {
+		if err := validateDatabase(dbName, dbCfg); err != nil {
+			return err
+		}
+	}
+
+	// Validate environments
 	for envName, envCfg := range cfg.Environments {
 		if envName == "" {
 			return errors.New("config: environment name must be non-empty")
 		}
 		if envCfg.Driver == "" {
 			return fmt.Errorf("config: environment %q: driver must be non-empty", envName)
+		}
+	}
+
+	return nil
+}
+
+// validateBackend validates backend configuration using the registry.
+func validateBackend(cfg *BackendConfig) error {
+	if cfg.Provider == "" {
+		return fmt.Errorf("backend.provider is required")
+	}
+
+	if !backendproviders.Has(cfg.Provider) {
+		return fmt.Errorf(
+			"unknown backend provider %q; available providers: %v",
+			cfg.Provider,
+			backendproviders.DefaultRegistry.IDs(),
+		)
+	}
+
+	if cfg.Providers == nil {
+		return fmt.Errorf("backend.providers is required")
+	}
+
+	if _, ok := cfg.Providers[cfg.Provider]; !ok {
+		return fmt.Errorf(
+			"backend.providers.%s is missing; provider-specific config is required",
+			cfg.Provider,
+		)
+	}
+
+	return nil
+}
+
+// validateDatabase validates database configuration including migrations.
+func validateDatabase(name string, db DatabaseConfig) error {
+	if db.Migrations == nil {
+		return nil // Migrations are optional
+	}
+
+	engine := db.Migrations.Engine
+	if engine == "" {
+		return fmt.Errorf("databases.%s.migrations.engine is required", name)
+	}
+
+	if !migrationengines.Has(engine) {
+		return fmt.Errorf(
+			"unknown migration engine %q for database %s; available engines: %v",
+			engine,
+			name,
+			migrationengines.DefaultRegistry.IDs(),
+		)
+	}
+
+	if db.Migrations.Path == "" {
+		return fmt.Errorf("databases.%s.migrations.path is required", name)
+	}
+
+	// Validate strategy if present
+	if db.Migrations.Strategy != "" {
+		validStrategies := map[string]bool{
+			"pre_deploy":  true,
+			"post_deploy": true,
+			"manual":      true,
+		}
+		if !validStrategies[db.Migrations.Strategy] {
+			return fmt.Errorf(
+				"databases.%s.migrations.strategy must be one of: pre_deploy, post_deploy, manual",
+				name,
+			)
 		}
 	}
 

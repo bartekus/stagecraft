@@ -328,6 +328,14 @@ features:
     tests:
       - "pkg/migrations/migrator_test.go"
 
+  - id: MIGRATION_ENGINE_RAW
+    title: "Raw SQL migration engine implementation"
+    status: todo
+    spec: "providers/migration/raw.md"
+    owner: bart
+    tests:
+      - "internal/providers/migration/raw/raw_test.go"
+
   - id: MIGRATION_CONTAINER_RUNNER
     title: "ContainerRunner interface"
     status: todo

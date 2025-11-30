@@ -1,0 +1,14 @@
+{
+  "name": "basic-node-backend",
+  "version": "1.0.0",
+  "description": "Example Node.js backend for Stagecraft",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+

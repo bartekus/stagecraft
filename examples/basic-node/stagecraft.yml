@@ -1,0 +1,36 @@
+# Stagecraft configuration for a basic Node.js application
+# This example demonstrates the generic backend provider
+
+project:
+  name: basic-node
+
+backend:
+  provider: generic
+  providers:
+    generic:
+      dev:
+        command: ["npm", "run", "dev"]
+        workdir: "./backend"
+        env:
+          NODE_ENV: development
+          PORT: "4000"
+      build:
+        dockerfile: "./backend/Dockerfile"
+        context: "./backend"
+
+databases:
+  main:
+    connection_env: DATABASE_URL
+    migrations:
+      engine: raw
+      path: ./migrations
+      strategy: pre_deploy
+
+environments:
+  dev:
+    driver: local
+  staging:
+    driver: digitalocean
+  prod:
+    driver: digitalocean
+
