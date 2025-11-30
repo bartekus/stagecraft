@@ -1,5 +1,10 @@
 ## Migration Strategy
 
+> **Related Documents:**
+> - [`spec/core/config.md`](../spec/core/config.md) - Full config schema including `databases` section
+> - [`docs/implementation-roadmap.md`](../docs/implementation-roadmap.md) - Phase 6: Migration System
+> - [`spec/features.yaml`](../spec/features.yaml) - Migration-related features (MIGRATION_*)
+
 ### 1. **Migration approach**
 - Treat migrations as first-class deployment steps, not just framework concerns
 - Run migrations via one-off containers using the app image (similar to Kamal)
@@ -13,6 +18,8 @@
     - `manual`: Never auto-run; require explicit command
 - Support multiple databases per app with per-database migration config
 - Use environment variable interpolation (`${VAR}`) in config values
+  - **Note**: v1 supports basic `${VAR}` interpolation for migration config values only
+  - Full environment variable interpolation across all config fields is deferred to v2
 
 ### 3. **Deployment pipeline order**
 Fixed sequence:

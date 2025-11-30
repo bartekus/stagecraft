@@ -1,5 +1,11 @@
 # Stagecraft CLI - Application Specification
 
+> **Related Documents:**
+> - [`docs/implementation-roadmap.md`](implementation-roadmap.md) - Implementation phases and feature catalog
+> - [`spec/features.yaml`](../spec/features.yaml) - Feature tracking (source of truth)
+> - [`docs/adr/0001-architecture.md`](adr/0001-architecture.md) - Architecture decisions
+> - [`blog/01-why-not-kamal.md`](../blog/01-why-not-kamal.md) - Design rationale
+
 ## 0. Purpose and goals
 
 Stagecraft is a Go based orchestration CLI for local development and deployment of multi service applications.

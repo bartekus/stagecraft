@@ -74,6 +74,20 @@ services:
     role: app
   # ... more services
 
+databases:
+  primary:
+    migrations:
+      engine: drizzle
+      path: ./migrations
+      strategy: pre_deploy
+    connection_env: DATABASE_URL
+  # Additional databases can be defined here
+  # analytics:
+  #   migrations:
+  #     engine: prisma
+  #     path: ./prisma/migrations
+  #     strategy: post_deploy
+
 environments:
   dev:
     env_file: .env.local
@@ -161,6 +175,15 @@ environments:
 - Service names must match docker-compose.yml services
 - Service roles must match host roles
 
+#### Databases (Migration Configuration)
+- `databases` is optional (only needed if migrations are used)
+- Each database must have:
+  - `migrations.engine` must be one of: `drizzle`, `prisma`, `knex`, `raw`
+  - `migrations.path` must be a valid path (relative to project root)
+  - `migrations.strategy` must be one of: `pre_deploy`, `post_deploy`, `manual`
+- `connection_env` must be a valid environment variable name
+- Environment-specific overrides can override migration strategy per environment
+
 #### Environments
 - At least one environment must be defined
 - Environment names must be non-empty
@@ -169,7 +192,7 @@ environments:
 ## Non-Goals (initial version)
 
 - Remote config loading
-- Environment variable interpolation (v1)
+- Full environment variable interpolation (v1) - Note: Basic `${VAR}` interpolation is supported for migration config values only
 - Advanced schema evolution/migrations
 - Config file watching/reloading
 
