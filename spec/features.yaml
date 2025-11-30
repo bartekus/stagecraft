@@ -1,10 +1,27 @@
 features:
+  # Architecture & Documentation
   - id: ARCH_OVERVIEW
     title: "Architecture documentation and project overview"
     status: done
     spec: "overview.md"
     owner: bart
     tests: []
+
+  - id: DOCS_ADR
+    title: "ADR process and initial decisions"
+    status: done
+    spec: "adr/0001-architecture.md"
+    owner: bart
+    tests: []
+
+  # Phase 0: Foundation
+  - id: CORE_CONFIG
+    title: "Config loading and validation"
+    status: todo
+    spec: "core/config.md"
+    owner: bart
+    tests:
+      - "pkg/config/config_test.go"
 
   - id: CLI_INIT
     title: "Project bootstrap command"
@@ -15,14 +32,80 @@ features:
       - "internal/cli/commands/init_test.go"
       - "test/e2e/init_smoke_test.go"
 
-  - id: CORE_CONFIG
-    title: "Config loading and validation"
+  - id: CORE_LOGGING
+    title: "Structured logging helpers"
     status: todo
-    spec: "core/config.md"
+    spec: "core/logging.md"
     owner: bart
     tests:
-      - "pkg/config/config_test.go"
+      - "pkg/logging/logging_test.go"
 
+  - id: CORE_EXECUTIL
+    title: "Process execution utilities"
+    status: todo
+    spec: "core/executil.md"
+    owner: bart
+    tests:
+      - "pkg/executil/executil_test.go"
+
+  - id: CLI_GLOBAL_FLAGS
+    title: "Global flags (--env, --config, --verbose, --dry-run)"
+    status: todo
+    spec: "core/global-flags.md"
+    owner: bart
+    tests:
+      - "internal/cli/root_test.go"
+
+  # Phase 1: Provider Interfaces
+  - id: PROVIDER_BACKEND_INTERFACE
+    title: "BackendProvider interface definition"
+    status: todo
+    spec: "providers/backend/interface.md"
+    owner: bart
+    tests:
+      - "pkg/providers/backend/backend_test.go"
+
+  - id: PROVIDER_FRONTEND_INTERFACE
+    title: "FrontendProvider interface definition"
+    status: todo
+    spec: "providers/frontend/interface.md"
+    owner: bart
+    tests:
+      - "pkg/providers/frontend/frontend_test.go"
+
+  - id: PROVIDER_NETWORK_INTERFACE
+    title: "NetworkProvider interface definition"
+    status: todo
+    spec: "providers/network/interface.md"
+    owner: bart
+    tests:
+      - "pkg/providers/network/network_test.go"
+
+  - id: PROVIDER_CLOUD_INTERFACE
+    title: "CloudProvider interface definition"
+    status: todo
+    spec: "providers/cloud/interface.md"
+    owner: bart
+    tests:
+      - "pkg/providers/cloud/cloud_test.go"
+
+  - id: PROVIDER_CI_INTERFACE
+    title: "CIProvider interface definition"
+    status: todo
+    spec: "providers/ci/interface.md"
+    owner: bart
+    tests:
+      - "pkg/providers/ci/ci_test.go"
+
+  - id: PROVIDER_SECRETS_INTERFACE
+    title: "SecretsProvider interface definition"
+    status: todo
+    spec: "providers/secrets/interface.md"
+    owner: bart
+    tests:
+      - "pkg/providers/secrets/secrets_test.go"
+
+  # Phase 2: Core Orchestration
   - id: CORE_PLAN
     title: "Deployment planning engine"
     status: todo
@@ -31,6 +114,113 @@ features:
     tests:
       - "internal/core/plan_test.go"
 
+  - id: CORE_ENV_RESOLUTION
+    title: "Environment resolution and context"
+    status: todo
+    spec: "core/env-resolution.md"
+    owner: bart
+    tests:
+      - "internal/core/env_test.go"
+
+  - id: CORE_STATE
+    title: "State management (release history)"
+    status: todo
+    spec: "core/state.md"
+    owner: bart
+    tests:
+      - "internal/state/state_test.go"
+
+  - id: CORE_COMPOSE
+    title: "Docker Compose integration"
+    status: todo
+    spec: "core/compose.md"
+    owner: bart
+    tests:
+      - "internal/compose/compose_test.go"
+
+  # Phase 3: Local Development
+  - id: CLI_DEV
+    title: "stagecraft dev command"
+    status: todo
+    spec: "commands/dev.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/dev_test.go"
+      - "test/e2e/dev_smoke_test.go"
+
+  - id: DEV_MKCERT
+    title: "mkcert integration for local HTTPS"
+    status: todo
+    spec: "dev/mkcert.md"
+    owner: bart
+    tests:
+      - "internal/dev/mkcert_test.go"
+
+  - id: DEV_HOSTS
+    title: "/etc/hosts management"
+    status: todo
+    spec: "dev/hosts.md"
+    owner: bart
+    tests:
+      - "internal/dev/hosts_test.go"
+
+  - id: DEV_TRAEFIK
+    title: "Traefik dev config generation"
+    status: todo
+    spec: "dev/traefik.md"
+    owner: bart
+    tests:
+      - "internal/dev/traefik_test.go"
+
+  - id: DEV_COMPOSE_INFRA
+    title: "Compose infra up/down for dev"
+    status: todo
+    spec: "dev/compose-infra.md"
+    owner: bart
+    tests:
+      - "internal/dev/compose_test.go"
+
+  - id: PROVIDER_BACKEND_ENCORE
+    title: "Encore.ts BackendProvider implementation"
+    status: todo
+    spec: "providers/backend/encore-ts.md"
+    owner: bart
+    tests:
+      - "internal/providers/backend/encorets/encorets_test.go"
+
+  - id: PROVIDER_FRONTEND_GENERIC
+    title: "Generic dev command FrontendProvider"
+    status: todo
+    spec: "providers/frontend/generic.md"
+    owner: bart
+    tests:
+      - "internal/providers/frontend/generic/generic_test.go"
+
+  - id: DEV_PROCESS_MGMT
+    title: "Process lifecycle management"
+    status: todo
+    spec: "dev/process-mgmt.md"
+    owner: bart
+    tests:
+      - "internal/dev/process_test.go"
+
+  # Phase 4: Provider Implementations
+  - id: PROVIDER_NETWORK_TAILSCALE
+    title: "Tailscale NetworkProvider implementation"
+    status: todo
+    spec: "providers/network/tailscale.md"
+    owner: bart
+    tests:
+      - "internal/providers/network/tailscale/tailscale_test.go"
+
+  - id: PROVIDER_CLOUD_DO
+    title: "DigitalOcean CloudProvider implementation"
+    status: todo
+    spec: "providers/cloud/digitalocean.md"
+    owner: bart
+    tests:
+      - "internal/providers/cloud/digitalocean/do_test.go"
+
   - id: DRIVER_DO
     title: "DigitalOcean driver"
     status: todo
@@ -38,6 +228,15 @@ features:
     owner: bart
     tests:
       - "internal/drivers/do/do_test.go"
+
+  # Phase 5: Build and Deploy
+  - id: CLI_BUILD
+    title: "stagecraft build command"
+    status: todo
+    spec: "commands/build.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/build_test.go"
 
   - id: CLI_PLAN
     title: "Plan command (dry-run)"
@@ -54,10 +253,249 @@ features:
     owner: bart
     tests:
       - "internal/cli/commands/deploy_test.go"
+      - "test/e2e/deploy_smoke_test.go"
 
-  - id: DOCS_ADR
-    title: "ADR process and initial decisions"
-    status: done
-    spec: "adr/0001-architecture.md"
+  - id: CLI_ROLLBACK
+    title: "stagecraft rollback command"
+    status: todo
+    spec: "commands/rollback.md"
     owner: bart
-    tests: []
+    tests:
+      - "internal/cli/commands/rollback_test.go"
+
+  - id: DEPLOY_COMPOSE_GEN
+    title: "Per-host Compose generation"
+    status: todo
+    spec: "deploy/compose-gen.md"
+    owner: bart
+    tests:
+      - "internal/deploy/compose_test.go"
+
+  - id: DEPLOY_ROLLOUT
+    title: "docker-rollout integration"
+    status: todo
+    spec: "deploy/rollout.md"
+    owner: bart
+    tests:
+      - "internal/deploy/rollout_test.go"
+
+  # Phase 6: Migration System
+  - id: MIGRATION_CONFIG
+    title: "Migration config schema in stagecraft.yml"
+    status: todo
+    spec: "migrations/config.md"
+    owner: bart
+    tests:
+      - "pkg/config/config_test.go"
+
+  - id: MIGRATION_INTERFACE
+    title: "Migrator interface"
+    status: todo
+    spec: "migrations/interface.md"
+    owner: bart
+    tests:
+      - "pkg/migrations/migrator_test.go"
+
+  - id: MIGRATION_CONTAINER_RUNNER
+    title: "ContainerRunner interface"
+    status: todo
+    spec: "migrations/container-runner.md"
+    owner: bart
+    tests:
+      - "pkg/migrations/runner_test.go"
+
+  - id: MIGRATION_PRE_DEPLOY
+    title: "Pre-deploy migration execution"
+    status: todo
+    spec: "migrations/pre-deploy.md"
+    owner: bart
+    tests:
+      - "internal/deploy/migrations_test.go"
+
+  - id: MIGRATION_POST_DEPLOY
+    title: "Post-deploy migration execution"
+    status: todo
+    spec: "migrations/post-deploy.md"
+    owner: bart
+    tests:
+      - "internal/deploy/migrations_test.go"
+
+  - id: CLI_MIGRATE_PLAN
+    title: "stagecraft migrate plan command"
+    status: todo
+    spec: "commands/migrate-plan.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/migrate_plan_test.go"
+
+  - id: CLI_MIGRATE_RUN
+    title: "stagecraft migrate run command"
+    status: todo
+    spec: "commands/migrate-run.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/migrate_run_test.go"
+
+  - id: CLI_RELEASES
+    title: "stagecraft releases list/show commands"
+    status: todo
+    spec: "commands/releases.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/releases_test.go"
+
+  # Phase 7: Infrastructure
+  - id: CLI_INFRA_UP
+    title: "stagecraft infra up command"
+    status: todo
+    spec: "commands/infra-up.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/infra_up_test.go"
+
+  - id: CLI_INFRA_DOWN
+    title: "stagecraft infra down command"
+    status: todo
+    spec: "commands/infra-down.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/infra_down_test.go"
+
+  - id: INFRA_HOST_BOOTSTRAP
+    title: "Host bootstrap (Docker, Tailscale, etc.)"
+    status: todo
+    spec: "infra/bootstrap.md"
+    owner: bart
+    tests:
+      - "internal/infra/bootstrap_test.go"
+
+  - id: INFRA_VOLUME_MGMT
+    title: "Volume management"
+    status: todo
+    spec: "infra/volumes.md"
+    owner: bart
+    tests:
+      - "internal/infra/volumes_test.go"
+
+  - id: INFRA_FIREWALL
+    title: "Firewall configuration"
+    status: todo
+    spec: "infra/firewall.md"
+    owner: bart
+    tests:
+      - "internal/infra/firewall_test.go"
+
+  # Phase 8: Operations
+  - id: CLI_STATUS
+    title: "stagecraft status command"
+    status: todo
+    spec: "commands/status.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/status_test.go"
+
+  - id: CLI_LOGS
+    title: "stagecraft logs command"
+    status: todo
+    spec: "commands/logs.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/logs_test.go"
+
+  - id: CLI_SSH
+    title: "stagecraft ssh command"
+    status: todo
+    spec: "commands/ssh.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/ssh_test.go"
+
+  - id: CLI_SECRETS_SYNC
+    title: "stagecraft secrets sync command"
+    status: todo
+    spec: "commands/secrets-sync.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/secrets_sync_test.go"
+
+  - id: PROVIDER_SECRETS_ENVFILE
+    title: "Env file SecretsProvider"
+    status: todo
+    spec: "providers/secrets/envfile.md"
+    owner: bart
+    tests:
+      - "internal/providers/secrets/envfile/envfile_test.go"
+
+  - id: PROVIDER_SECRETS_ENCORE
+    title: "Encore dev secrets SecretsProvider"
+    status: todo
+    spec: "providers/secrets/encore.md"
+    owner: bart
+    tests:
+      - "internal/providers/secrets/encore/encore_test.go"
+
+  # Phase 9: CI Integration
+  - id: PROVIDER_CI_GITHUB
+    title: "GitHub Actions CIProvider"
+    status: todo
+    spec: "providers/ci/github.md"
+    owner: bart
+    tests:
+      - "internal/providers/ci/github/github_test.go"
+
+  - id: CLI_CI_INIT
+    title: "stagecraft ci init command"
+    status: todo
+    spec: "commands/ci-init.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/ci_init_test.go"
+
+  - id: CLI_CI_RUN
+    title: "stagecraft ci run command"
+    status: todo
+    spec: "commands/ci-run.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/ci_run_test.go"
+
+  # Phase 10: Project Scaffold
+  - id: CLI_INIT_TEMPLATE
+    title: "Template system for stagecraft init"
+    status: todo
+    spec: "scaffold/templates.md"
+    owner: bart
+    tests:
+      - "internal/scaffold/templates_test.go"
+
+  - id: CLI_NEW
+    title: "stagecraft new --template=platform"
+    status: todo
+    spec: "commands/new.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/new_test.go"
+
+  - id: CLI_ATTACH
+    title: "stagecraft attach for existing projects"
+    status: todo
+    spec: "commands/attach.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/attach_test.go"
+
+  - id: TEMPLATE_PLATFORM
+    title: "Platform template (embedded)"
+    status: todo
+    spec: "scaffold/platform-template.md"
+    owner: bart
+    tests:
+      - "internal/scaffold/platform_test.go"
+
+  - id: SCAFFOLD_STAGECRAFT_DIR
+    title: ".stagecraft/ directory generation"
+    status: todo
+    spec: "scaffold/stagecraft-dir.md"
+    owner: bart
+    tests:
+      - "internal/scaffold/dir_test.go"
