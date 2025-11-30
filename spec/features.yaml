@@ -163,8 +163,17 @@ features:
       - "internal/compose/compose_test.go"
 
   # Phase 3: Local Development
+  - id: CLI_DEV_BASIC
+    title: "Basic stagecraft dev command that delegates to backend provider"
+    status: todo
+    spec: "commands/dev-basic.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/dev_test.go"
+      - "test/e2e/dev_smoke_test.go"
+
   - id: CLI_DEV
-    title: "stagecraft dev command"
+    title: "stagecraft dev command (full feature set)"
     status: todo
     spec: "commands/dev.md"
     owner: bart
@@ -360,8 +369,17 @@ features:
     tests:
       - "internal/deploy/migrations_test.go"
 
+  - id: CLI_MIGRATE_BASIC
+    title: "Basic stagecraft migrate command using registered migration engines"
+    status: todo
+    spec: "commands/migrate-basic.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/migrate_test.go"
+      - "test/e2e/migrate_smoke_test.go"
+
   - id: CLI_MIGRATE_PLAN
-    title: "stagecraft migrate plan command"
+    title: "stagecraft migrate plan command (dedicated)"
     status: todo
     spec: "commands/migrate-plan.md"
     owner: bart
@@ -369,7 +387,7 @@ features:
       - "internal/cli/commands/migrate_plan_test.go"
 
   - id: CLI_MIGRATE_RUN
-    title: "stagecraft migrate run command"
+    title: "stagecraft migrate run command (dedicated)"
     status: todo
     spec: "commands/migrate-run.md"
     owner: bart
