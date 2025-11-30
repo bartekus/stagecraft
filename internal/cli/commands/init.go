@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"stagecraft/pkg/config"
 )
 
 // Feature: CLI_INIT
