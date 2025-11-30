@@ -1,0 +1,74 @@
+# golangci-lint configuration for Stagecraft
+# See https://golangci-lint.run/usage/configuration/ for full options
+
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - vendor
+    - test/e2e  # E2E tests may have different patterns
+  skip-files:
+    - ".*\\.pb\\.go$"  # Generated protobuf files (if any)
+
+linters:
+  enable:
+    - staticcheck  # Advanced Go static analysis
+    - errcheck     # Check for unchecked errors
+    - gofmt        # Format check
+    - goimports    # Import formatting
+    - govet        # Go vet
+    - ineffassign  # Detect ineffectual assignments
+    - misspell     # Spelling checker
+    - unconvert    # Remove unnecessary type conversions
+    - unparam      # Unused function parameters
+    - gosec        # Security issues
+    - gocritic     # Opinionated code analyzer
+    - revive       # Fast, configurable linter
+  disable:
+    - typecheck    # Already covered by go build
+    - deadcode     # Deprecated, use staticcheck
+
+linters-settings:
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: stagecraft
+  govet:
+    check-shadowing: true
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - dupImport  # Sometimes needed for clarity
+      - ifElseChain # Can be more readable than switch in some cases
+  revive:
+    rules:
+      - name: exported
+        severity: warning
+      - name: var-naming
+        severity: warning
+      - name: package-comments
+        severity: warning
+  gosec:
+    severity: medium
+    confidence: medium
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    # Allow _test.go files to have longer functions
+    - path: _test\.go
+      linters:
+        - funlen
+        - gocognit
+    # Allow main functions to be longer
+    - text: "func main is too long"
+      linters:
+        - funlen
+

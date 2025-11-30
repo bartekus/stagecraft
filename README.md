@@ -230,19 +230,65 @@ Ops UX
     •	stagecraft ssh (per host/role). []
 
 
-## Contributing / development
+## Contributing / Development
 
 Right now this is experimental and evolving quickly.
 
-If you’re hacking on Stagecraft locally:
-1.	Keep the spec document up to date: docs/stagecraft-spec.md￼.
-2.	Keep the Implementation roadmap (this section) roughly in sync:
-    •	Mark items [x] as they are built.
-    •	Add new bullets as the design evolves.
+### Development Setup
 
+1. **Clone and build:**
+   ```bash
+   git clone https://github.com/your-org/stagecraft.git
+   cd stagecraft
+   go build ./cmd/stagecraft
+   ```
 
-- Split that section into `docs/implementation_status.md` and link it from README, or
-- Add a simple convention in commit messages like `[#dev]` or `[#deploy]` to tag which checklist areas you’re working on.
+2. **Install git hooks:**
+   ```bash
+   ./scripts/install-hooks.sh
+   ```
+
+3. **Run tests:**
+   ```bash
+   go test ./...
+   ```
+
+4. **Check coverage:**
+   ```bash
+   ./scripts/check-coverage.sh
+   ```
+
+5. **Validate specs:**
+   ```bash
+   ./scripts/validate-spec.sh
+   ```
+
+### Development Workflow
+
+1. **Spec-first**: Before implementing, update or create specs in `spec/`
+2. **Test-first**: Write tests before implementation (especially for core logic)
+3. **Update features.yaml**: Track feature status in `spec/features.yaml`
+4. **Run pre-commit checks**: Hooks will validate formatting, tests, etc.
+5. **Update docs**: Keep `docs/` and `spec/` in sync with code changes
+
+### Code Quality Standards
+
+- All code must pass `gofmt`, `go vet`, and `golangci-lint`
+- Core packages (`pkg/config`, `internal/core`) require 80%+ test coverage
+- All features must have specs and tests before marking as `done`
+- See [Agent.md](Agent.md) for detailed development guidelines
+
+### Documentation
+
+- **Specs**: `spec/` - Feature specifications
+- **Architecture**: `docs/architecture.md` - System design
+- **ADRs**: `docs/adr/` - Architecture Decision Records
+- **Implementation Status**: `docs/implementation-status.md` - Feature progress
+- **Getting Started**: `docs/guides/getting-started.md` - User guide
+
+For more details, see:
+- [Agent.md](Agent.md) - Development guidelines
+- [docs/implementation-status.md](docs/implementation-status.md) - Feature tracking
 
 
 
