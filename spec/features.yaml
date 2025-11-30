@@ -56,6 +56,30 @@ features:
     tests:
       - "internal/cli/root_test.go"
 
+  - id: CORE_BACKEND_REGISTRY
+    title: "Backend provider registry system"
+    status: todo
+    spec: "core/backend-registry.md"
+    owner: bart
+    tests:
+      - "pkg/providers/backend/registry_test.go"
+
+  - id: CORE_MIGRATION_REGISTRY
+    title: "Migration engine registry system"
+    status: todo
+    spec: "core/migration-registry.md"
+    owner: bart
+    tests:
+      - "pkg/providers/migration/registry_test.go"
+
+  - id: CORE_BACKEND_PROVIDER_CONFIG_SCHEMA
+    title: "Provider-scoped backend configuration schema"
+    status: todo
+    spec: "core/backend-provider-config.md"
+    owner: bart
+    tests:
+      - "pkg/config/config_test.go"
+
   # Phase 1: Provider Interfaces
   - id: PROVIDER_BACKEND_INTERFACE
     title: "BackendProvider interface definition"
@@ -187,6 +211,14 @@ features:
     owner: bart
     tests:
       - "internal/providers/backend/encorets/encorets_test.go"
+
+  - id: PROVIDER_BACKEND_GENERIC
+    title: "Generic command-based BackendProvider implementation"
+    status: todo
+    spec: "providers/backend/generic.md"
+    owner: bart
+    tests:
+      - "internal/providers/backend/generic/generic_test.go"
 
   - id: PROVIDER_FRONTEND_GENERIC
     title: "Generic dev command FrontendProvider"

@@ -52,6 +52,25 @@ This repository is both a **production-grade tool** and a **public portfolio pie
     - All tests must pass (`go test ./...`).
     - Address linter findings unless explicitly documented as exceptions.
 
+7. **Provider and Engine Agnosticism**
+    - **Never hardcode provider IDs or engine IDs in validation**
+        - ❌ Wrong: `if provider != "encore-ts" && provider != "generic" { return error }`
+        - ✅ Right: `if !backendproviders.Has(provider) { return error }`
+        - Always validate against the appropriate registry (`pkg/providers/backend` or `pkg/providers/migration`)
+    - **Provider-specific config belongs under `backend.providers.<id>`**
+        - ❌ Wrong: `backend.dev.encore_secrets` (Encore-specific at top level)
+        - ✅ Right: `backend.providers.encore-ts.dev.secrets` (provider-scoped)
+        - Stagecraft core treats provider config as opaque (`map[string]any`)
+    - **Encore.ts and Drizzle are implementations, not special cases**
+        - Encore.ts is a `BackendProvider` implementation, not a core feature
+        - Drizzle is a `MigrationEngine` implementation, not a core feature
+        - If you need provider/engine-specific logic, it belongs in the provider/engine implementation
+    - **When adding new providers or engines**
+        - Register them in the appropriate registry (`backend.Register()` or `migration.Register()`)
+        - Implement the interface (`BackendProvider` or `Engine`)
+        - Add provider/engine-specific config under the scoped namespace
+        - Do not modify core validation logic
+
 ## Workflow Expectations
 
 When implementing or modifying a feature:

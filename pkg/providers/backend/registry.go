@@ -1,0 +1,92 @@
+// pkg/providers/backend/registry.go
+package backend
+
+import (
+	"fmt"
+	"sync"
+)
+
+// Feature: CORE_BACKEND_REGISTRY
+// Spec: spec/core/backend-registry.md
+
+// Registry manages backend provider registration and lookup.
+type Registry struct {
+	mu        sync.RWMutex
+	providers map[string]BackendProvider
+}
+
+// NewRegistry creates a new empty registry.
+func NewRegistry() *Registry {
+	return &Registry{
+		providers: make(map[string]BackendProvider),
+	}
+}
+
+// Register registers a backend provider.
+// Panics if the provider ID is empty or already registered.
+func (r *Registry) Register(p BackendProvider) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	id := p.ID()
+	if id == "" {
+		panic("backend provider registration: empty ID")
+	}
+	if _, exists := r.providers[id]; exists {
+		panic(fmt.Sprintf("backend provider registration: duplicate ID %q", id))
+	}
+
+	r.providers[id] = p
+}
+
+// Get retrieves a provider by ID.
+// Returns an error if the provider is not found.
+func (r *Registry) Get(id string) (BackendProvider, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	p, ok := r.providers[id]
+	if !ok {
+		return nil, fmt.Errorf("unknown backend provider %q", id)
+	}
+	return p, nil
+}
+
+// Has checks if a provider with the given ID is registered.
+func (r *Registry) Has(id string) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	_, ok := r.providers[id]
+	return ok
+}
+
+// IDs returns all registered provider IDs.
+func (r *Registry) IDs() []string {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	ids := make([]string, 0, len(r.providers))
+	for id := range r.providers {
+		ids = append(ids, id)
+	}
+	return ids
+}
+
+// DefaultRegistry is the global default registry.
+var DefaultRegistry = NewRegistry()
+
+// Register registers a provider in the default registry.
+func Register(p BackendProvider) {
+	DefaultRegistry.Register(p)
+}
+
+// Get retrieves a provider from the default registry.
+func Get(id string) (BackendProvider, error) {
+	return DefaultRegistry.Get(id)
+}
+
+// Has checks if a provider exists in the default registry.
+func Has(id string) bool {
+	return DefaultRegistry.Has(id)
+}
+
