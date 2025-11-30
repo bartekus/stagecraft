@@ -32,6 +32,56 @@ For full details, see [`docs/stagecraft-spec.md`](docs/stagecraft-spec.md).
 
 ---
 
+## Quickstart: basic Node app
+
+The easiest way to get started is with the `examples/basic-node` example:
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/stagecraft.git
+cd stagecraft
+
+# Build Stagecraft
+go build ./cmd/stagecraft
+
+# Try the example
+cd examples/basic-node
+
+# Start dev backend
+./stagecraft dev
+
+# In another terminal, apply database migrations
+export DATABASE_URL="postgres://user:pass@localhost/dbname"
+./stagecraft migrate
+```
+
+The example uses:
+- **Backend provider**: `generic` – runs `npm run dev` in the `./backend` directory
+- **Migration engine**: `raw` – executes SQL files from `./migrations` in order
+
+See `examples/basic-node/stagecraft.yml` for the configuration:
+
+```yaml
+backend:
+  provider: generic
+  providers:
+    generic:
+      dev:
+        command: ["npm", "run", "dev"]
+        workdir: "./backend"
+
+databases:
+  main:
+    connection_env: DATABASE_URL
+    migrations:
+      engine: raw
+      path: ./migrations
+```
+
+This demonstrates Stagecraft's provider-agnostic architecture: you can use any backend framework and any migration tool, all configured through a single `stagecraft.yml` file.
+
+---
+
 ## High-level architecture
 
 Stagecraft is built around a few core ideas:

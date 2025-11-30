@@ -3,11 +3,14 @@ package raw
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"gopkg.in/yaml.v3"
 
 	"stagecraft/pkg/providers/migration"
@@ -78,12 +81,6 @@ func (e *RawEngine) Plan(ctx context.Context, opts migration.PlanOptions) ([]mig
 
 // Run executes migrations.
 func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
-	// For v1, raw engine is a placeholder
-	// Full implementation would:
-	// 1. Parse SQL files
-	// 2. Execute them against the database
-	// 3. Track applied migrations
-	
 	migrationPath := opts.MigrationPath
 	if migrationPath == "" {
 		return fmt.Errorf("migration path is required")
@@ -94,30 +91,115 @@ func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
 		return fmt.Errorf("migration directory does not exist: %s", migrationPath)
 	}
 
-	// For now, just verify we can read the directory
-	entries, err := os.ReadDir(migrationPath)
+	// Get connection string from environment
+	dbURL := os.Getenv(opts.ConnectionEnv)
+	if dbURL == "" {
+		return fmt.Errorf("connection environment variable %q is not set", opts.ConnectionEnv)
+	}
+
+	// Parse database URL and connect
+	// For v1, assume PostgreSQL (pgx driver)
+	db, err := sql.Open("pgx", dbURL)
 	if err != nil {
-		return fmt.Errorf("reading migration directory: %w", err)
+		return fmt.Errorf("connecting to database: %w", err)
+	}
+	defer db.Close()
+
+	// Verify connection
+	if err := db.PingContext(ctx); err != nil {
+		return fmt.Errorf("pinging database: %w", err)
 	}
 
-	// Count SQL files
-	sqlCount := 0
-	for _, entry := range entries {
-		if !entry.IsDir() && strings.HasSuffix(strings.ToLower(entry.Name()), ".sql") {
-			sqlCount++
-		}
+	// Get migration files (reuse Plan logic)
+	planOpts := migration.PlanOptions{
+		MigrationPath: migrationPath,
+	}
+	migrations, err := e.Plan(ctx, planOpts)
+	if err != nil {
+		return fmt.Errorf("planning migrations: %w", err)
 	}
 
-	if sqlCount == 0 {
+	if len(migrations) == 0 {
 		return fmt.Errorf("no SQL migration files found in %s", migrationPath)
 	}
 
-	// In a full implementation, we would:
-	// - Connect to database using opts.ConnectionEnv
-	// - Execute SQL files in order
-	// - Track which migrations have been applied
-	
-	return fmt.Errorf("raw migration engine execution not yet implemented (found %d SQL files)", sqlCount)
+	// Create migrations table if it doesn't exist
+	if err := e.ensureMigrationsTable(ctx, db); err != nil {
+		return fmt.Errorf("ensuring migrations table: %w", err)
+	}
+
+	// Execute each migration
+	for _, m := range migrations {
+		// Check if already applied
+		applied, err := e.isApplied(ctx, db, m.ID)
+		if err != nil {
+			return fmt.Errorf("checking migration status: %w", err)
+		}
+		if applied {
+			fmt.Printf("Skipping already applied migration: %s\n", m.ID)
+			continue
+		}
+
+		// Read and execute SQL file
+		sqlPath := filepath.Join(migrationPath, m.ID)
+		sqlContent, err := os.ReadFile(sqlPath)
+		if err != nil {
+			return fmt.Errorf("reading migration file %s: %w", m.ID, err)
+		}
+
+		// Execute in transaction
+		tx, err := db.BeginTx(ctx, nil)
+		if err != nil {
+			return fmt.Errorf("starting transaction: %w", err)
+		}
+
+		if _, err := tx.ExecContext(ctx, string(sqlContent)); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("executing migration %s: %w", m.ID, err)
+		}
+
+		// Record migration
+		if _, err := tx.ExecContext(ctx,
+			"INSERT INTO stagecraft_migrations (id, applied_at) VALUES ($1, NOW())",
+			m.ID,
+		); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("recording migration %s: %w", m.ID, err)
+		}
+
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("committing migration %s: %w", m.ID, err)
+		}
+
+		fmt.Printf("Applied migration: %s\n", m.ID)
+	}
+
+	return nil
+}
+
+// ensureMigrationsTable creates the migrations tracking table if it doesn't exist.
+func (e *RawEngine) ensureMigrationsTable(ctx context.Context, db *sql.DB) error {
+	query := `
+		CREATE TABLE IF NOT EXISTS stagecraft_migrations (
+			id VARCHAR(255) PRIMARY KEY,
+			applied_at TIMESTAMP NOT NULL DEFAULT NOW()
+		)
+	`
+	_, err := db.ExecContext(ctx, query)
+	return err
+}
+
+// isApplied checks if a migration has already been applied.
+func (e *RawEngine) isApplied(ctx context.Context, db *sql.DB, id string) (bool, error) {
+	var count int
+	err := db.QueryRowContext(ctx,
+		"SELECT COUNT(*) FROM stagecraft_migrations WHERE id = $1",
+		id,
+	).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 // parseConfig unmarshals the engine config.
