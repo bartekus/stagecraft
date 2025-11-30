@@ -639,33 +639,44 @@ Behavior:
 High level package structure:
 
 ```text
-cmd/
-  stagecraft/           # Cobra root command
-
-pkg/
-  config/               # Load and validate stagecraft.yml
-  compose/              # Compose file handling and override generation
-  providers/
-    backend/
-      encorets/
-    frontend/
-      devcommand/
-    network/
-      tailscale/
-      headscale/
-    cloud/
-      digitalocean/
-    ci/
-      github/
-    secrets/
-      envfile/
-      encoredev/
-  dev/                  # Orchestration logic for `stagecraft dev`
-  deploy/               # Orchestration logic for build/deploy/rollback
-  infra/                # Infra up/down workflows
-  ci/                   # CI integration workflows
-  logging/              # Structured logging helpers
-  executil/             # Process execution and streaming
+stagecraft/
+  cmd/
+    root.go             # Cobra root command
+    dev.go
+    deploy.go
+    init.go
+    infra.go
+    ci.go
+    status.go
+    logs.go
+    ssh.go
+    rollback.go
+  docs/
+    stagecraft-spec.md
+  pkg/
+    config/               # Load and validate stagecraft.yml
+    compose/              # Compose file handling and override generation
+    providers/
+        backend/
+          encorets/
+        frontend/
+          devcommand/
+        network/
+          tailscale/
+          headscale/
+        cloud/
+          digitalocean/
+        ci/
+          github/
+        secrets/
+          envfile/
+          encoredev/
+    dev/                  # Orchestration logic for `stagecraft dev`
+    deploy/               # Orchestration logic for build/deploy/rollback
+    infra/                # Infra up/down workflows
+    ci/                   # CI integration workflows
+    logging/              # Structured logging helpers
+    executil/             # Process execution and streaming
 ```
 
 ### 5.1 Core interfaces
@@ -758,6 +769,7 @@ GitHub provider wraps gh or GitHub REST API.
 ⸻
 
 ## 6. Design principles for DX
+
     •	Single command mental model:
         •	stagecraft dev for local.
         •	stagecraft deploy for remote.
@@ -775,3 +787,18 @@ GitHub provider wraps gh or GitHub REST API.
 	    •	Local builds are optional; CI is canonical for release artifacts.
 
 ⸻
+
+## 7. Cross-cutting concerns
+
+	•	Global CLI behavior
+        •	Global flags: --env, --config, --verbose/--quiet, --dry-run.
+        •	Consistent exit codes and error formatting.
+	•	Config resolution rules
+        •	Precedence: flags → env vars → stagecraft.yml → built-in defaults.
+        •	Ability to override config path (STAGECRAFT_CONFIG env or --config).
+	•	OS / platform assumptions
+	    •	Officially support: macOS + Linux (Windows WSL later).
+	•	Release metadata storage
+	    •	Where “release history” lives (e.g. S3/DO Spaces JSON, or Git-tracked file).
+	•	Testing hooks
+	    •	Abstractions that make providers mockable (interfaces already help here).
