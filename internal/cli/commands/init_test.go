@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 
@@ -10,6 +9,7 @@ import (
 
 // Feature: CLI_INIT
 // Spec: spec/commands/init.md
+
 func TestNewInitCommand_HasExpectedMetadata(t *testing.T) {
 	cmd := NewInitCommand()
 
@@ -22,21 +22,11 @@ func TestNewInitCommand_HasExpectedMetadata(t *testing.T) {
 	}
 }
 
-func executeCommand(cmd *cobra.Command, args ...string) (string, error) {
-	buf := &bytes.Buffer{}
-	cmd.SetOut(buf)
-	cmd.SetErr(buf)
-	cmd.SetArgs(args)
-
-	err := cmd.Execute()
-	return buf.String(), err
-}
-
 func TestInitCommand_DefaultConfigPath_InteractiveStub(t *testing.T) {
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewInitCommand())
 
-	out, err := executeCommand(root, "init")
+	out, err := executeCommandForGolden(root, "init")
 	if err != nil {
 		t.Fatalf("expected no error executing 'init' command, got: %v", err)
 	}
@@ -54,7 +44,7 @@ func TestInitCommand_NonInteractiveStub(t *testing.T) {
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewInitCommand())
 
-	out, err := executeCommand(root, "init", "--non-interactive", "--config", "custom.yml")
+	out, err := executeCommandForGolden(root, "init", "--non-interactive", "--config", "custom.yml")
 	if err != nil {
 		t.Fatalf("expected no error executing 'init --non-interactive', got: %v", err)
 	}
@@ -65,5 +55,79 @@ func TestInitCommand_NonInteractiveStub(t *testing.T) {
 
 	if !strings.Contains(out, "custom.yml") {
 		t.Fatalf("expected custom config path 'custom.yml' in output, got: %q", out)
+	}
+}
+
+// TestInitCommand_GoldenFiles tests CLI output against golden files.
+func TestInitCommand_GoldenFiles(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     []string
+		golden   string
+		setupCmd func() *cobra.Command
+	}{
+		{
+			name:   "init_default",
+			args:   []string{"init"},
+			golden: "init_default",
+			setupCmd: func() *cobra.Command {
+				root := &cobra.Command{Use: "stagecraft"}
+				root.AddCommand(NewInitCommand())
+				return root
+			},
+		},
+		{
+			name:   "init_non_interactive",
+			args:   []string{"init", "--non-interactive"},
+			golden: "init_non_interactive",
+			setupCmd: func() *cobra.Command {
+				root := &cobra.Command{Use: "stagecraft"}
+				root.AddCommand(NewInitCommand())
+				return root
+			},
+		},
+		{
+			name:   "init_custom_config",
+			args:   []string{"init", "--config", "custom.yml", "--non-interactive"},
+			golden: "init_custom_config",
+			setupCmd: func() *cobra.Command {
+				root := &cobra.Command{Use: "stagecraft"}
+				root.AddCommand(NewInitCommand())
+				return root
+			},
+		},
+		{
+			name:   "init_help",
+			args:   []string{"init", "--help"},
+			golden: "init_help",
+			setupCmd: func() *cobra.Command {
+				root := &cobra.Command{Use: "stagecraft"}
+				root.AddCommand(NewInitCommand())
+				return root
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := tt.setupCmd()
+			output, err := executeCommandForGolden(cmd, tt.args...)
+
+			// Help commands don't return errors, but other commands might
+			if err != nil && !strings.Contains(strings.Join(tt.args, " "), "--help") {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			expected := readGoldenFile(t, tt.golden)
+
+			if *updateGolden {
+				writeGoldenFile(t, tt.golden, output)
+				expected = output
+			}
+
+			if output != expected {
+				t.Errorf("output mismatch:\nGot:\n%s\nExpected:\n%s", output, expected)
+			}
+		})
 	}
 }

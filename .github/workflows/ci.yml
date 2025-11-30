@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Verify formatting
+        run: |
+          gofmt_out=$(gofmt -l .)
+          if [ -n "$gofmt_out" ]; then
+            echo "Files not gofmt'ed:"
+            echo "$gofmt_out"
+            exit 1
+          fi
+
+      - name: Go vet
+        run: go vet ./...
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+
+      - name: Run golangci-lint
+        run: golangci-lint run ./...
+
+  test:
+    name: Tests and Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Run tests
+        run: go test ./... -coverprofile=coverage.out -covermode=atomic
+
+      - name: Check coverage thresholds
+        run: |
+          # Install bc if not available (for floating point comparisons)
+          sudo apt-get update && sudo apt-get install -y bc || true
+          
+          # Use the coverage check script
+          ./scripts/check-coverage.sh --fail-on-warning
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./coverage.out
+          fail_ci_if_error: false
+
+  docs-check:
+    name: Documentation and Spec Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Validate spec/features.yaml
+        run: |
+          # Check that features.yaml is valid YAML
+          python3 -c "import yaml; yaml.safe_load(open('spec/features.yaml'))" || {
+            echo "ERROR: spec/features.yaml is not valid YAML"
+            exit 1
+          }
+          echo "✓ spec/features.yaml is valid YAML"
+
+      - name: Validate spec references
+        run: |
+          # This will be enhanced by the validation script
+          if [ -f "scripts/validate-spec.sh" ]; then
+            bash scripts/validate-spec.sh
+          else
+            echo "Spec validation script not found, skipping detailed checks"
+          fi
+
+      - name: Check for missing spec files
+        run: |
+          # Basic check: ensure referenced spec files exist
+          while IFS= read -r line; do
+            if [[ $line =~ spec:\s*\"([^\"]+)\" ]]; then
+              SPEC_FILE="${BASH_REMATCH[1]}"
+              if [ ! -f "spec/$SPEC_FILE" ] && [ ! -f "$SPEC_FILE" ]; then
+                echo "WARNING: Referenced spec file not found: $SPEC_FILE"
+              fi
+            fi
+          done < <(grep -r "Spec:" --include="*.go" . || true)

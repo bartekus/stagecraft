@@ -1,10 +1,11 @@
+// internal/cli/commands/init.go
 package commands
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
+
 	"stagecraft/pkg/config"
 )
 
@@ -12,8 +13,6 @@ import (
 // Spec: spec/commands/init.md
 
 // NewInitCommand returns the `stagecraft init` command.
-// For now it only prints a stub message; it will later be wired to
-// config scaffolding in pkg/config and core planning logic.
 func NewInitCommand() *cobra.Command {
 	var nonInteractive bool
 	var configPath string
@@ -29,13 +28,17 @@ provider-specific bootstrapping.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := cmd.OutOrStdout()
 
-			// Stub implementation: demonstrate intent and avoid doing anything destructive.
 			if configPath == "" {
-				configPath = "stagecraft.yml"
+				configPath = config.DefaultConfigPath()
 			}
 
-			if _, err := os.Stat(configPath); err == nil {
-				fmt.Fprintf(out, "A Stagecraft config file already exists at %s (stub check).\n", configPath)
+			exists, err := config.Exists(configPath)
+			if err != nil {
+				return fmt.Errorf("checking existing config at %s: %w", configPath, err)
+			}
+
+			if exists {
+				fmt.Fprintf(out, "A Stagecraft config file already exists at %s.\n", configPath)
 				return nil
 			}
 
@@ -46,8 +49,8 @@ provider-specific bootstrapping.`,
 				fmt.Fprintln(out, "NOTE: Interactive questions are not yet implemented.")
 			}
 
-			// TODO: In a later step, write a minimal config file and run validations.
-			// For now we just simulate success.
+			// TODO: create a minimal config.Config value and write it to disk via a helper.
+
 			return nil
 		},
 	}
