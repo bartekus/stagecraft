@@ -1,6 +1,10 @@
 # Implementation Status
 
-This document tracks the implementation status of Stagecraft features. It is automatically generated from `spec/features.yaml` and should be kept in sync.
+> **⚠️ Note**: This document is a snapshot view. For the complete, up-to-date feature list, see [`spec/features.yaml`](../spec/features.yaml).
+>
+> This document shows a subset of features for quick reference. The full feature catalog with 61+ features organized by phase is available in [`docs/implementation-roadmap.md`](implementation-roadmap.md).
+
+This document tracks the implementation status of Stagecraft features. It should be regenerated from `spec/features.yaml` when needed.
 
 > **Last Updated**: See `spec/features.yaml` for the source of truth.
 

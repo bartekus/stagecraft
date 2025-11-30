@@ -1,5 +1,10 @@
 ## Why not Kamal
 
+> **Related Documents:**
+> - [`docs/adr/0001-architecture.md`](../docs/adr/0001-architecture.md) - Architecture decisions
+> - [`docs/stagecraft-spec.md`](../docs/stagecraft-spec.md) - Full application specification
+> - [`docs/implementation-roadmap.md`](../docs/implementation-roadmap.md) - Implementation plan
+
 ### 1. **Kamal evaluation and decision**
 - Decision: Do not adopt Kamal directly; build a custom tool inspired by Kamal
 - Rationale:

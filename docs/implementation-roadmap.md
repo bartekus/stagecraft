@@ -8,12 +8,159 @@
 
 ## Table of Contents
 
-1. [Development Principles](#development-principles)
-2. [Feature Organization](#feature-organization)
-3. [Implementation Phases](#implementation-phases)
-4. [Feature Dependency Graph](#feature-dependency-graph)
-5. [Implementation Workflow](#implementation-workflow)
-6. [Feature Catalog](#feature-catalog)
+1. [Quick Start](#quick-start)
+2. [V1 Scope Definition](#v1-scope-definition)
+3. [Development Principles](#development-principles)
+4. [Feature Organization](#feature-organization)
+5. [Implementation Phases](#implementation-phases)
+6. [Feature Dependency Graph](#feature-dependency-graph)
+7. [Implementation Workflow](#implementation-workflow)
+8. [Feature Catalog](#feature-catalog)
+
+---
+
+## Quick Start
+
+If you're new to the project or starting implementation, here's the recommended path:
+
+### First 5 Features to Implement (Phase 0)
+
+These form the foundation for everything else:
+
+1. **`CORE_CONFIG`** (Priority: Critical)
+   - Establishes the config system
+   - Enables all other features
+   - Estimated effort: Medium
+   - Dependencies: None
+
+2. **`CORE_LOGGING`** (Priority: High)
+   - Needed for all commands
+   - Simple, self-contained
+   - Estimated effort: Low
+   - Dependencies: None
+
+3. **`CORE_EXECUTIL`** (Priority: High)
+   - Needed for running external commands
+   - Estimated effort: Low
+   - Dependencies: `CORE_LOGGING`
+
+4. **`CLI_GLOBAL_FLAGS`** (Priority: High)
+   - Enables consistent CLI behavior
+   - Estimated effort: Low
+   - Dependencies: `CORE_CONFIG`
+
+5. **`CLI_INIT`** (Priority: High)
+   - First user-facing command
+   - Validates the config system
+   - Estimated effort: Medium
+   - Dependencies: `CORE_CONFIG`
+
+### Critical Path Features
+
+After Phase 0, focus on these in order:
+
+1. **Provider Interfaces** (Phase 1) - Foundation for all providers
+2. **Core Orchestration** (Phase 2) - Planning and state management
+3. **Local Development** (Phase 3) - `stagecraft dev` command
+4. **Provider Implementations** (Phase 4) - Tailscale and DigitalOcean
+5. **Build and Deploy** (Phase 5) - Core deployment capabilities
+
+### Getting Help
+
+- See individual feature specs in `spec/` for detailed requirements
+- Check ADRs in `docs/adr/` for architectural decisions
+- Review `docs/stagecraft-spec.md` for full application specification
+- Follow the [Implementation Workflow](#implementation-workflow) for each feature
+
+---
+
+## V1 Scope Definition
+
+### What's In Scope for v1
+
+v1 focuses on core functionality to achieve a working deployment tool:
+
+**Core Capabilities:**
+- ✅ Complete config system (`stagecraft.yml` with full schema)
+- ✅ Local development (`stagecraft dev` with mkcert, Traefik, Encore, Vite)
+- ✅ Build and deploy (`stagecraft build`, `stagecraft deploy`)
+- ✅ Infrastructure provisioning (`stagecraft infra up/down` for DigitalOcean)
+- ✅ Migration system (pre/post deploy migrations)
+- ✅ Basic operations (`status`, `logs`, `ssh`, `rollback`)
+- ✅ CI integration (GitHub Actions workflow generation)
+
+**Provider Support:**
+- Backend: Encore.ts (primary)
+- Frontend: Generic dev commands (Vite, etc.)
+- Network: Tailscale (primary), Headscale (optional)
+- Cloud: DigitalOcean (primary)
+- CI: GitHub Actions (primary)
+- Secrets: Env files and Encore dev secrets
+
+**Deployment Model:**
+- Docker Compose-based orchestration
+- docker-rollout for zero-downtime updates
+- Multi-host via Tailscale mesh networking
+- File-based state management (`.stagecraft/releases.json`)
+
+### What's Explicitly Out of Scope for v1
+
+**Advanced Features (v2):**
+- ❌ Ephemeral environments
+- ❌ Audit ledger and replay
+- ❌ Infrastructure recipes
+- ❌ Topology visualization
+- ❌ AI test harness
+- ❌ Advanced secrets orchestrator
+- ❌ Health watchdog agent
+- ❌ Sync primitives
+- ❌ Composable pipelines
+- ❌ Snapshot manager
+- ❌ Editor plugins
+- ❌ Multi-owner/organization support
+- ❌ Observability stack
+- ❌ Budget guardrails
+- ❌ Migration preflight simulator
+
+**Config Features:**
+- ❌ Full environment variable interpolation (basic `${VAR}` for migrations only)
+- ❌ Remote config loading
+- ❌ Config file watching/reloading
+- ❌ Advanced schema evolution
+
+**Provider Extensions:**
+- ❌ Additional cloud providers (AWS, GCP, etc.)
+- ❌ Kubernetes support
+- ❌ Additional CI providers
+- ❌ Advanced secrets backends (Vault, Doppler, etc.)
+
+**State Management:**
+- ❌ Remote state backend (v1 uses local files)
+- ❌ Distributed state synchronization
+- ❌ State locking
+
+### v1 Success Criteria
+
+v1 is considered complete when:
+
+1. ✅ `stagecraft init` creates a valid, complete `stagecraft.yml`
+2. ✅ `stagecraft dev` spins up full local stack (infra + backend + frontend)
+3. ✅ `stagecraft build` builds and pushes Docker images
+4. ✅ `stagecraft deploy` deploys to staging/prod environments
+5. ✅ `stagecraft infra up` provisions DigitalOcean infrastructure
+6. ✅ Migrations run automatically in deployment pipeline
+7. ✅ All core commands work end-to-end
+8. ✅ Test coverage meets targets (80%+ core, 70%+ CLI/drivers)
+
+### Transition to v2
+
+v2 planning begins when:
+- All v1 features are complete and tested
+- v1 has been used in production for at least one project
+- User feedback identifies clear v2 priorities
+- Core architecture is stable and extensible
+
+See [V2 Features (Deferred)](#v2-features-deferred) for the planned v2 feature list.
 
 ---
 
@@ -441,12 +588,25 @@ These will be added to `spec/features.yaml` with `status: v2` when v1 is complet
 
 ## References
 
-- `blog/01-why-not-kamal.md` - Core architecture decisions
-- `blog/02-project-scaffold.md` - Project structure vision
-- `blog/03-migration-strategies.md` - Migration system design
-- `blog/04-features-now-and-future.md` - v1/v2 feature split
-- `blog/05-development-strategy.md` - Development methodology
-- `discussions/04-new-feature-ideas.md` - v2 feature ideas
-- `docs/stagecraft-spec.md` - Full application specification
-- `spec/features.yaml` - Feature tracking (source of truth)
+### Design Documents
+- [`blog/01-why-not-kamal.md`](../blog/01-why-not-kamal.md) - Core architecture decisions
+- [`blog/02-project-scaffold.md`](../blog/02-project-scaffold.md) - Project structure vision
+- [`blog/03-migration-strategies.md`](../blog/03-migration-strategies.md) - Migration system design
+- [`blog/04-features-now-and-future.md`](../blog/04-features-now-and-future.md) - v1/v2 feature split
+- [`blog/05-development-strategy.md`](../blog/05-development-strategy.md) - Development methodology
+- [`discussions/04-new-feature-ideas.md`](../discussions/04-new-feature-ideas.md) - v2 feature ideas
+
+### Specifications
+- [`docs/stagecraft-spec.md`](stagecraft-spec.md) - Full application specification
+- [`spec/features.yaml`](../spec/features.yaml) - Feature tracking (source of truth)
+- [`docs/implementation-status.md`](implementation-status.md) - Quick reference status
+
+### Architecture
+- [`docs/adr/0001-architecture.md`](adr/0001-architecture.md) - Architecture and directory structure
+- [`docs/architecture.md`](architecture.md) - System architecture overview
+- [`spec/overview.md`](../spec/overview.md) - Project overview
+
+### Related Features
+- See [`spec/core/config.md`](../spec/core/config.md) for config schema details
+- See [`spec/scaffold/stagecraft-dir.md`](../spec/scaffold/stagecraft-dir.md) for `.stagecraft/` directory structure
 
