@@ -43,7 +43,8 @@ func NewInitCommand() *cobra.Command {
 		Long: `Initialize Stagecraft configuration in the current directory.
 
 This command will create a minimal Stagecraft config file and guide you
-through initial setup.`,
+through initial setup. In future iterations it will support more advanced
+provider-specific bootstrapping.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := cmd.OutOrStdout()
 			verbose, _ := cmd.Flags().GetBool("verbose")

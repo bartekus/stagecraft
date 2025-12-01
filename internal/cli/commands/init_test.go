@@ -93,36 +93,40 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 		args     []string
 		golden   string
 		setupCmd func() *cobra.Command
+		needsCleanDir bool
 	}{
 		{
 			name:   "init_default",
-			args:   []string{"init"},
+			args:   []string{"init", "--non-interactive", "--project-name", "test-project"},
 			golden: "init_default",
 			setupCmd: func() *cobra.Command {
 				root := &cobra.Command{Use: "stagecraft"}
 				root.AddCommand(NewInitCommand())
 				return root
 			},
+			needsCleanDir: true,
 		},
 		{
 			name:   "init_non_interactive",
-			args:   []string{"init", "--non-interactive"},
+			args:   []string{"init", "--non-interactive", "--project-name", "test-project"},
 			golden: "init_non_interactive",
 			setupCmd: func() *cobra.Command {
 				root := &cobra.Command{Use: "stagecraft"}
 				root.AddCommand(NewInitCommand())
 				return root
 			},
+			needsCleanDir: true,
 		},
 		{
 			name:   "init_custom_config",
-			args:   []string{"init", "--config", "custom.yml", "--non-interactive"},
+			args:   []string{"init", "--config", "custom.yml", "--non-interactive", "--project-name", "test-project"},
 			golden: "init_custom_config",
 			setupCmd: func() *cobra.Command {
 				root := &cobra.Command{Use: "stagecraft"}
 				root.AddCommand(NewInitCommand())
 				return root
 			},
+			needsCleanDir: true,
 		},
 		{
 			name:   "init_help",
@@ -133,11 +137,22 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 				root.AddCommand(NewInitCommand())
 				return root
 			},
+			needsCleanDir: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var originalDir string
+			var tmpDir string
+			
+			if tt.needsCleanDir {
+				tmpDir = t.TempDir()
+				originalDir, _ = os.Getwd()
+				defer os.Chdir(originalDir)
+				os.Chdir(tmpDir)
+			}
+			
 			cmd := tt.setupCmd()
 			output, err := executeCommandForGolden(cmd, tt.args...)
 

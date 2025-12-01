@@ -8,6 +8,8 @@ Usage:
   stagecraft init [flags]
 
 Flags:
-      --config string     path to Stagecraft config file (default: stagecraft.yml)
-  -h, --help              help for init
-      --non-interactive   run without interactive prompts and use defaults
+      --config string         path to Stagecraft config file (default: stagecraft.yml)
+      --env string            default environment name (default "dev")
+  -h, --help                  help for init
+      --non-interactive       run without interactive prompts and use defaults
+      --project-name string   project name (default: directory name)

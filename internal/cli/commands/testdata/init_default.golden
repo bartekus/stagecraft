@@ -1,2 +1,2 @@
-Initializing Stagecraft project (interactive, stub) at stagecraft.yml
-NOTE: Interactive questions are not yet implemented.
+✓ Created Stagecraft config at stagecraft.yml
+You can now run 'stagecraft dev' to start development.

@@ -19,6 +19,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -31,7 +32,10 @@ var updateGolden = flag.Bool("update", false, "update golden files")
 // readGoldenFile reads a golden file, or returns empty string if it doesn't exist.
 func readGoldenFile(t *testing.T, name string) string {
 	t.Helper()
-	path := filepath.Join("testdata", name+".golden")
+	// Get the directory where this test file is located
+	_, filename, _, _ := runtime.Caller(0)
+	testDir := filepath.Dir(filename)
+	path := filepath.Join(testDir, "testdata", name+".golden")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -45,7 +49,10 @@ func readGoldenFile(t *testing.T, name string) string {
 // writeGoldenFile writes a golden file.
 func writeGoldenFile(t *testing.T, name string, content string) {
 	t.Helper()
-	dir := filepath.Join("testdata")
+	// Get the directory where this test file is located
+	_, filename, _, _ := runtime.Caller(0)
+	testDir := filepath.Dir(filename)
+	dir := filepath.Join(testDir, "testdata")
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		t.Fatalf("failed to create testdata directory: %v", err)
 	}
