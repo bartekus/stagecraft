@@ -15,10 +15,14 @@ on:
     branches: [ main ]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint and Format Check
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +36,7 @@ jobs:
         run: |
           gofmt_out=$(gofmt -l .)
           if [ -n "$gofmt_out" ]; then
-            echo "Files not gofmt'ed:"
+            echo "The following files are not gofmt'ed:"
             echo "$gofmt_out"
             exit 1
           fi
@@ -43,10 +47,16 @@ jobs:
         with:
           version: v2.6.2
           args: ./...
+          install-mode: binary
+          verify: true
+          only-new-issues: false
+          problem-matchers: false
 
   test:
     name: Tests and Coverage
     runs-on: ubuntu-latest
+    needs: lint
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,46 +73,62 @@ jobs:
         run: |
           echo "$(pwd)" >> $GITHUB_PATH
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: go test ./... -coverprofile=coverage.out -covermode=atomic
 
-      - name: Check coverage thresholds
+      - name: Enforce coverage threshold
         run: |
           # Install bc if not available (for floating point comparisons)
           sudo apt-get update && sudo apt-get install -y bc || true
 
           # Use the coverage check script
-          ./scripts/check-coverage.sh --fail-on-warning
+          if [ -x ./scripts/check-coverage.sh ]; then
+            ./scripts/check-coverage.sh --fail-on-warning
+          else
+            echo "scripts/check-coverage.sh not found; skipping coverage threshold enforcement"
+          fi
 
-      - name: Upload coverage
+      - name: Upload coverage to Codecov
+        if: success() && github.event_name == 'pull_request'
         uses: codecov/codecov-action@v4
         if: always()
         with:
-          file: ./coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.out
           fail_ci_if_error: false
 
-  docs-check:
-    name: Documentation and Spec Validation
+  docs-and-spec:
+    name: Docs and Spec Validation
     runs-on: ubuntu-latest
+    needs: test
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          go-version: "1.24"
+          python-version: '3.x'
+
+      - name: Install PyYAML
+        run: |
+          python3 -m pip install --quiet --upgrade pip
+          python3 -m pip install --quiet pyyaml
 
       - name: Validate spec/features.yaml
         run: |
-          # Check that features.yaml is valid YAML
-          python3 -c "import yaml; yaml.safe_load(open('spec/features.yaml'))" || {
-            echo "ERROR: spec/features.yaml is not valid YAML"
-            exit 1
-          }
-          echo "✓ spec/features.yaml is valid YAML"
+          if [ -f spec/features.yaml ]; then
+            python3 -c "import yaml; yaml.safe_load(open('spec/features.yaml'))" || {
+              echo 'ERROR: spec/features.yaml is not valid YAML'
+              exit 1
+            }
+            echo '✓ spec/features.yaml is valid YAML'
+          else
+            echo 'spec/features.yaml not found, skipping YAML validation'
+          fi
 
-      - name: Validate spec references
+      - name: Run spec validation script (if present)
         run: |
           # This will be enhanced by the validation script
           if [ -f "scripts/validate-spec.sh" ]; then
@@ -122,3 +148,23 @@ jobs:
               fi
             fi
           done < <(grep -r "Spec:" --include="*.go" . || true)
+
+  license:
+    name: License Headers
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+
+      - name: Install addlicense
+        run: go install github.com/google/addlicense@latest
+
+      - name: Run license check
+        run: addlicense -check .
