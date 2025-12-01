@@ -165,7 +165,7 @@ features:
   # Phase 3: Local Development
   - id: CLI_DEV_BASIC
     title: "Basic stagecraft dev command that delegates to backend provider"
-    status: todo
+    status: done
     spec: "commands/dev-basic.md"
     owner: bart
     tests:
@@ -371,7 +371,7 @@ features:
 
   - id: CLI_MIGRATE_BASIC
     title: "Basic stagecraft migrate command using registered migration engines"
-    status: todo
+    status: done
     spec: "commands/migrate-basic.md"
     owner: bart
     tests:

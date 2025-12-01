@@ -24,14 +24,19 @@ func NewDevCommand() *cobra.Command {
 		RunE:  runDev,
 	}
 
+	cmd.Flags().String("config", "", "path to Stagecraft config file (default: stagecraft.yml)")
+
 	return cmd
 }
 
 func runDev(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
-	// Get config path (future: from --config flag)
-	configPath := config.DefaultConfigPath()
+	// Get config path from flag or use default
+	configPath, _ := cmd.Flags().GetString("config")
+	if configPath == "" {
+		configPath = config.DefaultConfigPath()
+	}
 	absPath, err := filepath.Abs(configPath)
 	if err != nil {
 		return fmt.Errorf("resolving config path: %w", err)
@@ -54,8 +59,9 @@ func runDev(cmd *cobra.Command, args []string) error {
 	backendID := cfg.Backend.Provider
 	provider, err := backendproviders.Get(backendID)
 	if err != nil {
-		// Error already includes available providers
-		return fmt.Errorf("resolving backend provider: %w", err)
+		// Enhance error message with available providers
+		available := backendproviders.DefaultRegistry.IDs()
+		return fmt.Errorf("unknown backend provider %q; available providers: %v", backendID, available)
 	}
 
 	// Get provider-specific config

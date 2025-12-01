@@ -10,7 +10,7 @@ It aims to be a “Kamal, but for Docker Compose + Tailscale + Encore.ts + Vite�
 - **Provider model** – Encore.ts, Vite, DigitalOcean, GitHub Actions and others plug in cleanly.
 - **Configuration-driven** – one `stagecraft.yml` plus a canonical `docker-compose.yml`.
 
-> ⚠️ **Status**: Early WIP / experimental. Right now only the Cobra skeleton exists; most features are not implemented yet.
+> ⚠️ **Status**: Early WIP / experimental. Core commands (`dev`, `migrate`) are functional. See [Implementation Status](docs/implementation-status.md) for details.
 
 ---
 
@@ -47,12 +47,15 @@ go build ./cmd/stagecraft
 # Try the example
 cd examples/basic-node
 
-# Start dev backend
+# Start dev backend (runs npm run dev in ./backend)
 ./stagecraft dev
 
 # In another terminal, apply database migrations
 export DATABASE_URL="postgres://user:pass@localhost/dbname"
 ./stagecraft migrate
+
+# Or preview migrations without executing
+./stagecraft migrate --plan
 ```
 
 The example uses:
@@ -76,6 +79,7 @@ databases:
     migrations:
       engine: raw
       path: ./migrations
+      strategy: pre_deploy
 ```
 
 This demonstrates Stagecraft's provider-agnostic architecture: you can use any backend framework and any migration tool, all configured through a single `stagecraft.yml` file.
@@ -106,14 +110,31 @@ Stagecraft is built around a few core ideas:
 
 ---
 
-## Planned commands
+## Commands
 
-_None of these are fully implemented yet – this is the target design._
+### Implemented
 
-- `stagecraft init`  
-  Scaffold `stagecraft.yml`, optional `docker-compose.yml`, and basic app layout.
+- `stagecraft dev` ✅  
+  Start development environment using the configured backend provider.
+  - Loads `stagecraft.yml` and resolves backend provider from registry
+  - Delegates to provider's `Dev()` method
+  - Streams output to terminal
+  - Supports `--config` flag to specify config file path
+  - Supports `--verbose` flag for detailed logging
 
-- `stagecraft dev`  
+- `stagecraft migrate` ✅  
+  Run database migrations using the configured migration engine.
+  - Supports `--plan` flag for dry-run mode
+  - Supports `--database <name>` to select database
+  - Supports `--config` flag to specify config file path
+  - Delegates to engine's `Plan()` or `Run()` methods
+
+- `stagecraft init` (partial)  
+  Bootstrap Stagecraft into the current project (currently stub).
+
+### Planned
+
+- `stagecraft dev` (full feature set)  
   Run full local dev:
     - Docker Compose infra (Traefik, Postgres, Redis, Logto, etc.).
     - Encore dev server (with secrets synced from `.env.local`).
@@ -205,23 +226,28 @@ stagecraft/
     logging/               # structured logging helpers
 ```
 
-Building & running
+## Building & running
 
-Right now, Stagecraft only has the root command. Once more commands are added, this section will be expanded with real usage examples.
+### Prerequisites
+- Go 1.22+ (or recent stable).
+- Docker (for future dev/deploy functionality).
+- PostgreSQL (for migration examples).
 
-Prerequisites
-•	Go 1.22+ (or recent stable).
-•	Docker (for future dev/deploy functionality).
-
-Build from source
+### Build from source
 ```bash
 git clone https://github.com/your-org/stagecraft.git
 cd stagecraft
-go build ./...
+go build ./cmd/stagecraft
 ```
 
+### Try it out
 ```bash
+# See available commands
 ./stagecraft --help
+
+# Try the basic-node example
+cd examples/basic-node
+./stagecraft dev
 ```
 
 ## Implementation roadmap & status
