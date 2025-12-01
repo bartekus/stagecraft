@@ -51,7 +51,7 @@ databases:
       strategy: pre_deploy
 `)
 
-	if err := os.WriteFile(configPath, content, 0644); err != nil {
+	if err := os.WriteFile(configPath, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -102,7 +102,7 @@ environments:
     driver: local
 `)
 
-	if err := os.WriteFile(configPath, content, 0644); err != nil {
+	if err := os.WriteFile(configPath, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -143,7 +143,7 @@ databases:
       strategy: pre_deploy
 `)
 
-	if err := os.WriteFile(configPath, content, 0644); err != nil {
+	if err := os.WriteFile(configPath, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 

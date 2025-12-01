@@ -114,20 +114,19 @@ func (p *GenericProvider) BuildDocker(ctx context.Context, opts backend.BuildDoc
 		dockerfile = "Dockerfile"
 	}
 
-	context := cfg.Build.Context
-	if context == "" {
-		context = opts.WorkDir
+	buildContext := cfg.Build.Context
+	if buildContext == "" {
+		buildContext = opts.WorkDir
 	}
-	if context == "" {
-		context = "."
+	if buildContext == "" {
+		buildContext = "."
 	}
 
-	// Build docker build command
 	args := []string{
 		"build",
 		"-t", opts.ImageTag,
 		"-f", dockerfile,
-		context,
+		buildContext,
 	}
 
 	//nolint:gosec // docker args come from trusted config (image tag, dockerfile, context)
