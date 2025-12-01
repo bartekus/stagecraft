@@ -36,7 +36,8 @@ func (m *mockEngine) Plan(ctx context.Context, opts PlanOptions) ([]Migration, e
 	return nil, nil
 }
 
-func (m *mockEngine) Run(ctx context.Context, opts RunOptions) error {
+func (m *mockEngine) Run(ctx context.Context, opts RunOptions) error { //nolint:gocritic
+	// interface requires value
 	return nil
 }
 
