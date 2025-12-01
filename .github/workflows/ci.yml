@@ -41,7 +41,7 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
-          version: v9.0.0
+          version: v2.6.2
           args: --out-format=colored-line-number ./...
 
   test:
