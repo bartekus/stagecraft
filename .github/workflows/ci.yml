@@ -37,16 +37,12 @@ jobs:
             exit 1
           fi
 
-      - name: Go vet
-        run: go vet ./...
-
-      - name: Install golangci-lint
+      # Run golangci-lint using .golangci.yml, modern defaults (no deprecated output format)
+      - name: golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
           version: latest
-
-      - name: Run golangci-lint
-        run: golangci-lint run ./...
+          args: ./...
 
   test:
     name: Tests and Coverage

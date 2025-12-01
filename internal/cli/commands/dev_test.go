@@ -74,7 +74,7 @@ environments:
   dev:
     driver: local
 `
-	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
 	originalDir, _ := os.Getwd()
@@ -116,7 +116,7 @@ environments:
   dev:
     driver: local
 `
-	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
 	originalDir, _ := os.Getwd()

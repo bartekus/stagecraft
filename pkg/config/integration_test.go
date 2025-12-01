@@ -52,7 +52,7 @@ environments:
     driver: local
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -151,7 +151,7 @@ environments:
 			tmpDir := t.TempDir()
 			path := filepath.Join(tmpDir, "stagecraft.yml")
 
-			if err := os.WriteFile(path, []byte(tt.configContent), 0o644); err != nil {
+			if err := os.WriteFile(path, []byte(tt.configContent), 0o600); err != nil {
 				t.Fatalf("failed to write temp config: %v", err)
 			}
 
@@ -201,7 +201,7 @@ environments:
     driver: local
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 

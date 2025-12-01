@@ -85,6 +85,7 @@ func (p *GenericProvider) Dev(ctx context.Context, opts backend.DevOptions) erro
 	}
 
 	// Build command
+	//nolint:gosec // commands and args are trusted operator config from stagecraft.yml, not user input
 	cmd := exec.CommandContext(ctx, cfg.Dev.Command[0], cfg.Dev.Command[1:]...)
 	cmd.Dir = workDir
 
@@ -129,6 +130,7 @@ func (p *GenericProvider) BuildDocker(ctx context.Context, opts backend.BuildDoc
 		context,
 	}
 
+	//nolint:gosec // docker args come from trusted config (image tag, dockerfile, context)
 	cmd := exec.CommandContext(ctx, "docker", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
