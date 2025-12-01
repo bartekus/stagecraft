@@ -31,6 +31,7 @@ import (
 // Spec: spec/providers/backend/encore-ts.md
 
 // EncoreTsProvider implements the Encore.ts backend provider.
+//
 //nolint:revive // EncoreTsProvider is the preferred name for clarity
 type EncoreTsProvider struct{}
 

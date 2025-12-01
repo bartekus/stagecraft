@@ -12,12 +12,13 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
-// test/e2e/init_smoke_test.go
 package e2e
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -29,7 +30,11 @@ import (
 // in PATH or built beforehand. It is gated behind the `e2e` build tag
 // so it won't run in normal `go test ./...` runs.
 func TestStagecraftInit_Smoke(t *testing.T) {
-	cmd := exec.Command("stagecraft", "init", "--non-interactive")
+	tmpDir := t.TempDir()
+
+	// Run init in an isolated directory so stagecraft.yml does not already exist.
+	cmd := exec.Command("stagecraft", "init", "--non-interactive", "--project-name", "e2e")
+	cmd.Dir = tmpDir
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -39,8 +44,15 @@ func TestStagecraftInit_Smoke(t *testing.T) {
 		t.Fatalf("expected 'stagecraft init' to succeed, got error: %v, output: %s", err, out.String())
 	}
 
-	if !strings.Contains(out.String(), "Created Stagecraft config") {
-		t.Fatalf("expected output to contain init success message, got: %q", out.String())
+	output := out.String()
+	if !strings.Contains(output, "Created Stagecraft config") {
+		t.Fatalf("expected output to contain init success message, got: %q", output)
+	}
+
+	// Ensure the config file was actually created.
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+	if _, err := os.Stat(configPath); err != nil {
+		t.Fatalf("expected stagecraft.yml to be created at %s, got error: %v", configPath, err)
 	}
 }
 
