@@ -39,8 +39,8 @@ func TestStagecraftInit_Smoke(t *testing.T) {
 		t.Fatalf("expected 'stagecraft init' to succeed, got error: %v, output: %s", err, out.String())
 	}
 
-	if !strings.Contains(out.String(), "Initializing Stagecraft project") {
-		t.Fatalf("expected output to contain init stub message, got: %q", out.String())
+	if !strings.Contains(out.String(), "Created Stagecraft config") {
+		t.Fatalf("expected output to contain init success message, got: %q", out.String())
 	}
 }
 

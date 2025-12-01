@@ -24,7 +24,6 @@ import (
 	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"gopkg.in/yaml.v3"
 
 	"stagecraft/pkg/providers/migration"
 )
@@ -213,25 +212,6 @@ func (e *RawEngine) isApplied(ctx context.Context, db *sql.DB, id string) (bool,
 		return false, err
 	}
 	return count > 0, nil
-}
-
-// parseConfig unmarshals the engine config.
-func (e *RawEngine) parseConfig(cfg any) (*Config, error) {
-	if cfg == nil {
-		return &Config{}, nil // Config is optional for raw engine
-	}
-
-	data, err := yaml.Marshal(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("marshaling config: %w", err)
-	}
-
-	var config Config
-	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("invalid raw engine config: %w", err)
-	}
-
-	return &config, nil
 }
 
 func init() {
