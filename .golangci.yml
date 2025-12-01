@@ -31,6 +31,9 @@ linters:
     - typecheck     # Already covered by go build
 
 linters-settings:
+  # Define the Go version limit for linters.
+  # This should be <= the Go version used to build golangci-lint.
+  go: "1.24"
   gofmt:
     simplify: true
   goimports:
