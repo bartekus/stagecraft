@@ -1,6 +1,6 @@
 Stagecraft
 
-A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 Copyright (C) 2025  Bartek Kus
 
@@ -10,13 +10,13 @@ You may obtain a copy of the license at:
 
     https://www.gnu.org/licenses/agpl-3.0.html
 
-This NOTICE file is provided for informational purposes only.  
+This NOTICE file is provided for informational purposes only.
 
 It does not modify the terms of the AGPL license.
 
 ---
 
-This project incorporates open source software.  
+This project incorporates open source software.
 
 Below is a non-exhaustive list of third-party components and their licenses:
 

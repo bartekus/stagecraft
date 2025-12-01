@@ -2,7 +2,7 @@
 
 /*
 
-Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 Copyright (C) 2025  Bartek Kus
 
@@ -53,7 +53,7 @@ type Config struct {
 func (e *RawEngine) Plan(ctx context.Context, opts migration.PlanOptions) ([]migration.Migration, error) {
 	// For raw engine, we simply list all SQL files in the migration directory
 	// In a real implementation, we'd check which ones have been applied
-	
+
 	migrationPath := opts.MigrationPath
 	if migrationPath == "" {
 		return nil, fmt.Errorf("migration path is required")
@@ -66,13 +66,13 @@ func (e *RawEngine) Plan(ctx context.Context, opts migration.PlanOptions) ([]mig
 	}
 
 	var migrations []migration.Migration
-	
+
 	// Collect SQL files
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
 		}
-		
+
 		if !strings.HasSuffix(strings.ToLower(entry.Name()), ".sql") {
 			continue
 		}
@@ -237,4 +237,3 @@ func (e *RawEngine) parseConfig(cfg any) (*Config, error) {
 func init() {
 	migration.Register(&RawEngine{})
 }
-

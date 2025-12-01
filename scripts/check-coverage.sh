@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+# Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 #
 # Copyright (C) 2025  Bartek Kus
 #
@@ -101,14 +101,14 @@ for pkg in "${CORE_PACKAGES[@]}"; do
     if ! go list "./$pkg" &>/dev/null; then
         continue
     fi
-    
+
     PKG_COVERAGE=$(go tool cover -func="$COVERAGE_FILE" | grep "$pkg" | awk '{print $3}' | sed 's/%//' || echo "0")
-    
+
     if [ "$PKG_COVERAGE" = "0" ] || [ -z "$PKG_COVERAGE" ]; then
         warning "$pkg: No coverage data (package may not have tests)"
         continue
     fi
-    
+
     if (( $(echo "$PKG_COVERAGE < $CORE_PACKAGE_MIN" | bc -l 2>/dev/null || echo "0") )); then
         error "$pkg: ${PKG_COVERAGE}% (below ${CORE_PACKAGE_MIN}% threshold)"
         CORE_FAILED=1
@@ -125,7 +125,7 @@ echo ""
 go tool cover -func="$COVERAGE_FILE" | grep -v "^total:" | while IFS= read -r line; do
     PKG=$(echo "$line" | awk '{print $1}')
     COV=$(echo "$line" | awk '{print $3}' | sed 's/%//')
-    
+
     if (( $(echo "$COV < 50" | bc -l 2>/dev/null || echo "0") )); then
         echo -e "${RED}$PKG: ${COV}%${NC}"
     elif (( $(echo "$COV < 70" | bc -l 2>/dev/null || echo "0") )); then

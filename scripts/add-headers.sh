@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+# Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 #
 # Copyright (C) 2025  Bartek Kus
 #
@@ -17,7 +17,7 @@ SHORT_HEADER='// SPDX-License-Identifier: AGPL-3.0-or-later
 
 /*
 
-Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 Copyright (C) 2025  Bartek Kus
 
@@ -39,7 +39,7 @@ find . -name "*.go" -type f ! -path "./vendor/*" ! -path "./node_modules/*" ! -p
 		echo "Skipping $file (already has header)"
 		continue
 	fi
-	
+
 	# Check if it's a full header file
 	is_full_header=false
 	for full_file in "${FULL_HEADER_FILES[@]}"; do
@@ -48,16 +48,16 @@ find . -name "*.go" -type f ! -path "./vendor/*" ! -path "./node_modules/*" ! -p
 			break
 		fi
 	done
-	
+
 	if [ "$is_full_header" = true ]; then
 		echo "Skipping $file (full header file, should be done manually)"
 		continue
 	fi
-	
+
 	# Create temp file with header
 	temp_file=$(mktemp)
 	echo -n "$SHORT_HEADER" > "$temp_file"
-	
+
 	# Remove leading comments if they exist (like // internal/cli/commands/init.go)
 	# and add the rest of the file
 	if head -1 "$file" | grep -q "^//"; then
@@ -66,7 +66,7 @@ find . -name "*.go" -type f ! -path "./vendor/*" ! -path "./node_modules/*" ! -p
 	else
 		cat "$file" >> "$temp_file"
 	fi
-	
+
 	mv "$temp_file" "$file"
 	echo "Added header to $file"
 done

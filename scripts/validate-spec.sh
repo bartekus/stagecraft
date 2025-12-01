@@ -1,7 +1,7 @@
 #!/bin/bash
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+# Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 #
 # Copyright (C) 2025  Bartek Kus
 #
@@ -82,7 +82,7 @@ for feature in data['features']:
     status = feature.get('status', 'unknown')
     spec_path = feature.get('spec', '')
     tests = feature.get('tests', [])
-    
+
     # Check spec file exists
     if spec_path:
         spec_full_paths = [
@@ -97,12 +97,12 @@ for feature in data['features']:
         else:
             found_path = next(p for p in spec_full_paths if os.path.exists(p))
             print(f"✓ Feature {feature_id}: spec found at {found_path}")
-    
+
     # Check test files for 'done' features
     if status == 'done' and not tests:
         print(f"WARNING: Feature {feature_id} is marked 'done' but has no test files listed")
         warnings += 1
-    
+
     # Check that test files exist (if listed)
     for test_file in tests:
         if not os.path.exists(test_file):

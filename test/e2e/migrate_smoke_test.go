@@ -2,7 +2,7 @@
 
 /*
 
-Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 Copyright (C) 2025  Bartek Kus
 
@@ -11,7 +11,6 @@ This program is free software licensed under the terms of the GNU AGPL v3 or lat
 See https://www.gnu.org/licenses/ for license details.
 
 */
-
 
 // test/e2e/migrate_smoke_test.go
 package e2e
@@ -94,4 +93,3 @@ func TestStagecraftMigrate_Help(t *testing.T) {
 		t.Fatalf("expected output to contain migrate command description, got: %q", out.String())
 	}
 }
-
