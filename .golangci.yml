@@ -27,8 +27,6 @@ linters:
     - gosec         # Security issues
     - gocritic      # Opinionated code analyzer
     - revive        # Fast, configurable linter
-  disable:
-    - typecheck     # Already covered by go build
 
 linters-settings:
   gofmt:
