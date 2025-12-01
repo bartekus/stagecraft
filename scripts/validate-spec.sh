@@ -84,6 +84,7 @@ for feature in data['features']:
     tests = feature.get('tests', [])
 
     # Check spec file exists
+    # Only require spec files for features that are done or wip, not todo
     if spec_path:
         spec_full_paths = [
             f"spec/{spec_path}",
@@ -92,8 +93,12 @@ for feature in data['features']:
         ]
         spec_exists = any(os.path.exists(p) for p in spec_full_paths)
         if not spec_exists:
-            print(f"ERROR: Feature {feature_id}: spec file not found: {spec_path}")
-            errors += 1
+            if status in ['done', 'wip']:
+                print(f"ERROR: Feature {feature_id}: spec file not found: {spec_path} (required for {status} features)")
+                errors += 1
+            else:
+                print(f"WARNING: Feature {feature_id}: spec file not found: {spec_path} (optional for {status} features)")
+                warnings += 1
         else:
             found_path = next(p for p in spec_full_paths if os.path.exists(p))
             print(f"✓ Feature {feature_id}: spec found at {found_path}")

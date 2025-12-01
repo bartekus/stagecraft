@@ -1,1 +1,2 @@
-Initializing Stagecraft project (non-interactive, stub) at custom.yml
+✓ Created Stagecraft config at custom.yml
+You can now run 'stagecraft dev' to start development.
