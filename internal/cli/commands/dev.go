@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package commands contains Cobra subcommands for the Stagecraft CLI.
 package commands
 
 import (

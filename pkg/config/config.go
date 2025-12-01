@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package config defines the Stagecraft configuration schema and helpers for loading and validating config files.
 package config
 
 import (

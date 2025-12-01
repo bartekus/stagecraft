@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package core contains core domain logic such as planning deployment operations.
 package core
 
 import (

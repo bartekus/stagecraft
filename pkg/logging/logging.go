@@ -27,6 +27,7 @@ import (
 // Level represents a log level.
 type Level int
 
+// Log levels in increasing order of severity.
 const (
 	// LevelDebug represents debug-level logging.
 	LevelDebug Level = iota
