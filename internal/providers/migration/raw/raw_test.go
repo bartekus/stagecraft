@@ -27,14 +27,14 @@ import (
 // Spec: spec/providers/migration/raw.md
 
 func TestRawEngine_ID(t *testing.T) {
-	e := &RawEngine{}
+	e := &Engine{}
 	if got := e.ID(); got != "raw" {
 		t.Errorf("ID() = %q, want %q", got, "raw")
 	}
 }
 
 func TestRawEngine_Plan(t *testing.T) {
-	e := &RawEngine{}
+	e := &Engine{}
 	tmpDir := t.TempDir()
 
 	// Create some SQL migration files
@@ -73,7 +73,7 @@ func TestRawEngine_Plan(t *testing.T) {
 }
 
 func TestRawEngine_Plan_EmptyDirectory(t *testing.T) {
-	e := &RawEngine{}
+	e := &Engine{}
 	tmpDir := t.TempDir()
 
 	opts := migration.PlanOptions{
@@ -93,7 +93,7 @@ func TestRawEngine_Plan_EmptyDirectory(t *testing.T) {
 }
 
 func TestRawEngine_Plan_NonExistentDirectory(t *testing.T) {
-	e := &RawEngine{}
+	e := &Engine{}
 
 	opts := migration.PlanOptions{
 		MigrationPath: "/nonexistent/path",
@@ -108,7 +108,7 @@ func TestRawEngine_Plan_NonExistentDirectory(t *testing.T) {
 }
 
 func TestRawEngine_Plan_IgnoresNonSQLFiles(t *testing.T) {
-	e := &RawEngine{}
+	e := &Engine{}
 	tmpDir := t.TempDir()
 
 	// Create SQL and non-SQL files
@@ -144,7 +144,7 @@ func TestRawEngine_Plan_IgnoresNonSQLFiles(t *testing.T) {
 }
 
 func TestRawEngine_Run_NotImplemented(t *testing.T) {
-	e := &RawEngine{}
+	e := &Engine{}
 	tmpDir := t.TempDir()
 
 	// Create a SQL file
@@ -173,7 +173,7 @@ func TestRawEngine_Run_NotImplemented(t *testing.T) {
 }
 
 func TestRawEngine_Run_NonExistentDirectory(t *testing.T) {
-	e := &RawEngine{}
+	e := &Engine{}
 
 	opts := migration.RunOptions{
 		MigrationPath: "/nonexistent/path",

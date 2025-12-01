@@ -32,14 +32,14 @@ import (
 // Feature: MIGRATION_ENGINE_RAW
 // Spec: spec/providers/migration/raw.md
 
-// RawEngine implements a simple SQL file-based migration engine.
-type RawEngine struct{}
+// Engine implements a simple SQL file-based migration engine.
+type Engine struct{}
 
-// Ensure RawEngine implements Engine
-var _ migration.Engine = (*RawEngine)(nil)
+// Ensure Engine implements migration.Engine.
+var _ migration.Engine = (*Engine)(nil)
 
 // ID returns the engine identifier.
-func (e *RawEngine) ID() string {
+func (e *Engine) ID() string {
 	return "raw"
 }
 
@@ -50,7 +50,7 @@ type Config struct {
 }
 
 // Plan analyzes migration files and returns a list of pending migrations.
-func (e *RawEngine) Plan(ctx context.Context, opts migration.PlanOptions) ([]migration.Migration, error) {
+func (e *Engine) Plan(ctx context.Context, opts migration.PlanOptions) ([]migration.Migration, error) {
 	// For raw engine, we simply list all SQL files in the migration directory
 	// In a real implementation, we'd check which ones have been applied
 
@@ -93,7 +93,9 @@ func (e *RawEngine) Plan(ctx context.Context, opts migration.PlanOptions) ([]mig
 }
 
 // Run executes migrations.
-func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
+//
+// nolint:gocritic // opts is passed by value to satisfy migration.Engine interface.
+func (e *Engine) Run(ctx context.Context, opts migration.RunOptions) error {
 	migrationPath := opts.MigrationPath
 	if migrationPath == "" {
 		return fmt.Errorf("migration path is required")
@@ -121,7 +123,7 @@ func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
 	}()
 
 	// Verify connection
-	if err := db.PingContext(ctx); err != nil {
+	if err = db.PingContext(ctx); err != nil {
 		return fmt.Errorf("pinging database: %w", err)
 	}
 
@@ -194,7 +196,7 @@ func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
 }
 
 // ensureMigrationsTable creates the migrations tracking table if it doesn't exist.
-func (e *RawEngine) ensureMigrationsTable(ctx context.Context, db *sql.DB) error {
+func (e *Engine) ensureMigrationsTable(ctx context.Context, db *sql.DB) error {
 	query := `
 		CREATE TABLE IF NOT EXISTS stagecraft_migrations (
 			id VARCHAR(255) PRIMARY KEY,
@@ -206,7 +208,7 @@ func (e *RawEngine) ensureMigrationsTable(ctx context.Context, db *sql.DB) error
 }
 
 // isApplied checks if a migration has already been applied.
-func (e *RawEngine) isApplied(ctx context.Context, db *sql.DB, id string) (bool, error) {
+func (e *Engine) isApplied(ctx context.Context, db *sql.DB, id string) (bool, error) {
 	var count int
 	err := db.QueryRowContext(ctx,
 		"SELECT COUNT(*) FROM stagecraft_migrations WHERE id = $1",
@@ -219,5 +221,5 @@ func (e *RawEngine) isApplied(ctx context.Context, db *sql.DB, id string) (bool,
 }
 
 func init() {
-	migration.Register(&RawEngine{})
+	migration.Register(&Engine{})
 }

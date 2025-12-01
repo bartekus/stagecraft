@@ -215,7 +215,7 @@ func TestInitCommand_CreatesConfigFile(t *testing.T) {
 	}
 
 	// Verify config file was created
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+	if _, err = os.Stat(configPath); os.IsNotExist(err) {
 		t.Fatalf("expected config file to be created at %s", configPath)
 	}
 

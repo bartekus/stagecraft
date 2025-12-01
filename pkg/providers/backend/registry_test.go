@@ -112,8 +112,8 @@ func TestRegistry_Get_ReturnsErrorForUnknownID(t *testing.T) {
 		t.Error("Get() error = nil, want error for unknown provider")
 	}
 
-	if !reg.Has("unknown-provider") {
-		// This is expected - Has should also return false
+	if reg.Has("unknown-provider") {
+		t.Error("Has() = true for unknown provider, want false")
 	}
 }
 

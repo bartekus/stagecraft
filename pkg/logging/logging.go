@@ -142,7 +142,9 @@ func (l *loggerImpl) log(level Level, msg string, fields ...Field) {
 	prefix := fmt.Sprintf("[%s] %s: ", timestamp, level.String())
 
 	// Combine base fields with message fields
-	allFields := append(l.fields, fields...)
+	baseFields := make([]Field, len(l.fields))
+	copy(baseFields, l.fields)
+	allFields := append(baseFields, fields...)
 
 	// Format message
 	if len(allFields) > 0 {
