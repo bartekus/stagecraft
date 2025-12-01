@@ -24,6 +24,7 @@ func NewMigrateCommand() *cobra.Command {
 		RunE:  runMigrate,
 	}
 
+	cmd.Flags().String("config", "", "path to Stagecraft config file (default: stagecraft.yml)")
 	cmd.Flags().String("database", "main", "Database name to migrate")
 	cmd.Flags().Bool("plan", false, "Show migration plan without executing")
 
@@ -33,7 +34,11 @@ func NewMigrateCommand() *cobra.Command {
 func runMigrate(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
-	configPath := config.DefaultConfigPath()
+	// Get config path from flag or use default
+	configPath, _ := cmd.Flags().GetString("config")
+	if configPath == "" {
+		configPath = config.DefaultConfigPath()
+	}
 	absPath, err := filepath.Abs(configPath)
 	if err != nil {
 		return fmt.Errorf("resolving config path: %w", err)
@@ -61,8 +66,10 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	engineID := dbCfg.Migrations.Engine
 	engine, err := migrationengines.Get(engineID)
 	if err != nil {
-		// Error already includes available engines
-		return fmt.Errorf("resolving migration engine: %w", err)
+		// Enhance error message with available engines
+		available := migrationengines.DefaultRegistry.IDs()
+		return fmt.Errorf("unknown migration engine %q for database %s; available engines: %v",
+			engineID, dbName, available)
 	}
 
 	workDir, err := os.Getwd()
