@@ -144,12 +144,12 @@ func (l *loggerImpl) log(level Level, msg string, fields ...Field) {
 	// Combine base fields with message fields
 	baseFields := make([]Field, len(l.fields))
 	copy(baseFields, l.fields)
-	allFields := append(baseFields, fields...)
+	combinedFields := append(baseFields, fields...)
 
 	// Format message
-	if len(allFields) > 0 {
-		fieldStrs := make([]string, 0, len(allFields))
-		for _, f := range allFields {
+	if len(combinedFields) > 0 {
+		fieldStrs := make([]string, 0, len(combinedFields))
+		for _, f := range combinedFields {
 			fieldStrs = append(fieldStrs, fmt.Sprintf("%s=%v", f.Key, f.Value))
 		}
 		_, _ = fmt.Fprintf(writer, "%s%s %s\n", prefix, msg, fmt.Sprintf("(%s)", fmt.Sprint(fieldStrs)))
