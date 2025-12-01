@@ -1,5 +1,9 @@
 # Stagecraft
 
+<p align="center">
+  <img src="https://img.shields.io/badge/License-AGPL_v3%2B-blue.svg" alt="AGPL-3.0-or-later" />
+</p>
+
 Stagecraft is a Go-based orchestration CLI for local development and deployment of multi-service applications.
 
 It aims to be a “Kamal, but for Docker Compose + Tailscale + Encore.ts + Vite”:

@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+#
+# Copyright (C) 2025  Bartek Kus
+#
+# This program is free software licensed under the terms of the GNU AGPL v3 or later.
+#
+# See https://www.gnu.org/licenses/ for license details.
+#
+name: Go Lint
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run staticcheck
+        uses: dominikh/staticcheck-action@v1.3.0
+        with:
+          version: "2024.1"
+

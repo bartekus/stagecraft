@@ -1,4 +1,14 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+#
+# Copyright (C) 2025  Bartek Kus
+#
+# This program is free software licensed under the terms of the GNU AGPL v3 or later.
+#
+# See https://www.gnu.org/licenses/ for license details.
+#
 # generate-cli-docs.sh - Generate CLI reference documentation from Cobra
 #
 # This script builds the stagecraft binary and uses it to generate
