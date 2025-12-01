@@ -30,6 +30,7 @@ import (
 // Spec: spec/providers/backend/generic.md
 
 // GenericProvider implements a command-based backend provider.
+//
 //nolint:revive // GenericProvider is the preferred name for clarity
 type GenericProvider struct{}
 
