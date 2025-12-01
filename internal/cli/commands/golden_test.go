@@ -20,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -32,10 +33,17 @@ var updateGolden = flag.Bool("update", false, "update golden files")
 // readGoldenFile reads a golden file, or returns empty string if it doesn't exist.
 func readGoldenFile(t *testing.T, name string) string {
 	t.Helper()
-	// Get the directory where this test file is located
+
+	// Defensive: avoid path traversal or separators in golden names.
+	if strings.Contains(name, "..") || strings.ContainsRune(name, os.PathSeparator) {
+		t.Fatalf("invalid golden file name %q", name)
+	}
+
 	_, filename, _, _ := runtime.Caller(0)
 	testDir := filepath.Dir(filename)
 	path := filepath.Join(testDir, "testdata", name+".golden")
+
+	//nolint:gosec // G304: golden file path is derived from test directory and a validated name
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
