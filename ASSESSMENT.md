@@ -1,3 +1,5 @@
+>Prompt: Please summarize the existing project architecture, structure, development style, implementation details and code quality.
+
 ## Stagecraft
 
 ### Project Overview
@@ -14,117 +16,165 @@ It aims to be a "A local-first tool that scales from single-host to multi-host d
 
 ### Architecture
 
-The project follows a layered architecture (ADR 0001):
+**Layered architecture** (ADR 0001):
+1. **CLI Layer** (`internal/cli/`) — Cobra commands, user input, output
+2. **Core Layer** (`internal/core/`) — Planning, state, config interpretation (planned)
+3. **Driver Layer** (`internal/drivers/`) — Platform-specific implementations (planned)
+4. **Provider layer** (`pkg/providers/`, `internal/providers/`): Pluggable backends, migrations, etc.
+5**Support Libraries** (`pkg/`) — Reusable components (config, providers, utilities)
 
-1. CLI layer (`internal/cli/`): User-facing commands using Cobra
-2. Core layer (`internal/core/`): Planning, state management, environment resolution (planned)
-3. Driver layer (`internal/drivers/`): Platform-specific implementations (planned)
-4. Provider layer (`pkg/providers/`, `internal/providers/`): Pluggable backends, migrations, etc.
-5. Support libraries (`pkg/`): Config loading, shared utilities
+**Provider model**:
+- Plugin-based with registries for backend providers and migration engines
+- Provider-agnostic core; provider-specific config is opaque
+- Current providers: `generic`, `encore-ts` (backend); `raw` (migrations)
+- Registry pattern with thread-safe registration/lookup
 
-### Current Implementation Status
+**Data flow**:
+```
+User Command → CLI Layer → Config Loading → Provider Resolution → Execution
+```
 
-#### ✅ Completed Features
+### **Project Structure**
 
-1. Architecture & documentation
-    - Architecture docs and ADR process
-    - Project structure defined
-
-2. Core infrastructure
-    - Config loading (`pkg/config/`) with validation
-    - Backend provider registry system
-    - Migration engine registry system
-    - Provider registration via `init()` functions
-
-3. CLI commands (basic implementations)
-    - `stagecraft init` — stub (doesn't create config yet)
-    - `stagecraft dev` — delegates to backend provider
-    - `stagecraft migrate` — runs migrations using registered engines
-
-4. Provider implementations
-    - Generic backend provider (command-based)
-    - Encore.ts backend provider (stub)
-    - Raw SQL migration engine (with tracking table)
-
-### Key Design Decisions
-
-1. Registry pattern: Providers register themselves via `init()` functions
-   ```go
-   func init() {
-       backend.Register(&GenericProvider{})
-   }
-   ```
-
-2. Provider-agnostic config: Provider-specific config is stored as `any` and unmarshaled by each provider
-
-3. Spec-driven development: Features tracked in `spec/features.yaml` with status, specs, and tests
-
-4. Test-first approach: Test files defined before implementation
-
-### Technology Stack
-
-- Language: Go 1.23.3
-- CLI framework: Cobra
-- Config: YAML (via `gopkg.in/yaml.v3`)
-- Database: PostgreSQL (via `pgx/v5` for migrations)
-- Dependencies: Minimal, focused
-
-### Project Structure Highlights
-
+**Current structure**:
 ```
 stagecraft/
 ├── cmd/stagecraft/          # Entry point
 ├── internal/
-│   ├── cli/                 # CLI commands (init, dev, migrate)
+│   ├── cli/                 # CLI commands (dev, migrate, init)
 │   └── providers/           # Provider implementations
+│       ├── backend/         # generic, encorets
+│       └── migration/       # raw
 ├── pkg/
 │   ├── config/              # Config loading & validation
 │   └── providers/           # Provider interfaces & registries
+│       ├── backend/
+│       └── migration/
 ├── spec/                    # Feature specifications
-├── docs/                    # Documentation & ADRs
-├── examples/                # Example projects
-└── test/e2e/                # End-to-end tests
+│   ├── commands/
+│   ├── core/
+│   └── providers/
+├── docs/                    # Documentation
+│   ├── adr/                 # Architecture Decision Records
+│   └── guides/
+├── test/e2e/                # End-to-end tests
+└── examples/                # Example projects
 ```
 
-### Strengths
+**Design principles**:
+- `internal/` for implementation details
+- `pkg/` for reusable/public APIs
+- `spec/` for feature specs (spec-first)
+- Clear separation of concerns
 
-1. Clear architecture with separation of concerns
-2. Extensible provider system
-3. Spec-driven development with feature tracking
-4. Test coverage targets (80%+ for core packages)
-5. Good documentation structure (ADRs, specs, guides)
-6. Minimal dependencies
+### **Development Style**
 
-### Areas for Improvement / Next Steps
+**Spec-first, test-first**:
+- Features tracked in `spec/features.yaml` with IDs, status, specs, tests
+- Specs in `spec/` before implementation
+- Tests written before or alongside implementation
+- Feature IDs referenced in code comments
 
-1. Config creation: `init` command doesn't create `stagecraft.yml` yet
-2. Global flags: `--env`, `--config`, `--dry-run` not fully implemented
-3. Core orchestration: Planning engine, state management, Compose integration not implemented
-4. Provider implementations: Many providers are stubs (Encore.ts, Tailscale, DigitalOcean, etc.)
-5. Local dev features: mkcert, Traefik, `/etc/hosts` management not implemented
-6. Deployment: Build, deploy, rollback commands not implemented
+**Code organization**:
+- Feature comments: `// Feature: CLI_DEV_BASIC`
+- Interface-driven design (provider interfaces)
+- Registry pattern for extensibility
+- Error wrapping with context (`fmt.Errorf("...: %w", err)`)
 
-### Development Approach
+**Documentation**:
+- ADRs for architectural decisions
+- Specs for feature behavior
+- Inline comments explaining design choices
+- `Agent.md` for AI-assisted development guidelines
 
-- Spec-first: Features specified before implementation
-- Test-first: Tests defined in `features.yaml` before coding
-- Feature tracking: 61+ features organized in phases in `spec/features.yaml`
-- Status: Most features are `todo`; only architecture/docs are `done`
+### **Implementation Details**
 
-### Notable Code Quality
+**Current features**:
 
-- Error handling: Consistent error wrapping with context
-- Type safety: Interfaces properly defined and validated
-- Testing: Test files exist for core functionality
-- Documentation: Code comments reference feature IDs and specs
+1. **Config system** (`pkg/config/`):
+    - YAML config loading with validation
+    - Registry-based provider/engine validation
+    - Provider-scoped config under `backend.providers.<id>`
+    - Database migration config support
 
-### Summary
+2. **CLI commands**:
+    - `stagecraft dev` — Runs backend provider in dev mode
+    - `stagecraft migrate` — Executes database migrations (with `--plan`)
+    - `stagecraft init` — Project bootstrap (stub)
 
-Stagecraft is an early-stage project with a solid foundation. The architecture is clear, the provider system is extensible, and the development process is structured. Most features are planned but not implemented. The current codebase provides:
+3. **Provider system**:
+    - Backend providers: `generic` (command-based), `encore-ts` (Encore.ts)
+    - Migration engines: `raw` (SQL file-based with tracking table)
+    - Thread-safe registries with panic on duplicate registration
 
-- Working config loading and validation
-- Functional `dev` and `migrate` commands
-- Extensible provider registry system
-- Basic migration engine (raw SQL)
+4. **Testing approach**:
+    - Unit tests for core logic
+    - Integration tests for registry behavior
+    - E2E smoke tests (gated behind `e2e` build tag)
+    - Golden file tests for CLI output
 
-The project is positioned to scale as features are implemented, with a clear roadmap in `spec/features.yaml` organized into 10 phases.
+**Technical stack**:
+- Go 1.23.3
+- Cobra for CLI
+- YAML v3 for config
+- PostgreSQL (pgx/v5) for migrations
+- Minimal external dependencies
+
+### **Code Quality**
+
+**Testing**:
+- 83+ test functions across the codebase
+- Coverage targets: 80%+ for core packages, 60%+ overall
+- Coverage script (`scripts/check-coverage.sh`) with thresholds
+- Tests use `t.TempDir()` for isolation
+- Integration tests verify registry behavior
+
+**Code standards**:
+- Go formatting (`gofmt`/`goimports`)
+- Interface compliance checks: `var _ Interface = (*Type)(nil)`
+- Error handling with wrapped errors
+- Context propagation for cancellation
+- Clear function/method naming
+
+**Quality indicators**:
+- ✅ Comprehensive test coverage
+- ✅ Clear error messages with context
+- ✅ Thread-safe registry implementations
+- ✅ Provider-agnostic validation (no hardcoded provider checks)
+- ✅ Spec-driven development
+- ✅ Documentation in code and markdown
+
+**Areas for improvement**:
+- Some features marked `todo` in `spec/features.yaml`
+- `init` command is a stub
+- Core planning engine not yet implemented
+- No structured logging yet (planned)
+
+**Development workflow**:
+- Git hooks via `scripts/install-hooks.sh`
+- Spec validation script
+- Coverage checking script
+- Feature tracking in YAML
+
+### **Overall Assessment**
+
+**Strengths**:
+1. Clear architecture with defined layers
+2. Strong testing discipline
+3. Spec-first approach
+4. Extensible provider model
+5. Good documentation
+6. Clean code organization
+
+**Maturity**:
+- Early WIP/experimental (per README)
+- Core foundation solid
+- Basic commands functional
+- Many planned features not yet implemented
+
+**Code quality**: High
+- Well-structured, tested, documented
+- Follows Go best practices
+- Maintainable and extensible
+
+The project shows a solid foundation with a clear path for growth, emphasizing quality, testability, and maintainability.
