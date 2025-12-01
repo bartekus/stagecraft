@@ -19,17 +19,16 @@ linters:
   default: standard
 
   enable:
-    - staticcheck
-    - errcheck
-    - govet
-    - shadow
-    - ineffassign
-    - misspell
-    - unconvert
-    - unparam
-    - gosec
-    - gocritic
-    - revive
+    - staticcheck   # Advanced Go static analysis
+    - errcheck      # Check for unchecked errors
+    - govet         # Go vet
+    - ineffassign   # Detect ineffectual assignments
+    - misspell      # Spelling checker
+    - unconvert     # Remove unnecessary type conversions
+    - unparam       # Unused function parameters
+    - gosec         # Security issues
+    - gocritic      # Opinionated code analyzer
+    - revive        # Fast, configurable linter
 
   settings:
     gocritic:
