@@ -161,3 +161,4 @@ func (p *Planner) addHealthCheckOps(plan *Plan) {
 			"environment": plan.Environment,
 		},
 	})
+}

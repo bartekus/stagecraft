@@ -17,6 +17,7 @@ package e2e
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -50,6 +51,11 @@ func TestStagecraftDev_Smoke(t *testing.T) {
 	configPath := filepath.Join(exampleDir, "stagecraft.yml")
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		t.Skip("examples/basic-node/stagecraft.yml not found, skipping E2E test")
+	}
+
+	err = os.Setenv("PATH", fmt.Sprintf("%s:%s", filepath.Join(repoRoot, "bin"), os.Getenv("PATH")))
+	if err != nil {
+		return
 	}
 
 	// Run stagecraft dev with a timeout (it will run until cancelled)
