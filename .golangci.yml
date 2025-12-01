@@ -9,7 +9,6 @@
 # See https://www.gnu.org/licenses/ for license details.
 #
 # golangci-lint configuration for Stagecraft
-
 version: "2"
 
 run:
@@ -17,14 +16,11 @@ run:
   tests: true
 
 linters:
-  # Start from the standard set; override with enable/disable below if you like.
   default: standard
 
   enable:
     - staticcheck
     - errcheck
-    - gofmt
-    - goimports
     - govet
     - shadow
     - ineffassign
@@ -35,12 +31,7 @@ linters:
     - gocritic
     - revive
 
-  # Add linter-specific settings here (replaces old top-level linters-settings).
   settings:
-    gofmt:
-      simplify: true
-    goimports:
-      local-prefixes: stagecraft
     gocritic:
       enabled-tags:
         - diagnostic
@@ -51,7 +42,7 @@ linters:
       disabled-checks:
         - dupImport
         - ifElseChain
-        # - hugeParam   # uncomment to globally disable this check if needed
+        # - hugeParam   # optional: globally disable this check
     revive:
       rules:
         - name: exported
@@ -64,29 +55,35 @@ linters:
       severity: medium
       confidence: medium
 
-  # Replaces issues.exclude-*, issues.exclude-rules.
   exclusions:
-    # Optional; warns if an exclusion is never matched.
     warn-unused: true
-
-    # These replace issues.exclude-dirs and issues.exclude-files.
     paths:
       - vendor
       - test/e2e
       - ".*\\.pb\\.go$"
-
-    # These replace issues.exclude-rules.
     rules:
-      # Allow _test.go files to have longer functions/complexity.
       - path: _test\.go
         linters:
           - funlen
           - gocognit
-
-      # Allow main functions to be longer.
       - text: "func main is too long"
         linters:
           - funlen
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+  settings:
+    gofmt:
+      # this is the v2 place for the old gofmt.simplify setting
+      simplify: true
+
+    goimports:
+      # this is where local-prefixes goes in v2
+      local-prefixes:
+        - stagecraft
 
 issues:
   max-issues-per-linter: 0
