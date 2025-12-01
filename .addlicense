@@ -1,0 +1,10 @@
+copyright=Bartek Kus
+license=agpl
+year=2025
+skip=vendor
+skip=node_modules
+skip=assets
+skip=.idea
+skip=examples/basic-node/backend
+skip=examples/basic-node/migrations
+

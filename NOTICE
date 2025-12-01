@@ -1,0 +1,36 @@
+Stagecraft
+
+A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+
+Copyright (C) 2025  Bartek Kus
+
+Licensed under the GNU Affero General Public License v3 or later.
+
+You may obtain a copy of the license at:
+
+    https://www.gnu.org/licenses/agpl-3.0.html
+
+This NOTICE file is provided for informational purposes only.  
+
+It does not modify the terms of the AGPL license.
+
+---
+
+This project incorporates open source software.  
+
+Below is a non-exhaustive list of third-party components and their licenses:
+
+* Cobra (spf13/cobra) - Apache License 2.0
+
+* Viper (spf13/viper) - MIT License
+
+* fsnotify - BSD License
+
+* Go standard library - BSD License
+
+Each of these components is used under the terms of its respective license.
+
+---
+
+Contributors to Stagecraft agree that all contributions are licensed under AGPL-3.0-or-later and grant the maintainers the right to relicense the project in the future.
+
