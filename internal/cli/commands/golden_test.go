@@ -47,17 +47,17 @@ func readGoldenFile(t *testing.T, name string) string {
 }
 
 // writeGoldenFile writes a golden file.
-func writeGoldenFile(t *testing.T, name string, content string) {
+func writeGoldenFile(t *testing.T, name, content string) {
 	t.Helper()
 	// Get the directory where this test file is located
 	_, filename, _, _ := runtime.Caller(0)
 	testDir := filepath.Dir(filename)
 	dir := filepath.Join(testDir, "testdata")
-	if err := os.MkdirAll(dir, 0755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		t.Fatalf("failed to create testdata directory: %v", err)
 	}
 	path := filepath.Join(dir, name+".golden")
-	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 		t.Fatalf("failed to write golden file %s: %v", path, err)
 	}
 }

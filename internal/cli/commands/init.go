@@ -62,8 +62,8 @@ provider-specific bootstrapping.`,
 
 			if exists {
 				logger.Warn("Config file already exists", logging.NewField("path", configPath))
-				fmt.Fprintf(out, "A Stagecraft config file already exists at %s.\n", configPath)
-				fmt.Fprintf(out, "Run 'stagecraft init --config <path>' to create a config at a different location.\n")
+				_, _ = fmt.Fprintf(out, "A Stagecraft config file already exists at %s.\n", configPath)
+				_, _ = fmt.Fprintf(out, "Run 'stagecraft init --config <path>' to create a config at a different location.\n")
 				return nil
 			}
 
@@ -82,8 +82,8 @@ provider-specific bootstrapping.`,
 				logging.NewField("path", configPath),
 				logging.NewField("project", cfg.Project.Name),
 			)
-			fmt.Fprintf(out, "✓ Created Stagecraft config at %s\n", configPath)
-			fmt.Fprintf(out, "You can now run 'stagecraft dev' to start development.\n")
+			_, _ = fmt.Fprintf(out, "✓ Created Stagecraft config at %s\n", configPath)
+			_, _ = fmt.Fprintf(out, "You can now run 'stagecraft dev' to start development.\n")
 
 			return nil
 		},
@@ -114,10 +114,12 @@ func gatherConfig(out *os.File, nonInteractive bool, projectName, envName string
 				return nil, fmt.Errorf("getting working directory: %w", err)
 			}
 			defaultName := filepath.Base(wd)
-			fmt.Fprintf(out, "Project name [%s]: ", defaultName)
+			_, _ = fmt.Fprintf(out, "Project name [%s]: ", defaultName)
 			var input string
-			fmt.Scanln(&input)
-			if strings.TrimSpace(input) == "" {
+			if _, err := fmt.Scanln(&input); err != nil {
+				// Treat scan failure as "use default"
+				projectName = defaultName
+			} else if strings.TrimSpace(input) == "" {
 				projectName = defaultName
 			} else {
 				projectName = strings.TrimSpace(input)

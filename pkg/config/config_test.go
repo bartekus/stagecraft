@@ -43,7 +43,7 @@ func TestExists_ReportsCorrectly(t *testing.T) {
 	}
 
 	existing := filepath.Join(tmpDir, "config.yml")
-	if err := os.WriteFile(existing, []byte("project:\n  name: test\n"), 0o644); err != nil {
+	if err := os.WriteFile(existing, []byte("project:\n  name: test\n"), 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -82,7 +82,7 @@ environments:
     driver: "digitalocean"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -114,7 +114,7 @@ project:
   name: ""
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -142,7 +142,7 @@ environments:
     driver: "local"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -177,7 +177,7 @@ environments:
     driver: "local"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -219,7 +219,7 @@ environments:
     driver: "local"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -247,7 +247,7 @@ environments:
     driver: "local"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -280,7 +280,7 @@ environments:
     driver: "local"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -325,7 +325,7 @@ environments:
     driver: "local"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -369,7 +369,7 @@ environments:
     driver: "local"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 
@@ -402,7 +402,7 @@ environments:
     driver: "local"
 `)
 
-	if err := os.WriteFile(path, content, 0o644); err != nil {
+	if err := os.WriteFile(path, content, 0o600); err != nil {
 		t.Fatalf("failed to write temp config: %v", err)
 	}
 

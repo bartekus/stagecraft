@@ -56,7 +56,7 @@ func NewRootCommand() *cobra.Command {
 		Use:   "version",
 		Short: "Print the version number of Stagecraft",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(cmd.OutOrStdout(), "Stagecraft version %s\n", version)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Stagecraft version %s\n", version)
 		},
 	})
 

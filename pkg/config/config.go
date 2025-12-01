@@ -128,6 +128,7 @@ func Load(path string) (*Config, error) {
 		return nil, ErrConfigNotFound
 	}
 
+	// nolint:gosec // G304: reading config file from user-specified path is expected behavior
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("reading config file: %w", err)
