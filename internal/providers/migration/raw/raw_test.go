@@ -46,7 +46,7 @@ func TestRawEngine_Plan(t *testing.T) {
 
 	for _, name := range migrationFiles {
 		path := filepath.Join(tmpDir, name)
-		if err := os.WriteFile(path, []byte("-- migration: "+name), 0644); err != nil {
+		if err := os.WriteFile(path, []byte("-- migration: "+name), 0o600); err != nil {
 			t.Fatalf("failed to create migration file: %v", err)
 		}
 	}
@@ -121,7 +121,7 @@ func TestRawEngine_Plan_IgnoresNonSQLFiles(t *testing.T) {
 
 	for name, content := range files {
 		path := filepath.Join(tmpDir, name)
-		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
 			t.Fatalf("failed to create file: %v", err)
 		}
 	}
@@ -149,7 +149,7 @@ func TestRawEngine_Run_NotImplemented(t *testing.T) {
 
 	// Create a SQL file
 	sqlFile := filepath.Join(tmpDir, "001_initial.sql")
-	if err := os.WriteFile(sqlFile, []byte("CREATE TABLE test (id INT);"), 0644); err != nil {
+	if err := os.WriteFile(sqlFile, []byte("CREATE TABLE test (id INT);"), 0o600); err != nil {
 		t.Fatalf("failed to create migration file: %v", err)
 	}
 

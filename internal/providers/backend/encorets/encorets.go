@@ -100,6 +100,7 @@ func (p *EncoreTsProvider) Dev(ctx context.Context, opts backend.DevOptions) err
 			}
 			args = append(args, secretName)
 
+			//nolint:gosec // encore CLI args and secret names are controlled by operator config/env, not end-user input
 			cmd := exec.CommandContext(ctx, "encore", args...)
 			cmd.Stdin = strings.NewReader(secretValue)
 			cmd.Stdout = os.Stdout
@@ -122,6 +123,7 @@ func (p *EncoreTsProvider) Dev(ctx context.Context, opts backend.DevOptions) err
 		args = append(args, "--entrypoint", cfg.Dev.EntryPoint)
 	}
 
+	//nolint:gosec // encore CLI args come from trusted stagecraft.yml and env
 	cmd := exec.CommandContext(ctx, "encore", args...)
 	cmd.Dir = opts.WorkDir
 	cmd.Env = os.Environ()
@@ -147,6 +149,7 @@ func (p *EncoreTsProvider) BuildDocker(ctx context.Context, opts backend.BuildDo
 	// Run encore build docker
 	args := []string{"build", "docker", opts.ImageTag}
 
+	//nolint:gosec // encore CLI args come from trusted config (image tag)
 	cmd := exec.CommandContext(ctx, "encore", args...)
 	cmd.Dir = opts.WorkDir
 	cmd.Stdout = os.Stdout
