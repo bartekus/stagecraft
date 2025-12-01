@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package generic provides a generic command-based backend provider implementation.
 package generic
 
 import (
@@ -29,6 +30,7 @@ import (
 // Spec: spec/providers/backend/generic.md
 
 // GenericProvider implements a command-based backend provider.
+//nolint:revive // GenericProvider is the preferred name for clarity
 type GenericProvider struct{}
 
 // Ensure GenericProvider implements BackendProvider

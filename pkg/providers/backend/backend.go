@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package backend provides interfaces and types for backend providers.
 package backend
 
 import "context"
@@ -46,6 +47,7 @@ type BuildDockerOptions struct {
 }
 
 // BackendProvider is the interface that all backend providers must implement.
+//nolint:revive // BackendProvider is the preferred name for clarity
 type BackendProvider interface {
 	// ID returns the unique identifier for this provider (e.g., "encore-ts", "generic").
 	ID() string

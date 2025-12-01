@@ -115,7 +115,9 @@ func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
 	if err != nil {
 		return fmt.Errorf("connecting to database: %w", err)
 	}
-	defer db.Close()
+	defer func() {
+		_ = db.Close()
+	}()
 
 	// Verify connection
 	if err := db.PingContext(ctx); err != nil {
@@ -166,7 +168,7 @@ func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
 		}
 
 		if _, err := tx.ExecContext(ctx, string(sqlContent)); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("executing migration %s: %w", m.ID, err)
 		}
 
@@ -175,7 +177,7 @@ func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
 			"INSERT INTO stagecraft_migrations (id, applied_at) VALUES ($1, NOW())",
 			m.ID,
 		); err != nil {
-			tx.Rollback()
+			_ = tx.Rollback()
 			return fmt.Errorf("recording migration %s: %w", m.ID, err)
 		}
 

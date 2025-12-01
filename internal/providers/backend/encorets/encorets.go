@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package encorets provides the Encore.ts backend provider implementation.
 package encorets
 
 import (
@@ -30,6 +31,7 @@ import (
 // Spec: spec/providers/backend/encore-ts.md
 
 // EncoreTsProvider implements the Encore.ts backend provider.
+//nolint:revive // EncoreTsProvider is the preferred name for clarity
 type EncoreTsProvider struct{}
 
 // Ensure EncoreTsProvider implements BackendProvider
