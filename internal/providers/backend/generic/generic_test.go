@@ -167,14 +167,9 @@ func TestGenericProvider_Dev_WorkDirResolution(t *testing.T) {
 			// Create a test script that outputs its working directory
 			testScript := filepath.Join(tt.wantDir, "test_script.sh")
 
-			// First, create the script with strict permissions.
+			// Create test script (does not need to be executable)
 			if err := os.WriteFile(testScript, []byte("#!/bin/sh\npwd\n"), 0o600); err != nil {
 				t.Fatalf("failed to create test script: %v", err)
-			}
-
-			// Then, make it executable only by the owner.
-			if err := os.Chmod(testScript, 0o700); err != nil {
-				t.Fatalf("failed to make test script executable: %v", err)
 			}
 
 			// Update config to use the script
