@@ -43,8 +43,14 @@ func TestNewInitCommand_HasExpectedMetadata(t *testing.T) {
 func TestInitCommand_DefaultConfigPath_InteractiveStub(t *testing.T) {
 	tmpDir := t.TempDir()
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
-	os.Chdir(tmpDir)
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
 
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewInitCommand())
@@ -66,8 +72,14 @@ func TestInitCommand_DefaultConfigPath_InteractiveStub(t *testing.T) {
 func TestInitCommand_NonInteractiveStub(t *testing.T) {
 	tmpDir := t.TempDir()
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
-	os.Chdir(tmpDir)
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
 
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewInitCommand())
@@ -149,8 +161,14 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 			if tt.needsCleanDir {
 				tmpDir = t.TempDir()
 				originalDir, _ = os.Getwd()
-				defer os.Chdir(originalDir)
-				os.Chdir(tmpDir)
+				defer func() {
+					if err := os.Chdir(originalDir); err != nil {
+						t.Logf("failed to restore directory: %v", err)
+					}
+				}()
+				if err := os.Chdir(tmpDir); err != nil {
+					t.Fatalf("failed to change directory: %v", err)
+				}
 			}
 
 			cmd := tt.setupCmd()
@@ -179,8 +197,14 @@ func TestInitCommand_CreatesConfigFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "stagecraft.yml")
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
-	os.Chdir(tmpDir)
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
 
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewInitCommand())
@@ -217,11 +241,19 @@ environments:
   dev:
     driver: local
 `
-	os.WriteFile(configPath, []byte(existingConfig), 0644)
+	if err := os.WriteFile(configPath, []byte(existingConfig), 0o600); err != nil {
+		t.Fatalf("failed to write existing config: %v", err)
+	}
 
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
-	os.Chdir(tmpDir)
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
 
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewInitCommand())

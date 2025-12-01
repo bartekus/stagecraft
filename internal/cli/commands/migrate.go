@@ -124,13 +124,14 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("planning migrations: %w", err)
 		}
 
-		fmt.Fprintf(cmd.OutOrStdout(), "Migration plan (%d pending):\n", len(migrations))
+		out := cmd.OutOrStdout()
+		_, _ = fmt.Fprintf(out, "Migration plan (%d pending):\n", len(migrations))
 		for _, m := range migrations {
 			status := "pending"
 			if m.Applied {
 				status = "applied"
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "  - %s: %s [%s]\n", m.ID, m.Description, status)
+			_, _ = fmt.Fprintf(out, "  - %s: %s [%s]\n", m.ID, m.Description, status)
 		}
 
 		return nil

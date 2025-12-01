@@ -40,11 +40,16 @@ type Operation struct {
 type OperationType string
 
 const (
+	// OpTypeInfraProvision represents infrastructure provisioning operations.
 	OpTypeInfraProvision OperationType = "infra_provision"
-	OpTypeMigration      OperationType = "migration"
-	OpTypeBuild          OperationType = "build"
-	OpTypeDeploy         OperationType = "deploy"
-	OpTypeHealthCheck    OperationType = "health_check"
+	// OpTypeMigration represents database migration operations.
+	OpTypeMigration OperationType = "migration"
+	// OpTypeBuild represents build operations.
+	OpTypeBuild OperationType = "build"
+	// OpTypeDeploy represents deploy operations.
+	OpTypeDeploy OperationType = "deploy"
+	// OpTypeHealthCheck represents health check operations.
+	OpTypeHealthCheck OperationType = "health_check"
 )
 
 // Planner creates deployment plans from configuration.
@@ -72,35 +77,25 @@ func (p *Planner) PlanDeploy(envName string) (*Plan, error) {
 	}
 
 	// Add migration operations (pre-deploy)
-	if err := p.addMigrationOps(plan, "pre_deploy"); err != nil {
-		return nil, fmt.Errorf("planning pre-deploy migrations: %w", err)
-	}
+	p.addMigrationOps(plan, "pre_deploy")
 
 	// Add build operations
-	if err := p.addBuildOps(plan); err != nil {
-		return nil, fmt.Errorf("planning builds: %w", err)
-	}
+	p.addBuildOps(plan)
 
 	// Add deploy operations
-	if err := p.addDeployOps(plan); err != nil {
-		return nil, fmt.Errorf("planning deployment: %w", err)
-	}
+	p.addDeployOps(plan)
 
 	// Add migration operations (post-deploy)
-	if err := p.addMigrationOps(plan, "post_deploy"); err != nil {
-		return nil, fmt.Errorf("planning post-deploy migrations: %w", err)
-	}
+	p.addMigrationOps(plan, "post_deploy")
 
 	// Add health check operations
-	if err := p.addHealthCheckOps(plan); err != nil {
-		return nil, fmt.Errorf("planning health checks: %w", err)
-	}
+	p.addHealthCheckOps(plan)
 
 	return plan, nil
 }
 
 // addMigrationOps adds migration operations for the given strategy.
-func (p *Planner) addMigrationOps(plan *Plan, strategy string) error {
+func (p *Planner) addMigrationOps(plan *Plan, strategy string) {
 	for dbName, dbCfg := range p.config.Databases {
 		if dbCfg.Migrations == nil {
 			continue
@@ -125,12 +120,10 @@ func (p *Planner) addMigrationOps(plan *Plan, strategy string) error {
 		})
 		_ = opID // For future dependency tracking
 	}
-
-	return nil
 }
 
 // addBuildOps adds build operations.
-func (p *Planner) addBuildOps(plan *Plan) error {
+func (p *Planner) addBuildOps(plan *Plan) {
 	if p.config.Backend != nil {
 		opID := "build_backend"
 		plan.Operations = append(plan.Operations, Operation{
@@ -143,12 +136,10 @@ func (p *Planner) addBuildOps(plan *Plan) error {
 		})
 		_ = opID // For future dependency tracking
 	}
-
-	return nil
 }
 
 // addDeployOps adds deployment operations.
-func (p *Planner) addDeployOps(plan *Plan) error {
+func (p *Planner) addDeployOps(plan *Plan) {
 	plan.Operations = append(plan.Operations, Operation{
 		Type:         OpTypeDeploy,
 		Description:  fmt.Sprintf("Deploy to environment %s", plan.Environment),
@@ -158,11 +149,10 @@ func (p *Planner) addDeployOps(plan *Plan) error {
 		},
 	})
 
-	return nil
 }
 
 // addHealthCheckOps adds health check operations.
-func (p *Planner) addHealthCheckOps(plan *Plan) error {
+func (p *Planner) addHealthCheckOps(plan *Plan) {
 	plan.Operations = append(plan.Operations, Operation{
 		Type:         OpTypeHealthCheck,
 		Description:  fmt.Sprintf("Health check for environment %s", plan.Environment),
@@ -171,6 +161,3 @@ func (p *Planner) addHealthCheckOps(plan *Plan) error {
 			"environment": plan.Environment,
 		},
 	})
-
-	return nil
-}

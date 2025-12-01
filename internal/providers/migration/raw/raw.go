@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package raw provides the raw SQL migration engine implementation.
 package raw
 
 import (
@@ -156,33 +157,34 @@ func (e *RawEngine) Run(ctx context.Context, opts migration.RunOptions) error {
 
 		// Read and execute SQL file
 		sqlPath := filepath.Join(migrationPath, m.ID)
-		sqlContent, err := os.ReadFile(sqlPath)
-		if err != nil {
-			return fmt.Errorf("reading migration file %s: %w", m.ID, err)
+		// nolint:gosec // G304: migration files are read from a controlled directory
+		sqlContent, readErr := os.ReadFile(sqlPath)
+		if readErr != nil {
+			return fmt.Errorf("reading migration file %s: %w", m.ID, readErr)
 		}
 
 		// Execute in transaction
-		tx, err := db.BeginTx(ctx, nil)
-		if err != nil {
-			return fmt.Errorf("starting transaction: %w", err)
+		tx, beginErr := db.BeginTx(ctx, nil)
+		if beginErr != nil {
+			return fmt.Errorf("starting transaction: %w", beginErr)
 		}
 
-		if _, err := tx.ExecContext(ctx, string(sqlContent)); err != nil {
+		if _, execErr := tx.ExecContext(ctx, string(sqlContent)); execErr != nil {
 			_ = tx.Rollback()
-			return fmt.Errorf("executing migration %s: %w", m.ID, err)
+			return fmt.Errorf("executing migration %s: %w", m.ID, execErr)
 		}
 
 		// Record migration
-		if _, err := tx.ExecContext(ctx,
+		if _, recordErr := tx.ExecContext(ctx,
 			"INSERT INTO stagecraft_migrations (id, applied_at) VALUES ($1, NOW())",
 			m.ID,
-		); err != nil {
+		); recordErr != nil {
 			_ = tx.Rollback()
-			return fmt.Errorf("recording migration %s: %w", m.ID, err)
+			return fmt.Errorf("recording migration %s: %w", m.ID, recordErr)
 		}
 
-		if err := tx.Commit(); err != nil {
-			return fmt.Errorf("committing migration %s: %w", m.ID, err)
+		if commitErr := tx.Commit(); commitErr != nil {
+			return fmt.Errorf("committing migration %s: %w", m.ID, commitErr)
 		}
 
 		fmt.Printf("Applied migration: %s\n", m.ID)
