@@ -14,5 +14,8 @@
 # Usage:
 #   ./scripts/run-all-checks.sh
 
+rm -rf bin
 go build -o ./bin/stagecraft ./cmd/stagecraft
 go vet ./... && go test ./... && staticcheck ./... && ./scripts/check-coverage.sh && ./scripts/validate-spec.sh
+
+rm -f internal/providers/backend/generic/test_script.sh && addlicense -check .

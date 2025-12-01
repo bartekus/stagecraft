@@ -36,3 +36,6 @@ go.work.sum
 
 # env file
 .env
+
+# test created
+internal/providers/backend/generic/test_script.sh

@@ -144,7 +144,7 @@ func (l *loggerImpl) log(level Level, msg string, fields ...Field) {
 	// Combine base fields with message fields
 	baseFields := make([]Field, len(l.fields))
 	copy(baseFields, l.fields)
-	combinedFields := append(baseFields, fields...)
+	combinedFields := append(baseFields, fields...) //nolint:gocritic
 
 	// Format message
 	if len(combinedFields) > 0 {
