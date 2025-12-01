@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable
-# single-host to multi-host deployments for multi-service applications powered by Docker Compose.
+# Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 #
 # Copyright (C) 2025  Bartek Kus
 #
+# This program is free software licensed under the terms of the GNU AGPL v3 or later.
+#
+# See https://www.gnu.org/licenses/ for license details.
+#
 # golangci-lint configuration for Stagecraft
+
 version: "2"
 
 run:
@@ -13,81 +17,78 @@ run:
   tests: true
 
 linters:
-  enable:
-    - staticcheck   # Advanced Go static analysis
-    - errcheck      # Check for unchecked errors
-    - gofmt         # Format check
-    - goimports     # Import formatting
-    - govet         # Go vet
-    - shadow        # Detect variable shadowing (replacement for govet.check-shadowing)
-    - ineffassign   # Detect ineffectual assignments
-    - misspell      # Spelling checker
-    - unconvert     # Remove unnecessary type conversions
-    - unparam       # Unused function parameters
-    - gosec         # Security issues
-    - gocritic      # Opinionated code analyzer
-    - revive        # Fast, configurable linter
+  # Start from the standard set; override with enable/disable below if you like.
+  default: standard
 
-linters-settings:
-  gofmt:
-    simplify: true
-  goimports:
-    local-prefixes: stagecraft
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport     # Sometimes needed for clarity
-      - ifElseChain   # Can be more readable than switch in some cases
-      # - hugeParam   # Uncomment to globally disable this check if it’s too noisy
-  revive:
+  enable:
+    - staticcheck
+    - errcheck
+    - gofmt
+    - goimports
+    - govet
+    - shadow
+    - ineffassign
+    - misspell
+    - unconvert
+    - unparam
+    - gosec
+    - gocritic
+    - revive
+
+  # Add linter-specific settings here (replaces old top-level linters-settings).
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes: stagecraft
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        # - hugeParam   # uncomment to globally disable this check if needed
+    revive:
+      rules:
+        - name: exported
+          severity: warning
+        - name: var-naming
+          severity: warning
+        - name: package-comments
+          severity: warning
+    gosec:
+      severity: medium
+      confidence: medium
+
+  # Replaces issues.exclude-*, issues.exclude-rules.
+  exclusions:
+    # Optional; warns if an exclusion is never matched.
+    warn-unused: true
+
+    # These replace issues.exclude-dirs and issues.exclude-files.
+    paths:
+      - vendor
+      - test/e2e
+      - ".*\\.pb\\.go$"
+
+    # These replace issues.exclude-rules.
     rules:
-      - name: exported
-        severity: warning
-      - name: var-naming
-        severity: warning
-      - name: package-comments
-        severity: warning
-  gosec:
-    severity: medium
-    confidence: medium
+      # Allow _test.go files to have longer functions/complexity.
+      - path: _test\.go
+        linters:
+          - funlen
+          - gocognit
+
+      # Allow main functions to be longer.
+      - text: "func main is too long"
+        linters:
+          - funlen
 
 issues:
-  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
-
-  exclude-dirs:
-    - vendor
-    - test/e2e   # E2E tests may have different patterns
-
-  exclude-files:
-    - ".*\\.pb\\.go$"  # Generated protobuf files (if any)
-
-  exclude-rules:
-    # Allow _test.go files to have longer functions and higher complexity
-    - path: _test\.go
-      linters:
-        - funlen
-        - gocognit
-
-    # (Optional) Relax gosec for specific rules in tests
-    - path: _test\.go
-      linters:
-        - gosec
-      text: "G304"   # Potential file inclusion via variable in tests
-
-    - path: _test\.go
-      linters:
-        - gosec
-      text: "G306"   # Permissions 0600 or less in tests
-
-    # Allow main functions to be longer
-    - text: "func main is too long"
-      linters:
-        - funlen
-
+  # leave other options (uniq-by-line, new, etc) at defaults for now
