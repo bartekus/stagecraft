@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package logging provides structured logging functionality for Stagecraft.
 package logging
 
 import (
@@ -27,6 +28,7 @@ import (
 type Level int
 
 const (
+	// LevelDebug represents debug-level logging.
 	LevelDebug Level = iota
 	LevelInfo
 	LevelWarn
@@ -148,8 +150,8 @@ func (l *loggerImpl) log(level Level, msg string, fields ...Field) {
 		for _, f := range allFields {
 			fieldStrs = append(fieldStrs, fmt.Sprintf("%s=%v", f.Key, f.Value))
 		}
-		fmt.Fprintf(writer, "%s%s %s\n", prefix, msg, fmt.Sprintf("(%s)", fmt.Sprint(fieldStrs)))
+		_, _ = fmt.Fprintf(writer, "%s%s %s\n", prefix, msg, fmt.Sprintf("(%s)", fmt.Sprint(fieldStrs)))
 	} else {
-		fmt.Fprintf(writer, "%s%s\n", prefix, msg)
+		_, _ = fmt.Fprintf(writer, "%s%s\n", prefix, msg)
 	}
 }

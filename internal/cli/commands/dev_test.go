@@ -41,8 +41,14 @@ func TestNewDevCommand_HasExpectedMetadata(t *testing.T) {
 func TestDevCommand_ConfigNotFound(t *testing.T) {
 	tmpDir := t.TempDir()
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
-	os.Chdir(tmpDir)
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
 
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewDevCommand())
@@ -68,10 +74,18 @@ environments:
   dev:
     driver: local
 `
-	os.WriteFile(configPath, []byte(configContent), 0644)
+	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
-	os.Chdir(tmpDir)
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
 
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewDevCommand())
@@ -102,10 +116,18 @@ environments:
   dev:
     driver: local
 `
-	os.WriteFile(configPath, []byte(configContent), 0644)
+	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
 	originalDir, _ := os.Getwd()
-	defer os.Chdir(originalDir)
-	os.Chdir(tmpDir)
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
 
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewDevCommand())

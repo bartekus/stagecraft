@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package migration provides interfaces and types for migration engines.
 package migration
 
 import "context"

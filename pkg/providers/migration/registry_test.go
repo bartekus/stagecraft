@@ -197,7 +197,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			reg.Has("a")
-			reg.Get("a")
+			_, _ = reg.Get("a") // Ignore error in concurrent test
 			reg.IDs()
 		}()
 	}
