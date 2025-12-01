@@ -2,7 +2,7 @@
 
 /*
 
-Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 Copyright (C) 2025  Bartek Kus
 
@@ -113,10 +113,10 @@ func TestRawEngine_Plan_IgnoresNonSQLFiles(t *testing.T) {
 
 	// Create SQL and non-SQL files
 	files := map[string]string{
-		"001_initial.sql":    "-- SQL migration",
+		"001_initial.sql":   "-- SQL migration",
 		"002_add_users.sql": "-- SQL migration",
-		"README.md":          "# Documentation",
-		"config.json":        "{}",
+		"README.md":         "# Documentation",
+		"config.json":       "{}",
 	}
 
 	for name, content := range files {
@@ -188,4 +188,3 @@ func TestRawEngine_Run_NonExistentDirectory(t *testing.T) {
 		t.Error("Run() error = nil, want error for non-existent directory")
 	}
 }
-

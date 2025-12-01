@@ -4,14 +4,12 @@
   <img src="https://img.shields.io/badge/License-AGPL_v3%2B-blue.svg" alt="AGPL-3.0-or-later" />
 </p>
 
-Stagecraft is a Go-based orchestration CLI for local development and deployment of multi-service applications.
-
-It aims to be a “Kamal, but for Docker Compose + Tailscale + Encore.ts + Vite”:
+Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 - **Local-first DX** – one command to spin up full local infra, HTTPS, backend, and frontend.
 - **Compose + docker-rollout** – predictable runtime orchestration.
 - **Mesh networking by default** – Tailscale or Headscale for single-host → multi-host evolution.
-- **Provider model** – Encore.ts, Vite, DigitalOcean, GitHub Actions and others plug in cleanly.
+- **Provider model** – Generic or Encore.ts backend, Generic or Vite, DigitalOcean, GitHub Actions and others plug in cleanly.
 - **Configuration-driven** – one `stagecraft.yml` plus a canonical `docker-compose.yml`.
 
 > ⚠️ **Status**: Early WIP / experimental. Core commands (`dev`, `migrate`) are functional. See [Implementation Status](docs/implementation-status.md) for details.

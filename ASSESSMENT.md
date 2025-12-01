@@ -4,8 +4,7 @@
 
 ### Project Overview
 
-Stagecraft is a Go-based CLI for orchestrating local development and deployment of multi-service applications.
-It aims to be a "A local-first tool that scales from single-host to multi-host deployments like Kamal, but for Docker Compose"
+Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 ### Core Goals
 

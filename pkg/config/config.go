@@ -2,7 +2,7 @@
 
 /*
 
-Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 Copyright (C) 2025  Bartek Kus
 
@@ -22,8 +22,8 @@ import (
 	"gopkg.in/yaml.v3"
 
 	// Import providers to ensure they register themselves
-	_ "stagecraft/internal/providers/backend/generic"
 	_ "stagecraft/internal/providers/backend/encorets"
+	_ "stagecraft/internal/providers/backend/generic"
 	_ "stagecraft/internal/providers/migration/raw"
 
 	backendproviders "stagecraft/pkg/providers/backend"
@@ -39,8 +39,8 @@ var ErrConfigNotFound = errors.New("stagecraft config not found")
 // Config represents the top-level Stagecraft configuration.
 type Config struct {
 	Project      ProjectConfig                `yaml:"project"`
-	Backend      *BackendConfig                `yaml:"backend,omitempty"`
-	Databases    map[string]DatabaseConfig     `yaml:"databases,omitempty"`
+	Backend      *BackendConfig               `yaml:"backend,omitempty"`
+	Databases    map[string]DatabaseConfig    `yaml:"databases,omitempty"`
 	Environments map[string]EnvironmentConfig `yaml:"environments"`
 }
 

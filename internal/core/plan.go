@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 /*
-Stagecraft - A Go-based CLI for orchestrating local-first multi-service deployments using Docker Compose.
+Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 
 Copyright (C) 2025  Bartek Kus
 
@@ -30,10 +30,10 @@ type Plan struct {
 
 // Operation represents a single step in a deployment plan.
 type Operation struct {
-	Type        OperationType
-	Description string
+	Type         OperationType
+	Description  string
 	Dependencies []string // IDs of operations that must complete first
-	Metadata    map[string]interface{}
+	Metadata     map[string]interface{}
 }
 
 // OperationType represents the kind of operation.
@@ -112,11 +112,11 @@ func (p *Planner) addMigrationOps(plan *Plan, strategy string) error {
 
 		opID := fmt.Sprintf("migration_%s_%s", dbName, strategy)
 		plan.Operations = append(plan.Operations, Operation{
-			Type:        OpTypeMigration,
-			Description: fmt.Sprintf("Run %s migrations for database %s", strategy, dbName),
+			Type:         OpTypeMigration,
+			Description:  fmt.Sprintf("Run %s migrations for database %s", strategy, dbName),
 			Dependencies: []string{},
 			Metadata: map[string]interface{}{
-				"database":  dbName,
+				"database": dbName,
 				"strategy": strategy,
 				"engine":   dbCfg.Migrations.Engine,
 				"path":     dbCfg.Migrations.Path,
@@ -134,8 +134,8 @@ func (p *Planner) addBuildOps(plan *Plan) error {
 	if p.config.Backend != nil {
 		opID := "build_backend"
 		plan.Operations = append(plan.Operations, Operation{
-			Type:        OpTypeBuild,
-			Description: fmt.Sprintf("Build backend using provider %s", p.config.Backend.Provider),
+			Type:         OpTypeBuild,
+			Description:  fmt.Sprintf("Build backend using provider %s", p.config.Backend.Provider),
 			Dependencies: []string{},
 			Metadata: map[string]interface{}{
 				"provider": p.config.Backend.Provider,
@@ -150,8 +150,8 @@ func (p *Planner) addBuildOps(plan *Plan) error {
 // addDeployOps adds deployment operations.
 func (p *Planner) addDeployOps(plan *Plan) error {
 	plan.Operations = append(plan.Operations, Operation{
-		Type:        OpTypeDeploy,
-		Description: fmt.Sprintf("Deploy to environment %s", plan.Environment),
+		Type:         OpTypeDeploy,
+		Description:  fmt.Sprintf("Deploy to environment %s", plan.Environment),
 		Dependencies: []string{}, // Will depend on builds and pre-deploy migrations
 		Metadata: map[string]interface{}{
 			"environment": plan.Environment,
@@ -164,8 +164,8 @@ func (p *Planner) addDeployOps(plan *Plan) error {
 // addHealthCheckOps adds health check operations.
 func (p *Planner) addHealthCheckOps(plan *Plan) error {
 	plan.Operations = append(plan.Operations, Operation{
-		Type:        OpTypeHealthCheck,
-		Description: fmt.Sprintf("Health check for environment %s", plan.Environment),
+		Type:         OpTypeHealthCheck,
+		Description:  fmt.Sprintf("Health check for environment %s", plan.Environment),
 		Dependencies: []string{}, // Will depend on deployment
 		Metadata: map[string]interface{}{
 			"environment": plan.Environment,
@@ -174,4 +174,3 @@ func (p *Planner) addHealthCheckOps(plan *Plan) error {
 
 	return nil
 }
-
