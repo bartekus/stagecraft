@@ -90,6 +90,8 @@ echo ""
 echo "=== Core Package Coverage ==="
 echo ""
 
+MODULE_PATH=$(go list -m)
+
 CORE_PACKAGES=(
     "pkg/config"
     "internal/core"
@@ -102,9 +104,32 @@ for pkg in "${CORE_PACKAGES[@]}"; do
         continue
     fi
 
-    PKG_COVERAGE=$(go tool cover -func="$COVERAGE_FILE" | grep "$pkg" | awk '{print $3}' | sed 's/%//' || echo "0")
+    PKG_PREFIX="${MODULE_PATH}/${pkg}/"
 
-    if [ "$PKG_COVERAGE" = "0" ] || [ -z "$PKG_COVERAGE" ]; then
+    PKG_COVERAGE=$(
+        awk -v pkg="$PKG_PREFIX" '
+            # Profile line format:
+            # path/to/file.go:line.col,line.col num_stmts count
+            {
+                # Extract file path before the first colon
+                split($1, f, ":")
+                file = f[1]
+                if (index(file, pkg) == 1) {
+                    total += $2
+                    if ($3 > 0) {
+                        covered += $2
+                    }
+                }
+            }
+            END {
+                if (total > 0) {
+                    printf "%.1f\n", (covered / total) * 100
+                }
+            }
+        ' "$COVERAGE_FILE"
+    )
+
+    if [ -z "$PKG_COVERAGE" ]; then
         warning "$pkg: No coverage data (package may not have tests)"
         continue
     fi
