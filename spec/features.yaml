@@ -27,7 +27,7 @@ features:
   # Phase 0: Foundation
   - id: CORE_CONFIG
     title: "Config loading and validation"
-    status: todo
+    status: done
     spec: "core/config.md"
     owner: bart
     tests:
@@ -35,7 +35,7 @@ features:
 
   - id: CLI_INIT
     title: "Project bootstrap command"
-    status: todo
+    status: done
     spec: "commands/init.md"
     owner: bart
     tests:
@@ -44,7 +44,7 @@ features:
 
   - id: CORE_LOGGING
     title: "Structured logging helpers"
-    status: todo
+    status: done
     spec: "core/logging.md"
     owner: bart
     tests:
@@ -68,7 +68,7 @@ features:
 
   - id: CORE_BACKEND_REGISTRY
     title: "Backend provider registry system"
-    status: todo
+    status: done
     spec: "core/backend-registry.md"
     owner: bart
     tests:
@@ -76,7 +76,7 @@ features:
 
   - id: CORE_MIGRATION_REGISTRY
     title: "Migration engine registry system"
-    status: todo
+    status: done
     spec: "core/migration-registry.md"
     owner: bart
     tests:
@@ -84,7 +84,7 @@ features:
 
   - id: CORE_BACKEND_PROVIDER_CONFIG_SCHEMA
     title: "Provider-scoped backend configuration schema"
-    status: todo
+    status: done
     spec: "core/backend-provider-config.md"
     owner: bart
     tests:
@@ -93,7 +93,7 @@ features:
   # Phase 1: Provider Interfaces
   - id: PROVIDER_BACKEND_INTERFACE
     title: "BackendProvider interface definition"
-    status: todo
+    status: done
     spec: "providers/backend/interface.md"
     owner: bart
     tests:
@@ -142,7 +142,7 @@ features:
   # Phase 2: Core Orchestration
   - id: CORE_PLAN
     title: "Deployment planning engine"
-    status: todo
+    status: done
     spec: "core/plan.md"
     owner: bart
     tests:
@@ -233,7 +233,7 @@ features:
 
   - id: PROVIDER_BACKEND_GENERIC
     title: "Generic command-based BackendProvider implementation"
-    status: todo
+    status: done
     spec: "providers/backend/generic.md"
     owner: bart
     tests:
@@ -349,7 +349,7 @@ features:
 
   - id: MIGRATION_ENGINE_RAW
     title: "Raw SQL migration engine implementation"
-    status: todo
+    status: done
     spec: "providers/migration/raw.md"
     owner: bart
     tests:

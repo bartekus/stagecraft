@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"stagecraft/pkg/config"
+	"stagecraft/pkg/logging"
 	migrationengines "stagecraft/pkg/providers/migration"
 )
 
@@ -96,13 +97,17 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 		migrationPath = filepath.Join(workDir, migrationPath)
 	}
 
+	// Initialize logger
 	verbose, _ := cmd.Flags().GetBool("verbose")
-	if verbose {
-		fmt.Fprintf(cmd.OutOrStdout(), "Using migration engine: %s\n", engineID)
-		fmt.Fprintf(cmd.OutOrStdout(), "Config file: %s\n", absPath)
-		fmt.Fprintf(cmd.OutOrStdout(), "Database: %s\n", dbName)
-		fmt.Fprintf(cmd.OutOrStdout(), "Migration path: %s\n", migrationPath)
-	}
+	logger := logging.NewLogger(verbose)
+	logger.Info("Running migrations",
+		logging.NewField("engine", engineID),
+		logging.NewField("database", dbName),
+	)
+	logger.Debug("Migration details",
+		logging.NewField("config", absPath),
+		logging.NewField("path", migrationPath),
+	)
 
 	planOnly, _ := cmd.Flags().GetBool("plan")
 

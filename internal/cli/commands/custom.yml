@@ -1,0 +1,5 @@
+project:
+    name: commands
+environments:
+    dev:
+        driver: local
