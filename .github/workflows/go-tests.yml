@@ -30,7 +30,7 @@ jobs:
         run: go mod download
 
       - name: Build stagecraft binary
-        run: go build -o stagecraft ./cmd/stagecraft
+        run: go build -o ./bin/stagecraft ./cmd/stagecraft
 
       - name: Add stagecraft to PATH
         run: |
