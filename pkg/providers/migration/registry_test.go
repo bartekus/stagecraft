@@ -107,9 +107,13 @@ func TestRegistry_Get(t *testing.T) {
 func TestRegistry_Get_ReturnsErrorForUnknownID(t *testing.T) {
 	reg := NewRegistry()
 
-	_, err := reg.Get("unknown-engine")
+	_, err := reg.Get("unknown-provider")
 	if err == nil {
-		t.Error("Get() error = nil, want error for unknown engine")
+		t.Error("Get() error = nil, want error for unknown provider")
+	}
+
+	if reg.Has("unknown-provider") {
+		t.Error("Has() = true for unknown provider, want false")
 	}
 }
 
