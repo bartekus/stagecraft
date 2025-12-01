@@ -15,10 +15,14 @@ See https://www.gnu.org/licenses/ for license details.
 package commands
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
+
+	"stagecraft/pkg/config"
 )
 
 // Feature: CLI_INIT
@@ -37,16 +41,21 @@ func TestNewInitCommand_HasExpectedMetadata(t *testing.T) {
 }
 
 func TestInitCommand_DefaultConfigPath_InteractiveStub(t *testing.T) {
+	tmpDir := t.TempDir()
+	originalDir, _ := os.Getwd()
+	defer os.Chdir(originalDir)
+	os.Chdir(tmpDir)
+
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewInitCommand())
 
-	out, err := executeCommandForGolden(root, "init")
+	out, err := executeCommandForGolden(root, "init", "--non-interactive", "--project-name", "test-project")
 	if err != nil {
 		t.Fatalf("expected no error executing 'init' command, got: %v", err)
 	}
 
-	if !strings.Contains(out, "Initializing Stagecraft project (interactive, stub)") {
-		t.Fatalf("expected interactive stub message, got: %q", out)
+	if !strings.Contains(out, "Created Stagecraft config") {
+		t.Fatalf("expected success message, got: %q", out)
 	}
 
 	if !strings.Contains(out, "stagecraft.yml") {
@@ -55,16 +64,21 @@ func TestInitCommand_DefaultConfigPath_InteractiveStub(t *testing.T) {
 }
 
 func TestInitCommand_NonInteractiveStub(t *testing.T) {
+	tmpDir := t.TempDir()
+	originalDir, _ := os.Getwd()
+	defer os.Chdir(originalDir)
+	os.Chdir(tmpDir)
+
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewInitCommand())
 
-	out, err := executeCommandForGolden(root, "init", "--non-interactive", "--config", "custom.yml")
+	out, err := executeCommandForGolden(root, "init", "--non-interactive", "--config", "custom.yml", "--project-name", "test-project")
 	if err != nil {
 		t.Fatalf("expected no error executing 'init --non-interactive', got: %v", err)
 	}
 
-	if !strings.Contains(out, "Initializing Stagecraft project (non-interactive, stub)") {
-		t.Fatalf("expected non-interactive stub message, got: %q", out)
+	if !strings.Contains(out, "Created Stagecraft config") {
+		t.Fatalf("expected success message, got: %q", out)
 	}
 
 	if !strings.Contains(out, "custom.yml") {
@@ -143,5 +157,76 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 				t.Errorf("output mismatch:\nGot:\n%s\nExpected:\n%s", output, expected)
 			}
 		})
+	}
+}
+
+func TestInitCommand_CreatesConfigFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+	originalDir, _ := os.Getwd()
+	defer os.Chdir(originalDir)
+	os.Chdir(tmpDir)
+
+	root := &cobra.Command{Use: "stagecraft"}
+	root.AddCommand(NewInitCommand())
+
+	_, err := executeCommandForGolden(root, "init", "--non-interactive", "--project-name", "test-project")
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	// Verify config file was created
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		t.Fatalf("expected config file to be created at %s", configPath)
+	}
+
+	// Verify config is valid
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		t.Fatalf("expected valid config, got error: %v", err)
+	}
+
+	if cfg.Project.Name != "test-project" {
+		t.Fatalf("expected project name 'test-project', got %q", cfg.Project.Name)
+	}
+}
+
+func TestInitCommand_RefusesToOverwriteExistingConfig(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+
+	// Create existing config
+	existingConfig := `project:
+  name: existing
+environments:
+  dev:
+    driver: local
+`
+	os.WriteFile(configPath, []byte(existingConfig), 0644)
+
+	originalDir, _ := os.Getwd()
+	defer os.Chdir(originalDir)
+	os.Chdir(tmpDir)
+
+	root := &cobra.Command{Use: "stagecraft"}
+	root.AddCommand(NewInitCommand())
+
+	out, err := executeCommandForGolden(root, "init", "--non-interactive")
+	if err != nil {
+		t.Fatalf("expected no error (should inform user), got: %v", err)
+	}
+
+	if !strings.Contains(out, "already exists") {
+		t.Fatalf("expected message about existing config, got: %q", out)
+	}
+
+	// Verify original config wasn't modified
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		t.Fatalf("expected valid config, got error: %v", err)
+	}
+
+	if cfg.Project.Name != "existing" {
+		t.Fatalf("expected original config to be preserved, got project name %q", cfg.Project.Name)
 	}
 }

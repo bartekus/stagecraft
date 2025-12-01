@@ -22,6 +22,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"stagecraft/pkg/config"
+	"stagecraft/pkg/logging"
 	backendproviders "stagecraft/pkg/providers/backend"
 )
 
@@ -89,13 +90,14 @@ func runDev(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("getting working directory: %w", err)
 	}
 
-	// Log what we're doing (if verbose)
+	// Initialize logger
 	verbose, _ := cmd.Flags().GetBool("verbose")
-	if verbose {
-		fmt.Fprintf(cmd.OutOrStdout(), "Using backend provider: %s\n", backendID)
-		fmt.Fprintf(cmd.OutOrStdout(), "Config file: %s\n", absPath)
-		fmt.Fprintf(cmd.OutOrStdout(), "Working directory: %s\n", workDir)
-	}
+	logger := logging.NewLogger(verbose)
+	logger.Info("Starting development environment",
+		logging.NewField("provider", backendID),
+		logging.NewField("config", absPath),
+	)
+	logger.Debug("Working directory", logging.NewField("workdir", workDir))
 
 	// Call provider
 	opts := backendproviders.DevOptions{
