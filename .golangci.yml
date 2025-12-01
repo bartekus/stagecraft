@@ -1,50 +1,40 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
+# Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable
+# single-host to multi-host deployments for multi-service applications powered by Docker Compose.
 #
 # Copyright (C) 2025  Bartek Kus
 #
-# This program is free software licensed under the terms of the GNU AGPL v3 or later.
-#
-# See https://www.gnu.org/licenses/ for license details.
-#
 # golangci-lint configuration for Stagecraft
-# See https://golangci-lint.run/usage/configuration/ for full options
+version: "2"
 
 run:
   timeout: 5m
   tests: true
-  skip-dirs:
-    - vendor
-    - test/e2e  # E2E tests may have different patterns
-  skip-files:
-    - ".*\\.pb\\.go$"  # Generated protobuf files (if any)
 
 linters:
   enable:
-    - staticcheck  # Advanced Go static analysis
-    - errcheck     # Check for unchecked errors
-    - gofmt        # Format check
-    - goimports    # Import formatting
-    - govet        # Go vet
-    - ineffassign  # Detect ineffectual assignments
-    - misspell     # Spelling checker
-    - unconvert    # Remove unnecessary type conversions
-    - unparam      # Unused function parameters
-    - gosec        # Security issues
-    - gocritic     # Opinionated code analyzer
-    - revive       # Fast, configurable linter
+    - staticcheck   # Advanced Go static analysis
+    - errcheck      # Check for unchecked errors
+    - gofmt         # Format check
+    - goimports     # Import formatting
+    - govet         # Go vet
+    - shadow        # Detect variable shadowing (replacement for govet.check-shadowing)
+    - ineffassign   # Detect ineffectual assignments
+    - misspell      # Spelling checker
+    - unconvert     # Remove unnecessary type conversions
+    - unparam       # Unused function parameters
+    - gosec         # Security issues
+    - gocritic      # Opinionated code analyzer
+    - revive        # Fast, configurable linter
   disable:
-    - typecheck    # Already covered by go build
-    - deadcode     # Deprecated, use staticcheck
+    - typecheck     # Already covered by go build
 
 linters-settings:
   gofmt:
     simplify: true
   goimports:
     local-prefixes: stagecraft
-  govet:
-    check-shadowing: true
   gocritic:
     enabled-tags:
       - diagnostic
@@ -53,8 +43,9 @@ linters-settings:
       - performance
       - style
     disabled-checks:
-      - dupImport  # Sometimes needed for clarity
-      - ifElseChain # Can be more readable than switch in some cases
+      - dupImport     # Sometimes needed for clarity
+      - ifElseChain   # Can be more readable than switch in some cases
+      # - hugeParam   # Uncomment to globally disable this check if it’s too noisy
   revive:
     rules:
       - name: exported
@@ -71,12 +62,32 @@ issues:
   exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
+
+  exclude-dirs:
+    - vendor
+    - test/e2e   # E2E tests may have different patterns
+
+  exclude-files:
+    - ".*\\.pb\\.go$"  # Generated protobuf files (if any)
+
   exclude-rules:
-    # Allow _test.go files to have longer functions
+    # Allow _test.go files to have longer functions and higher complexity
     - path: _test\.go
       linters:
         - funlen
         - gocognit
+
+    # (Optional) Relax gosec for specific rules in tests
+    - path: _test\.go
+      linters:
+        - gosec
+      text: "G304"   # Potential file inclusion via variable in tests
+
+    - path: _test\.go
+      linters:
+        - gosec
+      text: "G306"   # Permissions 0600 or less in tests
+
     # Allow main functions to be longer
     - text: "func main is too long"
       linters:
