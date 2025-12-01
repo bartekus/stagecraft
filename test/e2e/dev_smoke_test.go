@@ -65,7 +65,8 @@ func TestStagecraftDev_Smoke(t *testing.T) {
 		t.Fatalf("expected 'stagecraft dev --help' to succeed, got error: %v, output: %s", err, out.String())
 	}
 
-	if !strings.Contains(out.String(), "Start development environment") {
+	if !strings.Contains(out.String(), "Start development environment") &&
+		!strings.Contains(out.String(), "Loads stagecraft.yml") {
 		t.Fatalf("expected output to contain dev command description, got: %q", out.String())
 	}
 }

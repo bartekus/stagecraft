@@ -89,10 +89,10 @@ func TestInitCommand_NonInteractiveStub(t *testing.T) {
 // TestInitCommand_GoldenFiles tests CLI output against golden files.
 func TestInitCommand_GoldenFiles(t *testing.T) {
 	tests := []struct {
-		name     string
-		args     []string
-		golden   string
-		setupCmd func() *cobra.Command
+		name          string
+		args          []string
+		golden        string
+		setupCmd      func() *cobra.Command
 		needsCleanDir bool
 	}{
 		{
@@ -145,14 +145,14 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var originalDir string
 			var tmpDir string
-			
+
 			if tt.needsCleanDir {
 				tmpDir = t.TempDir()
 				originalDir, _ = os.Getwd()
 				defer os.Chdir(originalDir)
 				os.Chdir(tmpDir)
 			}
-			
+
 			cmd := tt.setupCmd()
 			output, err := executeCommandForGolden(cmd, tt.args...)
 

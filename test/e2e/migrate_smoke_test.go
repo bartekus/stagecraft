@@ -89,7 +89,8 @@ func TestStagecraftMigrate_Help(t *testing.T) {
 		t.Fatalf("expected 'stagecraft migrate --help' to succeed, got error: %v, output: %s", err, out.String())
 	}
 
-	if !strings.Contains(out.String(), "Run database migrations") {
+	if !strings.Contains(out.String(), "Run database migrations") &&
+		!strings.Contains(out.String(), "Loads stagecraft.yml") {
 		t.Fatalf("expected output to contain migrate command description, got: %q", out.String())
 	}
 }

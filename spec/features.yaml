@@ -94,7 +94,7 @@ features:
   - id: PROVIDER_BACKEND_INTERFACE
     title: "BackendProvider interface definition"
     status: done
-    spec: "providers/backend/interface.md"
+    spec: "core/backend-registry.md"
     owner: bart
     tests:
       - "pkg/providers/backend/backend_test.go"
