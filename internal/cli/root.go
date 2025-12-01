@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package cli wires together the Stagecraft root Cobra command and global CLI options.
 package cli
 
 import (

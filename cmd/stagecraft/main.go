@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package main is the entry point for the Stagecraft CLI binary.
 package main
 
 import (
