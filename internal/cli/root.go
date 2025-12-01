@@ -21,9 +21,9 @@ import (
 	"github.com/spf13/cobra"
 
 	"stagecraft/internal/cli/commands"
-	//"stagecraft/spec" // optional; see note below
-	//"github.com/bartekus/stagecraft/internal/cli/commands"
-	//"github.com/bartekus/stagecraft/spec" // optional; see note below
+	// "stagecraft/spec" // optional; see note below
+	// "github.com/bartekus/stagecraft/internal/cli/commands"
+	// "github.com/bartekus/stagecraft/spec" // optional; see note below
 )
 
 // NOTE: The import above for github.com/bartekus/stagecraft/spec is optional.

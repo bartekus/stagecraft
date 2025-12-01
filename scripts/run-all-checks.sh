@@ -15,4 +15,4 @@
 #   ./scripts/run-all-checks.sh
 
 go build -o ./bin/stagecraft ./cmd/stagecraft
-go vet ./... && go test ./... && ./scripts/check-coverage.sh && ./scripts/validate-spec.sh
+go vet ./... && go test ./... && staticcheck ./... && ./scripts/check-coverage.sh && ./scripts/validate-spec.sh

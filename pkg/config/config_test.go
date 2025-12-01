@@ -43,8 +43,8 @@ func TestExists_ReportsCorrectly(t *testing.T) {
 	}
 
 	existing := filepath.Join(tmpDir, "config.yml")
-	if err := os.WriteFile(existing, []byte("project:\n  name: test\n"), 0o600); err != nil {
-		t.Fatalf("failed to write temp config: %v", err)
+	if werr := os.WriteFile(existing, []byte("project:\n  name: test\n"), 0o600); werr != nil {
+		t.Fatalf("failed to write temp config: %v", werr)
 	}
 
 	ok, err = Exists(existing)
