@@ -142,12 +142,12 @@ func TestRegistry_IDs(t *testing.T) {
 		t.Errorf("IDs() length = %d, want 0", len(ids))
 	}
 
-	// Register multiple engines
+	// Register multiple engines in non-alphabetical order
 	engines := []*mockEngine{
-		{id: "drizzle"},
-		{id: "prisma"},
-		{id: "knex"},
 		{id: "raw"},
+		{id: "drizzle"},
+		{id: "knex"},
+		{id: "prisma"},
 	}
 
 	for _, e := range engines {
@@ -157,6 +157,14 @@ func TestRegistry_IDs(t *testing.T) {
 	ids = reg.IDs()
 	if len(ids) != 4 {
 		t.Errorf("IDs() length = %d, want 4", len(ids))
+	}
+
+	// Verify IDs are sorted lexicographically
+	expected := []string{"drizzle", "knex", "prisma", "raw"}
+	for i, id := range ids {
+		if id != expected[i] {
+			t.Errorf("IDs()[%d] = %q, want %q (IDs must be sorted)", i, id, expected[i])
+		}
 	}
 
 	// Verify all IDs are present
@@ -191,8 +199,9 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 	wg.Wait()
 
 	// Verify all engines registered
-	if len(reg.IDs()) != numEngines {
-		t.Errorf("concurrent registration: got %d engines, want %d", len(reg.IDs()), numEngines)
+	ids := reg.IDs()
+	if len(ids) != numEngines {
+		t.Errorf("concurrent registration: got %d engines, want %d", len(ids), numEngines)
 	}
 
 	// Test concurrent reads

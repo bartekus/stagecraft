@@ -141,11 +141,11 @@ func TestRegistry_IDs(t *testing.T) {
 		t.Errorf("IDs() length = %d, want 0", len(ids))
 	}
 
-	// Register multiple providers
+	// Register multiple providers in non-alphabetical order
 	providers := []*mockProvider{
+		{id: "provider-3"},
 		{id: "provider-1"},
 		{id: "provider-2"},
-		{id: "provider-3"},
 	}
 
 	for _, p := range providers {
@@ -155,6 +155,14 @@ func TestRegistry_IDs(t *testing.T) {
 	ids = reg.IDs()
 	if len(ids) != 3 {
 		t.Errorf("IDs() length = %d, want 3", len(ids))
+	}
+
+	// Verify IDs are sorted lexicographically
+	expected := []string{"provider-1", "provider-2", "provider-3"}
+	for i, id := range ids {
+		if id != expected[i] {
+			t.Errorf("IDs()[%d] = %q, want %q (IDs must be sorted)", i, id, expected[i])
+		}
 	}
 
 	// Verify all IDs are present
