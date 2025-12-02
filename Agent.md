@@ -40,10 +40,12 @@ It reimagines tools like Kamal with:
 * Strong correctness guarantees enforced by specs, tests, and documentation
 * Extensibility through pluggable providers and migration engines
 
-> Stagecraft is not an orchestration platform, config management engine, or IaC DSL. </br>
+> Stagecraft is not an orchestration platform, config management engine, or IaC DSL.
+
 > It delegates infrastructure heavy lifting to providers, not core.
 
-This repository is both a production‑grade tool and a public engineering portfolio. </br>
+This repository is both a production‑grade tool and a public engineering portfolio.
+
 Clarity, determinism, traceability, and documentation matter as much as functionality.
 
 ⸻
@@ -114,7 +116,7 @@ All meaningful changes must reference a Feature ID:
 // Spec: spec/commands/init.md
 ```
 
-Creating a Feature ID
+### Creating a Feature ID
 
 Create a new Feature ID when:
 
@@ -129,7 +131,7 @@ Do NOT create a new Feature ID for:
 * Bug fixes
 * Docs‑only changes
 
-Feature ID Naming Rules
+### Feature ID Naming Rules
 
 * SCREAMING_SNAKE_CASE
 * Must map directly to a spec file
@@ -207,10 +209,10 @@ Unless explicitly specified otherwise:
 
 ## 4. Package Boundaries
 
-     * internal/ contains implementation details – no public APIs.
-     * pkg/ contains stable, reusable packages for external use.
-     * cmd/ must stay thin; wiring only.
-     * Packages MUST NOT form cyclic imports.
+* internal/ contains implementation details – no public APIs.
+* pkg/ contains stable, reusable packages for external use.
+* cmd/ must stay thin; wiring only.
+* Packages MUST NOT form cyclic imports.
 
 Directional rule:
 
@@ -254,7 +256,7 @@ If modification is necessary:
 // nolint:gocritic // interface requires value
 ```
 
-Mocking Policy
+### Mocking Policy
 
 * AI MUST NOT introduce new mocking frameworks without explicit approval.
 * Generated mocks MUST be deterministic.
@@ -554,8 +556,8 @@ chore/<short-desc>
 docs/<short-desc>
 ```
 
-	  * No uppercase.
-	  * No spaces.
+* No uppercase.
+* No spaces.
 
 PR Metadata
 
