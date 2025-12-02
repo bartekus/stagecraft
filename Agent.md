@@ -514,6 +514,98 @@ If a change touches files mapped to different features, AI MUST halt and request
 
 ⸻
 
+## 📐 Repository State Invariants
+
+The repository MUST remain in a valid state at all times:
+
+1. All specs MUST parse successfully.
+2. spec/features.yaml MUST reflect the ground truth of implemented behaviour.
+3. No dangling Feature IDs (referenced without spec).
+4. No orphan specs (spec exists with no implementation reference).
+5. No failing tests on main.
+6. golden test files MUST match code output when regenerated.
+
+If an invariant is violated, AI MUST stop and request human guidance.
+
+⸻
+
+## Deterministic Failure Mode Rules
+
+All failure paths MUST:
+  * produce stable error messages,
+  * produce stable exit codes,
+  * produce stable structured logs,
+  * avoid multi-source error ambiguity.
+
+Tests MUST assert exact error values or exact string matches, never substrings.
+
+⸻
+
+## Cross-Cutting Change Rules
+
+When behaviour affects multiple domains, AI MUST:
+
+1. Confirm whether an ADR is required.
+2. Identify all Feature IDs impacted.
+3. Stop unless the human approves a multi-feature change.
+4. Separate the change into multiple PRs unless explicitly directed otherwise.
+
+⸻
+
+## Spec Versioning Rules
+
+Spec changes fall into categories:
+  * additive (allowed)
+  * clarifying (allowed, no code changes)
+  * breaking (requires ADR)
+  * behavioural change (requires Feature ID)
+
+Every spec file MUST contain:
+  * a version field (v1, v1.1, etc.)
+
+⸻
+
+## Logging Determinism Rules
+
+Logs MUST:
+  * use a structured format (JSON)
+  * never include timestamps unless injected via deterministic clock
+  * include Feature ID when behaviour is feature-specific
+  * avoid machine-specific metadata
+
+AI MUST NOT introduce new log fields without explicit human approval.
+
+Provider log fields MUST be namespaced:
+```code
+provider.<id>.<field>
+```
+
+⸻
+
+## Context and Timeout Rules
+
+context.Context MUST:
+  * only be created through a deterministic constructor,
+  * never include real-time deadlines unless specified by the feature,
+  * never be cancelled except through deterministic test logic.
+
+No use of context.WithTimeout or context.WithDeadline in core.
+
+⸻
+
+## Interface Evolution Rules
+
+Interfaces in pkg/ MUST be stable.
+Changes require:
+  * ADR,
+  * spec update,
+  * migration guidance,
+  * major version bump if breaking.
+
+Interfaces in internal/ MAY evolve freely but MUST remain deterministic.
+
+⸻
+
 ## 📩 Change Envelope
 
 Every task defines a strict change envelope:
@@ -607,6 +699,18 @@ All other dependencies require explicit human approval, justification, and ADR i
 
 ⸻
 
+## 📌 Toolchain Determinism Rule
+
+All contributors must use the exact versions of:
+  * Go compiler,
+  * golangci-lint,
+  * test harness,
+  * build tools
+
+as defined in .tool-versions or go.mod.
+
+⸻
+
 ## 🚫 Non-Goals
   *	Stagecraft is NOT a general-purpose automation tool
   *	Do not add speculative features without an ADR
@@ -638,6 +742,9 @@ When behaviour is ambiguous:
 	•	No guessing
 	•	No refactors
 	•	No modifying protected files
+	•	No implicit defaults
+	•	No implicit auto-detection
+	•	No implicit environment reading
 
 ⸻
 
