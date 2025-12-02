@@ -88,6 +88,8 @@ New behaviour must follow this order:
 AI MUST NOT skip steps.
 AI MUST NOT fill in missing specs by guessing.
 
+If both the spec and tests are missing for a behaviour, AI MUST stop and request a new or updated spec (or explicit human direction) before proceeding with any tests or code.
+
 Example: Full Feature Lifecycle
 
 For CLI_INIT:
@@ -313,6 +315,7 @@ backend.providers.<id>.<env>.<configkey>
 ### Non‑determinism policy
 
 Provider/engine loading must not depend on environment ordering or file system randomness.
+Any directory reads (for example, using os.ReadDir) MUST be lexicographically sorted before processing to avoid filesystem ordering differences.
 
 Example: Duplicate Provider Registration
 
@@ -370,6 +373,7 @@ __CLI Determinism__
 
 * CLI help output MUST be deterministic.
 * Command registration MUST use stable and lexicographically sorted ordering.
+* CLI flags MUST be registered and rendered in a stable, lexicographically sorted order; no reliance on Cobra's implicit ordering is allowed.
 * No terminal width–dependent formatting that changes output between environments.
 
 ⸻
@@ -395,7 +399,9 @@ If any answer is unclear, AI MUST stop and ask for clarification.
 * Wrap all errors using fmt.Errorf("context: %w", err).
 * Never return plain strings.
 * Avoid shadowed variables.
+* Errors MUST NOT be combined using errors.Join unless explicitly specified by the spec or an ADR, and the ordering MUST be deterministic.
 * Errors must be deterministic and structured.
+* A single error value MUST NOT be wrapped multiple times in the same return path unless explicitly specified by the spec or an ADR.
 * Error messages MUST NOT include full system paths unless essential for debugging.
 
 __Sentinel Errors__
@@ -467,7 +473,7 @@ When the spec is:
 If the spec is incomplete but a Feature ID exists:
 
 * AI may propose exact wording for missing spec lines.
-* A human must approve before tests or code are produced.
+* A human must approve before tests or code are produced, and AI MUST provide proposed wording as explicit Markdown snippets in its response (not written to files) for review.
 
 ⸻
 
@@ -615,10 +621,11 @@ These MUST hold at all times:
 5. provider.Config is opaque to core.
 6. No timestamps unless explicitly part of the spec.
 
-* Time MUST be injected via a deterministic clock interface.
-* No direct use of time.Now() anywhere in core.
+   * Time MUST be injected via a deterministic clock interface.
+   * No direct use of time.Now() anywhere in core.
 
 7. Core NEVER shells out.
+8. Build tags MUST NOT be introduced or modified without explicit human approval and, if they affect behaviour, an ADR.
 
 ⸻
 
@@ -709,6 +716,12 @@ Logs MUST:
 * Never include timestamps unless injected via deterministic clock.
 * Include Feature ID when behaviour is feature‑specific.
 * Avoid machine‑specific metadata.
+
+__Structured Output Determinism__
+
+* Any YAML, JSON, or other structured configuration output MUST be produced using a deterministic encoder.
+* Keys MUST be ordered lexicographically at all levels where ordering is not semantically defined.
+* Tests MUST NOT rely on map iteration order or encoder-specific non-determinism.
 
 AI MUST NOT introduce new log fields without explicit human approval.
 
@@ -817,6 +830,8 @@ If the user writes “do X then Y”:
 
 This avoids premature implementation.
 
+Multi-step interaction rules govern how AI and humans collaborate, not commit boundaries. Commits SHOULD follow the commit granularity rules: typically a single commit per completed, single-feature change after all agreed steps for that feature are done, unless the user explicitly requests separate commits for intermediate steps.
+
 ⸻
 
 ## 📚 Canonical Error Categories
@@ -854,14 +869,17 @@ All contributors must use the exact versions of:
 
 as defined in .tool-versions or go.mod.
 
+Build tags and compilation flags MUST be documented and kept stable across environments.
+
 ⸻
 
 ## 🚫 Non‑Goals
 
-* Stagecraft is NOT a general‑purpose automation tool.
+* Stagecraft is NOT a general-purpose automation tool.
 * Do not add speculative features without an ADR.
 * All new behaviour must be anchored to a Feature ID and spec.
 * Stagecraft is not a plugin framework or workflow engine.
+* Stagecraft is not a general-purpose YAML/JSON transformer; any structured output MUST be directly justified by the spec.
 
 ⸻
 
