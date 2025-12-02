@@ -1,120 +1,318 @@
 # Agent Guide for Stagecraft
 
-> Audience: AI assistants (Cursor, ChatGPT, Copilot, etc.) and human collaborators using them.
+> Audience: AI assistants (Cursor, ChatGPT, Copilot, Claude, etc.) and human collaborators using them.  
+> Purpose: Ensure deterministic, spec-driven, test-driven, provider-agnostic contributions to the Stagecraft codebase.
 
-## Project Purpose
+---
 
-Stagecraft is a Go-based CLI that orchestrates application deployment and infrastructure workflows.
-It aims to reimagine tools like Kamal with:
+# 🔥 Project Purpose
 
-- A clean, composable core (planning, drivers, plugins).
-- First-class developer UX for local and remote dev.
-- Strong guarantees via tests, docs, and specs.
+Stagecraft is a Go-based CLI that orchestrates local-first application development, deployment, and infrastructure workflows.  
+It reimagines tools like Kamal with:
 
-This repository is both a **production-grade tool** and a **public portfolio piece**. Code quality, reasoning, and documentation matter as much as functionality.
+- A clean, composable, registry-driven core (planning, drivers, providers, plugins)
+- First-class developer UX for both local and remote workflows
+- Strong correctness guarantees through specs, tests, and docs
+- Extensibility through pluggable providers and migration engines
 
-## Golden Rules
+This repository is both a **production-grade tool** and a **public engineering portfolio**.  
+Clarity, reasoning, determinism, and documentation matter as much as functionality.
 
-1. **Spec-first, test-first**
-    - Before adding or changing behaviour, look at `spec/features.yaml` and the relevant spec in `spec/`.
-    - Prefer writing or updating tests before implementation, especially in `internal/core` and `pkg/config`.
+---
 
-2. **Every change must trace to a feature ID**
-    - Each meaningful change should be associated with a feature `id` from `spec/features.yaml` (e.g. `CLI_INIT`, `DEPLOY_PLAN`).
-    - Add a short comment in new Go files referencing the feature ID and spec:
-      ```go
-      // Feature: CLI_INIT
-      // Spec: spec/commands/init.md
-      ```
+# ⭐ Architectural Principles
 
-3. **Tests and docs are non-optional**
-    - When changing behaviour, also:
-        - Update or add tests (`*_test.go`).
-        - Update the relevant spec markdown in `spec/`.
-        - Update docs in `docs/` if user-facing behaviour changed.
-    - Do not mark a feature as `done` in `spec/features.yaml` unless tests and docs are in place.
+1. **Spec-driven behaviour**  
+2. **Test-first change flow**  
+3. **Registry-based extensibility**  
+4. **Opaque provider configuration**  
+5. **Predictable and idempotent operations**  
+6. **Strict package boundaries**  
+7. **Minimal diffs, maximal clarity**  
+8. **Traceability from spec → tests → code → docs → git**
 
-4. **Respect boundaries and structure**
-    - `internal/` contains implementation details; avoid exposing them as public APIs.
-    - `pkg/` is for pieces that can be reused or imported externally.
-    - `cmd/` should remain thin: wire CLI flags and arguments to `internal/` or `pkg/` logic, but not contain business logic.
+These principles override ambiguous instructions.
 
-5. **Do not modify certain files without explicit intent**
-    - Only change these when the human author clearly asks for it:
-        - `LICENSE`
-        - `README.md` top-level positioning (minor edits ok, but no radical reframing)
-        - Existing ADRs in `docs/adr/` (append follow-up ADRs instead of rewriting history).
-    - If a modification to these files seems required to complete a task, clearly explain why in comments or commit messages.
+---
 
-6. **Follow Go style and quality standards**
-    - Code should compile (`go build ./...`).
-    - Code should be formatted with `gofmt`/`goimports`.
-    - All tests must pass (`go test ./...`).
-    - Address linter findings unless explicitly documented as exceptions.
+# 🧭 Golden Rules
 
-7. **Provider and Engine Agnosticism**
-    - **Never hardcode provider IDs or engine IDs in validation**
-        - ❌ Wrong: `if provider != "encore-ts" && provider != "generic" { return error }`
-        - ✅ Right: `if !backendproviders.Has(provider) { return error }`
-        - Always validate against the appropriate registry (`pkg/providers/backend` or `pkg/providers/migration`)
-    - **Provider-specific config belongs under `backend.providers.<id>`**
-        - ❌ Wrong: `backend.dev.encore_secrets` (Encore-specific at top level)
-        - ✅ Right: `backend.providers.encore-ts.dev.secrets` (provider-scoped)
-        - Stagecraft core treats provider config as opaque (`map[string]any`)
-    - **Encore.ts and Drizzle are implementations, not special cases**
-        - Encore.ts is a `BackendProvider` implementation, not a core feature
-        - Drizzle is a `MigrationEngine` implementation, not a core feature
-        - If you need provider/engine-specific logic, it belongs in the provider/engine implementation
-    - **When adding new providers or engines**
-        - Register them in the appropriate registry (`backend.Register()` or `migration.Register()`)
-        - Implement the interface (`BackendProvider` or `Engine`)
-        - Add provider/engine-specific config under the scoped namespace
-        - Do not modify core validation logic
-    - **Registry wiring requirements**
-        - Any change to provider or migration engine registration/validation MUST reference:
-            - `CORE_BACKEND_REGISTRY` for backend provider changes
-            - `CORE_MIGRATION_REGISTRY` for migration engine changes
-            - `CORE_BACKEND_PROVIDER_CONFIG_SCHEMA` for config schema changes
-        - Update the corresponding spec before changing the implementation
-        - Ensure providers/engines are imported in `pkg/config/config.go` so they register before validation
-        - Never bypass the registry with hardcoded checks, even in tests
+## 1. Spec-first, test-first
+- Before implementing or modifying behaviour, inspect the relevant location in:
+  - `spec/features.yaml`
+  - The spec markdown under `spec/<domain>/<feature>.md`
+- For new behaviour:
+  1. Write or update the spec  
+  2. Write failing tests  
+  3. Implement code  
+  4. Make tests pass  
+  5. Update docs  
 
-## Workflow Expectations
+## 2. Every change MUST trace to a feature ID
+Each meaningful change references a feature ID from `spec/features.yaml`:
 
-When implementing or modifying a feature:
+```go
+// Feature: CLI_INIT
+// Spec: spec/commands/init.md
+```
 
-1. **Locate the feature in `spec/features.yaml`**
-    - If it does not exist, add a new entry with `status: todo`.
+When a new behaviour is introduced:
+	•	Add a feature entry with status: todo
+	•	Add or update its spec file
+	•	Write tests before implementation
 
-2. **Review or create the feature spec**
-    - Example: `spec/commands/init.md` for `CLI_INIT`.
+Create a new feature ID when:
+	•	Adding new user-facing behaviour
+	•	Adding a new CLI command
+	•	Adding a new provider or migration engine
+	•	Changing config schema with behavioural impact
 
-3. **Update or add tests**
-    - For core logic: unit tests in `internal/core/..._test.go`.
-    - For CLI behaviour: tests in `internal/cli/commands/..._test.go` or golden file tests.
-    - For end-to-end behaviour: tests in `test/e2e/` if needed.
+Do NOT create new feature IDs for:
+	•	Pure refactors
+	•	Bug fixes
+	•	Docs-only changes
 
-4. **Implement code**
-    - Keep functions small and focused.
-    - Depend on interfaces where integration with external systems is involved.
+⸻
 
-5. **Run tests and tooling**
-    - `go test ./...`
-    - Lint (e.g. `golangci-lint run ./...` if configured).
+# 3. Tests and docs are non-optional
 
-6. **Update documentation and feature status**
-    - Adjust relevant markdown in `spec/` and `docs/`.
-    - Set the feature’s `status` in `spec/features.yaml` to `wip` or `done` as appropriate.
+Every behavioural change must:
+	•	Add/update tests (*_test.go)
+	•	Update or create the feature spec in spec/
+	•	Update user docs in docs/ if applicable
+	•	Update the feature's status (todo → wip → done) only when implementation + tests + docs are complete
 
-## Folder-Level Instructions
+Tests must fail before implementation.
 
-Some folders may include their own `Agent.md` with more specific guidance (e.g. for `internal/core` or `pkg/config`).  
-When working in such folders, follow both the root `Agent.md` and the local one. If they conflict, defer to the human maintainer.
+⸻
 
-## Non-Goals
+# 4. Respect package boundaries
+	•	internal/ contains implementation details — no public APIs should leak from here.
+	•	pkg/ contains reusable and externally consumable packages.
+	•	cmd/ must stay thin — command wiring only.
+Never place business logic in cmd/.
 
-- Stagecraft is not intended to be a generic framework for arbitrary automation beyond deployment and infra workflows.
-- Avoid speculative or experimental patterns unless justified in an ADR and wired to a clear feature.
+⸻
 
-When in doubt, favour clarity, simplicity, and traceability over cleverness.
+# 5. Do not modify certain files unless explicitly asked
 
+Only change the following files when the human explicitly requests it or when required to complete a clearly defined task:
+	•	LICENSE
+	•	High-level README.md positioning or messaging
+	•	Existing ADRs (docs/adr/*) — append new ADRs instead of editing history
+	•	Global governance files
+
+If such a modification is necessary:
+	•	Justify it in comments or commit messages
+	•	Keep diffs minimal
+
+⸻
+
+# 6. Follow Go style and quality standards
+	•	Run go build ./...
+	•	Format code via gofmt and goimports
+	•	Run go test ./... and ensure full pass
+	•	Address golangci-lint findings unless explicitly suppressed with justification:
+
+```go
+// nolint:gocritic // explanation: interface requires value
+```
+
+⸻
+
+# 7. Provider and Engine Agnosticism
+
+Hard rule: Never hardcode provider or engine IDs
+
+❌ Bad:
+```go
+if provider != "encore-ts" && provider != "generic" { ... }
+```
+
+✅ Good:
+```go
+if !backendproviders.Has(provider) { ... }
+```
+
+Provider-specific config must be scoped:
+```code
+backend.providers.<id>.<env>.<configkey>
+```
+
+Provider/engine rules:
+	•	Provider configuration is opaque to core (map[string]any)
+	•	Encore.ts is not special
+	•	Drizzle is not special
+	•	Provider-specific logic lives inside the provider implementation
+	•	Migration engine-specific logic lives inside the engine implementation
+	•	Core never contains exceptions for specific providers or engines
+
+Registry wiring requirements:
+	•	Reference:
+	•	CORE_BACKEND_REGISTRY
+	•	CORE_MIGRATION_REGISTRY
+	•	CORE_BACKEND_PROVIDER_CONFIG_SCHEMA
+	•	Update the spec before modifying code
+	•	Ensure provider/engine registration happens via import side effects in pkg/config/config.go
+	•	Never bypass the registry
+
+⸻
+
+📁 Folder-Level Instructions
+
+Some folders may contain their own Agent.md.
+When present:
+	•	Follow both the top-level Agent.md and the local version
+	•	If they conflict, defer to the human maintainer
+
+⸻
+
+🧪 Test Discipline
+
+Write tests BEFORE implementation:
+	1.	Add feature spec
+	2.	Write failing tests
+	3.	Implement smallest possible change
+	4.	Make tests pass
+	5.	Add regressions for discovered edge cases
+	6.	Refactor only after green tests
+
+Tests must cover:
+	•	Happy path
+	•	Failure cases
+	•	Edge conditions
+	•	CLI-level behaviour where appropriate
+	•	Registry integration where applicable
+
+⸻
+
+🔄 Multi-File Change Protocol
+
+When a task requires modifying multiple files:
+	1.	Update the spec first
+	2.	Write failing tests
+	3.	Modify implementation
+	4.	Adjust docs
+	5.	Produce commit message
+	6.	Prepare PR description
+
+AI should not skip steps.
+Minimal diffs preferred.
+
+⸻
+
+❓ Ambiguity Rule
+
+When the spec is ambiguous or unclear:
+	•	Do not guess.
+	•	Leave existing behaviour unchanged.
+	•	Produce a clarification request summarizing options.
+	•	Never invent new behaviour without explicit human approval.
+
+⸻
+
+🧱 Naming Conventions
+	•	Go types: PascalCase
+	•	Interfaces: end with er (e.g., Provider, Planner)
+	•	Package names: short, lower-case, no underscores
+	•	Test files: <name>_test.go
+	•	Spec files: spec/<domain>/<feature>.md
+	•	Feature IDs: SCREAMING_SNAKE_CASE
+	•	Errors: prefix with domain or feature:
+
+fmt.Errorf("backend provider validation failed: %w", err)
+
+
+⸻
+
+🧩 Error Handling Rules
+	•	Wrap all errors (fmt.Errorf("context: %w", err))
+	•	Never return plain strings
+	•	Use deterministic, structured error messages
+	•	Avoid shadowing variables
+
+⸻
+
+🧲 Behavioural Guardrails for AI
+	•	Make minimal diffs
+	•	Do not refactor unless explicitly instructed
+	•	Do not rewrite large blocks of code or reorganize directories without approval
+	•	Stay within scope of the requested task
+	•	Always reference the feature ID
+	•	Always follow spec → tests → code → docs → commit order
+	•	Ask for clarification when necessary
+	•	Prefer precision over creativity
+
+⸻
+
+## 🧵 Git Workflow Rules (Critical)
+
+### 1. Every task ends with a commit message
+
+For each completed task, output:
+
+A. Human summary (free-form)
+
+B. Commit message (strict-form)
+
+The commit message format:
+```code
+<type>(<feature_id>): <short summary>
+
+Longer explanation if necessary.
+Spec: <path/to/spec.md>
+Tests: <path/to/tests>
+```
+
+Allowed types:
+	•	feat
+	•	fix
+	•	refactor
+	•	docs
+	•	test
+	•	ci
+	•	chore
+
+⸻
+
+### 2. Each behavioural feature must be implemented in a dedicated PR
+
+PR Title
+
+[FEATURE_ID] <Short human-readable description>
+
+PR Description
+
+Feature: <id>
+Spec: <path>
+Tests: <list of test files>
+Summary:
+- What changed
+- Why it changed
+- Any constraints or alternatives considered
+
+PR Requirements
+	•	Small, atomic, spec-driven
+	•	Behavioural changes must not mix multiple features
+	•	Tests must pass
+	•	Specs must be updated
+	•	Docs must be updated
+	•	Feature status must be updated
+
+⸻
+
+🚫 Non-Goals
+	•	Stagecraft is not a general-purpose automation framework
+	•	Avoid experimental or speculative changes unless backed by an ADR
+	•	Avoid adding behaviour not anchored to a feature
+
+⸻
+
+✔ When in doubt
+
+Favor:
+	•	clarity
+	•	simplicity
+	•	determinism
+	•	traceability
+over cleverness or abstraction.
