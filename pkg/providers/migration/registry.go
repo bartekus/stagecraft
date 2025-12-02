@@ -16,6 +16,7 @@ package migration
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 )
 
@@ -73,7 +74,8 @@ func (r *Registry) Has(id string) bool {
 	return ok
 }
 
-// IDs returns all registered engine IDs.
+// IDs returns all registered engine IDs in deterministic lexicographic order.
+// Determinism is required by Agent.md for stable output and golden tests.
 func (r *Registry) IDs() []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -82,6 +84,7 @@ func (r *Registry) IDs() []string {
 	for id := range r.engines {
 		ids = append(ids, id)
 	}
+	sort.Strings(ids) // Ensure deterministic lexicographic ordering
 	return ids
 }
 

@@ -65,6 +65,11 @@ func (e *Engine) Plan(ctx context.Context, opts migration.PlanOptions) ([]migrat
 		return nil, fmt.Errorf("reading migration directory: %w", err)
 	}
 
+	// Sort entries lexicographically for deterministic processing
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Name() < entries[j].Name()
+	})
+
 	var migrations []migration.Migration
 
 	// Collect SQL files

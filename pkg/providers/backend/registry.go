@@ -16,6 +16,7 @@ package backend
 
 import (
 	"fmt"
+	"sort"
 	"sync"
 )
 
@@ -82,6 +83,7 @@ func (r *Registry) IDs() []string {
 	for id := range r.providers {
 		ids = append(ids, id)
 	}
+	sort.Strings(ids) // Ensure deterministic lexicographic ordering
 	return ids
 }
 

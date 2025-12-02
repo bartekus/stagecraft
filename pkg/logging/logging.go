@@ -18,7 +18,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
+	"sort"
+	"strings"
 )
 
 // Feature: CORE_LOGGING
@@ -139,13 +140,20 @@ func (l *loggerImpl) log(level Level, msg string, fields ...Field) {
 		writer = l.errOut
 	}
 
-	timestamp := time.Now().Format("2006-01-02 15:04:05")
-	prefix := fmt.Sprintf("[%s] %s: ", timestamp, level.String())
+	// Removed timestamp for determinism - Agent.md requires no timestamps unless in spec
+	prefix := fmt.Sprintf("%s: ", level.String())
 
 	// Combine base fields with message fields
 	baseFields := make([]Field, len(l.fields))
 	copy(baseFields, l.fields)
 	combinedFields := append(baseFields, fields...) //nolint:gocritic
+
+	// Sort fields by key for deterministic ordering
+	if len(combinedFields) > 0 {
+		sort.Slice(combinedFields, func(i, j int) bool {
+			return combinedFields[i].Key < combinedFields[j].Key
+		})
+	}
 
 	// Format message
 	if len(combinedFields) > 0 {
@@ -153,7 +161,8 @@ func (l *loggerImpl) log(level Level, msg string, fields ...Field) {
 		for _, f := range combinedFields {
 			fieldStrs = append(fieldStrs, fmt.Sprintf("%s=%v", f.Key, f.Value))
 		}
-		_, _ = fmt.Fprintf(writer, "%s%s %s\n", prefix, msg, fmt.Sprintf("(%s)", fmt.Sprint(fieldStrs)))
+		joined := strings.Join(fieldStrs, ", ")
+		_, _ = fmt.Fprintf(writer, "%s%s (%s)\n", prefix, msg, joined)
 	} else {
 		_, _ = fmt.Fprintf(writer, "%s%s\n", prefix, msg)
 	}
