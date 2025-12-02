@@ -39,7 +39,7 @@ func NewDevCommand() *cobra.Command {
 		RunE:  runDev,
 	}
 
-	cmd.Flags().String("config", "", "path to Stagecraft config file (default: stagecraft.yml)")
+	// Global flags (--config, --env, --verbose, --dry-run) are inherited from root
 
 	return cmd
 }
@@ -47,27 +47,39 @@ func NewDevCommand() *cobra.Command {
 func runDev(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
-	// Get config path from flag or use default
-	configPath, _ := cmd.Flags().GetString("config")
-	if configPath == "" {
-		configPath = config.DefaultConfigPath()
-	}
-	absPath, err := filepath.Abs(configPath)
+	// Resolve global flags
+	flags, err := ResolveFlags(cmd, nil)
 	if err != nil {
-		return fmt.Errorf("resolving config path: %w", err)
+		return fmt.Errorf("resolving flags: %w", err)
 	}
 
-	// Load and validate config
-	cfg, err := config.Load(configPath)
+	// Load config to validate environment if needed
+	cfg, err := config.Load(flags.Config)
 	if err != nil {
 		if err == config.ErrConfigNotFound {
-			return fmt.Errorf("stagecraft config not found at %s", configPath)
+			return fmt.Errorf("stagecraft config not found at %s", flags.Config)
 		}
 		return fmt.Errorf("loading config: %w", err)
 	}
 
+	// Re-resolve flags with config for environment validation
+	flags, err = ResolveFlags(cmd, cfg)
+	if err != nil {
+		return fmt.Errorf("resolving flags: %w", err)
+	}
+
+	// Check for dry-run mode
+	if flags.DryRun {
+		logger := logging.NewLogger(flags.Verbose)
+		logger.Info("Dry-run mode: would start development environment",
+			logging.NewField("env", flags.Env),
+			logging.NewField("config", flags.Config),
+		)
+		return nil
+	}
+
 	if cfg.Backend == nil {
-		return fmt.Errorf("no backend configuration found in %s", configPath)
+		return fmt.Errorf("no backend configuration found in %s", flags.Config)
 	}
 
 	// Resolve backend provider
@@ -91,12 +103,17 @@ func runDev(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("getting working directory: %w", err)
 	}
 
+	absPath, err := filepath.Abs(flags.Config)
+	if err != nil {
+		return fmt.Errorf("resolving config path: %w", err)
+	}
+
 	// Initialize logger
-	verbose, _ := cmd.Flags().GetBool("verbose")
-	logger := logging.NewLogger(verbose)
+	logger := logging.NewLogger(flags.Verbose)
 	logger.Info("Starting development environment",
 		logging.NewField("provider", backendID),
 		logging.NewField("config", absPath),
+		logging.NewField("env", flags.Env),
 	)
 	logger.Debug("Working directory", logging.NewField("workdir", workDir))
 

@@ -28,16 +28,30 @@ This document tracks the implementation status of Stagecraft features. It should
 
 | ID | Title | Status | Owner | Spec | Tests |
 |----|-------|--------|-------|------|-------|
-| CORE_CONFIG | Config loading and validation | todo | bart | [core/config.md](../spec/core/config.md) | [config_test.go](../pkg/config/config_test.go) |
-| CORE_PLAN | Deployment planning engine | todo | bart | [core/plan.md](../spec/core/plan.md) | [plan_test.go](../internal/core/plan_test.go) |
+| CORE_CONFIG | Config loading and validation | done | bart | [core/config.md](../spec/core/config.md) | [config_test.go](../pkg/config/config_test.go) |
+| CORE_LOGGING | Structured logging helpers | done | bart | [core/logging.md](../spec/core/logging.md) | [logging_test.go](../pkg/logging/logging_test.go) |
+| CORE_PLAN | Deployment planning engine | done | bart | [core/plan.md](../spec/core/plan.md) | [plan_test.go](../internal/core/plan_test.go) |
+| CORE_BACKEND_REGISTRY | Backend provider registry system | done | bart | [core/backend-registry.md](../spec/core/backend-registry.md) | [registry_test.go](../pkg/providers/backend/registry_test.go) |
+| CORE_MIGRATION_REGISTRY | Migration engine registry system | done | bart | [core/migration-registry.md](../spec/core/migration-registry.md) | [registry_test.go](../pkg/providers/migration/registry_test.go) |
+| CORE_BACKEND_PROVIDER_CONFIG_SCHEMA | Provider-scoped backend configuration schema | done | bart | [core/backend-provider-config.md](../spec/core/backend-provider-config.md) | [config_test.go](../pkg/config/config_test.go) |
 
 ### CLI Commands
 
 | ID | Title | Status | Owner | Spec | Tests |
 |----|-------|--------|-------|------|-------|
-| CLI_INIT | Project bootstrap command | todo | bart | [commands/init.md](../spec/commands/init.md) | [init_test.go](../internal/cli/commands/init_test.go), [init_smoke_test.go](../test/e2e/init_smoke_test.go) |
+| CLI_INIT | Project bootstrap command | done | bart | [commands/init.md](../spec/commands/init.md) | [init_test.go](../internal/cli/commands/init_test.go), [init_smoke_test.go](../test/e2e/init_smoke_test.go) |
+| CLI_DEV_BASIC | Basic stagecraft dev command that delegates to backend provider | done | bart | [commands/dev-basic.md](../spec/commands/dev-basic.md) | [dev_test.go](../internal/cli/commands/dev_test.go), [dev_smoke_test.go](../test/e2e/dev_smoke_test.go) |
+| CLI_MIGRATE_BASIC | Basic stagecraft migrate command using registered migration engines | done | bart | [commands/migrate-basic.md](../spec/commands/migrate-basic.md) | [migrate_test.go](../internal/cli/commands/migrate_test.go), [migrate_smoke_test.go](../test/e2e/migrate_smoke_test.go) |
 | CLI_PLAN | Plan command (dry-run) | todo | bart | [commands/plan.md](../spec/commands/plan.md) | [plan_test.go](../internal/cli/commands/plan_test.go) |
 | CLI_DEPLOY | Deploy command | todo | bart | [commands/deploy.md](../spec/commands/deploy.md) | [deploy_test.go](../internal/cli/commands/deploy_test.go) |
+
+### Providers
+
+| ID | Title | Status | Owner | Spec | Tests |
+|----|-------|--------|-------|------|-------|
+| PROVIDER_BACKEND_INTERFACE | BackendProvider interface definition | done | bart | [core/backend-registry.md](../spec/core/backend-registry.md) | [backend_test.go](../pkg/providers/backend/backend_test.go) |
+| PROVIDER_BACKEND_GENERIC | Generic command-based BackendProvider implementation | done | bart | [providers/backend/generic.md](../spec/providers/backend/generic.md) | [generic_test.go](../internal/providers/backend/generic/generic_test.go) |
+| MIGRATION_ENGINE_RAW | Raw SQL migration engine implementation | done | bart | [providers/migration/raw.md](../spec/providers/migration/raw.md) | [raw_test.go](../internal/providers/migration/raw/raw_test.go) |
 
 ### Drivers
 
@@ -51,6 +65,18 @@ This document tracks the implementation status of Stagecraft features. It should
 
 - **ARCH_OVERVIEW**: Basic architecture documentation and project structure established
 - **DOCS_ADR**: ADR process documented with initial architecture decision (ADR 0001)
+- **CORE_CONFIG**: Config loading and validation with full schema support
+- **CLI_INIT**: Project bootstrap command with interactive and non-interactive modes
+- **CORE_LOGGING**: Structured logging helpers with verbose mode support
+- **CORE_PLAN**: Deployment planning engine
+- **CORE_BACKEND_REGISTRY**: Backend provider registry system with registration support
+- **CORE_MIGRATION_REGISTRY**: Migration engine registry system with registration support
+- **CORE_BACKEND_PROVIDER_CONFIG_SCHEMA**: Provider-scoped backend configuration schema
+- **PROVIDER_BACKEND_INTERFACE**: BackendProvider interface definition
+- **CLI_DEV_BASIC**: Basic dev command that delegates to backend provider
+- **PROVIDER_BACKEND_GENERIC**: Generic command-based BackendProvider implementation
+- **MIGRATION_ENGINE_RAW**: Raw SQL migration engine implementation
+- **CLI_MIGRATE_BASIC**: Basic migrate command with plan and run support
 
 ### In Progress
 
@@ -58,10 +84,11 @@ _None currently_
 
 ### Planned Next Steps
 
-1. Complete `CORE_CONFIG` implementation with full validation
-2. Implement `CLI_INIT` command with config scaffolding
-3. Build `CORE_PLAN` deployment planning engine
-4. Add `DRIVER_DO` for DigitalOcean integration
+1. Complete `CORE_EXECUTIL` - Process execution utilities
+2. Complete `CLI_GLOBAL_FLAGS` - Global flags with precedence support
+3. Implement remaining provider interfaces (Frontend, Network, Cloud, CI, Secrets)
+4. Build full `CLI_DEV` command with infrastructure orchestration
+5. Add `DRIVER_DO` for DigitalOcean integration
 
 ## Coverage Status
 

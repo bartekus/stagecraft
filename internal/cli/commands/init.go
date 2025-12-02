@@ -33,9 +33,7 @@ import (
 // NewInitCommand returns the `stagecraft init` command.
 func NewInitCommand() *cobra.Command {
 	var nonInteractive bool
-	var configPath string
 	var projectName string
-	var envName string
 
 	cmd := &cobra.Command{
 		Use:   "init",
@@ -47,12 +45,17 @@ through initial setup. In future iterations it will support more advanced
 provider-specific bootstrapping.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := cmd.OutOrStdout()
-			verbose, _ := cmd.Flags().GetBool("verbose")
-			logger := logging.NewLogger(verbose)
 
-			if configPath == "" {
-				configPath = config.DefaultConfigPath()
+			// Resolve global flags
+			flags, err := ResolveFlags(cmd, nil)
+			if err != nil {
+				return fmt.Errorf("resolving flags: %w", err)
 			}
+
+			logger := logging.NewLogger(flags.Verbose)
+
+			// Use resolved config path
+			configPath := flags.Config
 
 			// Check if config already exists
 			exists, err := config.Exists(configPath)
@@ -66,6 +69,17 @@ provider-specific bootstrapping.`,
 				_, _ = fmt.Fprintf(out, "Run 'stagecraft init --config <path>' to create a config at a different location.\n")
 				return nil
 			}
+
+			// Check for dry-run mode
+			if flags.DryRun {
+				logger.Info("Dry-run mode: would create config file",
+					logging.NewField("path", configPath),
+				)
+				return nil
+			}
+
+			// Use resolved environment name
+			envName := flags.Env
 
 			// Gather configuration - use os.Stdout for interactive prompts
 			cfg, err := gatherConfig(os.Stdout, nonInteractive, projectName, envName)
@@ -90,9 +104,8 @@ provider-specific bootstrapping.`,
 	}
 
 	cmd.Flags().BoolVar(&nonInteractive, "non-interactive", false, "run without interactive prompts and use defaults")
-	cmd.Flags().StringVar(&configPath, "config", "", "path to Stagecraft config file (default: stagecraft.yml)")
+	// Global flags (--config, --env, --verbose, --dry-run) are inherited from root
 	cmd.Flags().StringVar(&projectName, "project-name", "", "project name (default: directory name)")
-	cmd.Flags().StringVar(&envName, "env", "dev", "default environment name")
 
 	return cmd
 }
