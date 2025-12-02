@@ -50,6 +50,10 @@ func NewRootCommand() *cobra.Command {
 		SilenceErrors: true, // centralize error printing in main()
 	}
 
+	// Global flags - registered in lexicographic order for deterministic help output
+	cmd.PersistentFlags().StringP("config", "c", "", "path to stagecraft.yml")
+	cmd.PersistentFlags().Bool("dry-run", false, "show actions without executing")
+	cmd.PersistentFlags().StringP("env", "e", "", "target environment")
 	cmd.PersistentFlags().BoolP("verbose", "v", false, "enable verbose output")
 
 	// Version command – simple and explicit.

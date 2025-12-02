@@ -25,6 +25,17 @@ import (
 	"stagecraft/pkg/config"
 )
 
+// newTestRootCommand creates a root command with global flags for testing.
+func newTestRootCommand() *cobra.Command {
+	root := &cobra.Command{Use: "stagecraft"}
+	// Add global flags (matching internal/cli/root.go)
+	root.PersistentFlags().StringP("config", "c", "", "path to stagecraft.yml")
+	root.PersistentFlags().Bool("dry-run", false, "show actions without executing")
+	root.PersistentFlags().StringP("env", "e", "", "target environment")
+	root.PersistentFlags().BoolP("verbose", "v", false, "enable verbose output")
+	return root
+}
+
 // Feature: CLI_INIT
 // Spec: spec/commands/init.md
 
@@ -52,7 +63,7 @@ func TestInitCommand_DefaultConfigPath_InteractiveStub(t *testing.T) {
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	root := &cobra.Command{Use: "stagecraft"}
+	root := newTestRootCommand()
 	root.AddCommand(NewInitCommand())
 
 	out, err := executeCommandForGolden(root, "init", "--non-interactive", "--project-name", "test-project")
@@ -81,7 +92,7 @@ func TestInitCommand_NonInteractiveStub(t *testing.T) {
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	root := &cobra.Command{Use: "stagecraft"}
+	root := newTestRootCommand()
 	root.AddCommand(NewInitCommand())
 
 	out, err := executeCommandForGolden(root, "init", "--non-interactive", "--config", "custom.yml", "--project-name", "test-project")
@@ -112,7 +123,7 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 			args:   []string{"init", "--non-interactive", "--project-name", "test-project"},
 			golden: "init_default",
 			setupCmd: func() *cobra.Command {
-				root := &cobra.Command{Use: "stagecraft"}
+				root := newTestRootCommand()
 				root.AddCommand(NewInitCommand())
 				return root
 			},
@@ -123,7 +134,7 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 			args:   []string{"init", "--non-interactive", "--project-name", "test-project"},
 			golden: "init_non_interactive",
 			setupCmd: func() *cobra.Command {
-				root := &cobra.Command{Use: "stagecraft"}
+				root := newTestRootCommand()
 				root.AddCommand(NewInitCommand())
 				return root
 			},
@@ -134,7 +145,7 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 			args:   []string{"init", "--config", "custom.yml", "--non-interactive", "--project-name", "test-project"},
 			golden: "init_custom_config",
 			setupCmd: func() *cobra.Command {
-				root := &cobra.Command{Use: "stagecraft"}
+				root := newTestRootCommand()
 				root.AddCommand(NewInitCommand())
 				return root
 			},
@@ -145,7 +156,7 @@ func TestInitCommand_GoldenFiles(t *testing.T) {
 			args:   []string{"init", "--help"},
 			golden: "init_help",
 			setupCmd: func() *cobra.Command {
-				root := &cobra.Command{Use: "stagecraft"}
+				root := newTestRootCommand()
 				root.AddCommand(NewInitCommand())
 				return root
 			},

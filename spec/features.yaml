@@ -52,7 +52,7 @@ features:
 
   - id: CORE_EXECUTIL
     title: "Process execution utilities"
-    status: todo
+    status: done
     spec: "core/executil.md"
     owner: bart
     tests:
@@ -60,7 +60,7 @@ features:
 
   - id: CLI_GLOBAL_FLAGS
     title: "Global flags (--env, --config, --verbose, --dry-run)"
-    status: todo
+    status: done
     spec: "core/global-flags.md"
     owner: bart
     tests:

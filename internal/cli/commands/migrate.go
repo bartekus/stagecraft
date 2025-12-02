@@ -38,7 +38,7 @@ func NewMigrateCommand() *cobra.Command {
 		RunE:  runMigrate,
 	}
 
-	cmd.Flags().String("config", "", "path to Stagecraft config file (default: stagecraft.yml)")
+	// Global flags (--config, --env, --verbose, --dry-run) are inherited from root
 	cmd.Flags().String("database", "main", "Database name to migrate")
 	cmd.Flags().Bool("plan", false, "Show migration plan without executing")
 
@@ -48,22 +48,30 @@ func NewMigrateCommand() *cobra.Command {
 func runMigrate(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
-	// Get config path from flag or use default
-	configPath, _ := cmd.Flags().GetString("config")
-	if configPath == "" {
-		configPath = config.DefaultConfigPath()
-	}
-	absPath, err := filepath.Abs(configPath)
+	// Resolve global flags
+	flags, err := ResolveFlags(cmd, nil)
 	if err != nil {
-		return fmt.Errorf("resolving config path: %w", err)
+		return fmt.Errorf("resolving flags: %w", err)
 	}
 
-	cfg, err := config.Load(configPath)
+	// Load config to validate environment if needed
+	cfg, err := config.Load(flags.Config)
 	if err != nil {
 		if err == config.ErrConfigNotFound {
-			return fmt.Errorf("stagecraft config not found at %s", configPath)
+			return fmt.Errorf("stagecraft config not found at %s", flags.Config)
 		}
 		return fmt.Errorf("loading config: %w", err)
+	}
+
+	// Re-resolve flags with config for environment validation
+	flags, err = ResolveFlags(cmd, cfg)
+	if err != nil {
+		return fmt.Errorf("resolving flags: %w", err)
+	}
+
+	absPath, err := filepath.Abs(flags.Config)
+	if err != nil {
+		return fmt.Errorf("resolving config path: %w", err)
 	}
 
 	dbName, _ := cmd.Flags().GetString("database")
@@ -98,11 +106,11 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	}
 
 	// Initialize logger
-	verbose, _ := cmd.Flags().GetBool("verbose")
-	logger := logging.NewLogger(verbose)
+	logger := logging.NewLogger(flags.Verbose)
 	logger.Info("Running migrations",
 		logging.NewField("engine", engineID),
 		logging.NewField("database", dbName),
+		logging.NewField("env", flags.Env),
 	)
 	logger.Debug("Migration details",
 		logging.NewField("config", absPath),
@@ -110,6 +118,12 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 	)
 
 	planOnly, _ := cmd.Flags().GetBool("plan")
+
+	// Check for dry-run mode (treat as plan if not already planning)
+	if flags.DryRun && !planOnly {
+		logger.Info("Dry-run mode: would run migrations")
+		planOnly = true
+	}
 
 	if planOnly {
 		opts := migrationengines.PlanOptions{
