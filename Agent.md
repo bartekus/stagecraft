@@ -237,6 +237,17 @@ Provider/engine loading must not depend on environment ordering or file system r
 
 ⸻
 
+## 🪪 Provider Registration Conflict Rules
+
+If a provider attempts to register with an already-registered ID:
+  * Registration MUST fail deterministically.
+  * The provider registry MUST return a sentinel error: ErrProviderAlreadyRegistered.
+  * Tests MUST cover duplicate registration.
+
+Provider registration order MUST NOT depend on import order; iteration MUST sort keys lexicographically.
+
+⸻
+
 ## 📁 Folder-Level Instructions
   *	Some folders may contain additional Agent.md
   *	Both top-level and local rules apply
@@ -264,6 +275,21 @@ Nested Agent.md files do not override parent definitions unless explicitly state
 __CLI Command Names__
   *	MUST use dashed names: stagecraft deploy-plan
   *	NEVER camelCase or snake_case
+
+⸻
+
+## AI Pre-Change Safety Checklist
+
+Before generating any code, AI MUST verify:
+1. What Feature ID does the task belong to?
+2. Is the spec present, valid, and complete?
+3. Are tests already written? If not, produce failing tests first.
+4. Are there protected files in the diff? If yes, halt.
+5. Is the change limited to a single feature? If not, halt.
+6. Are provider boundaries respected? (core <-> provider)
+7. Will the behaviour be deterministic?
+
+If any answer is unclear, AI MUST stop and ask for clarification.
 
 ⸻
 
@@ -305,7 +331,41 @@ AI MUST NOT:
   * Create new files unless explicitly required by the Feature ID or spec.
 
 ⸻
+## 💬 AI Response Format Contract
 
+Unless explicitly instructed otherwise, every AI task response MUST include:
+
+1. Summary – one paragraph describing what was done.
+2. Diff Intent – a human-readable description of the exact changes to be made.
+3. File List – list of files to be created, modified, or deleted.
+4. Patch – unified diff (if asked for), minimal and scope-limited.
+5. Commit Message – formatted per Git Workflow Rules.
+
+If the task involves new behaviour:
+6. Feature Reference – Feature ID and spec path.
+7. Test Plan – list of failing tests to be written or updated.
+8. Documentation Changes – list of sections to be updated.
+
+
+AI MUST NOT produce fully applied diffs without explicit instruction.
+
+AI MUST NOT produce hidden changes beyond the listed file set.
+
+⸻
+## 📄 Spec Interpretation Rules
+
+AI MUST treat the written spec as the single source of truth.
+
+When the spec is:
+  * Silent → AI MUST NOT assume behaviour or invent rules.
+  * Ambiguous → AI MUST request clarification before writing code.
+  * Internally inconsistent → AI MUST report and stop.
+
+If the spec is incomplete but a Feature ID exists:
+  * AI may propose exact wording for missing spec lines.
+  * A human must approve before tests or code are produced.
+
+⸻
 ## 🧵 Git Workflow Rules (Critical)
 
 ### 1. Every task ends with a commit message
@@ -329,6 +389,14 @@ Allowed types: feat, fix, refactor, docs, test, ci, chore
 >Commits must be as small and isolated as possible; avoid bundling unrelated changes.
 
 >PRs MUST be merged using “squash and merge” unless the maintainer requests otherwise.
+
+AI MUST NOT rewrite commits once pushed to a PR branch, except when instructed.
+
+AI MUST NOT reorder commits unless instructed.
+
+All commit messages MUST pass linting:
+  * max 72 chars in subject
+  * no trailing periods
 
 ⸻
 
@@ -371,6 +439,63 @@ __PR Metadata__
   *	Must be in draft until tests pass
   *	Human reviewer required
   *	Default target branch: main
+
+⸻
+
+## 🧬 ADR Trigger Conditions
+
+A new ADR MUST be created when:
+  * A design decision affects multiple domains (providers, registry, config).
+  * A behaviour introduces long-term architectural constraints.
+  * Alternatives exist and the choice is not obvious.
+  * Changes affect performance, security, reproducibility, or provider boundaries.
+
+ADRs MUST follow template:
+1. Context
+2. Decision
+3. Rationale
+4. Alternatives
+5. Consequences (positive and negative)
+
+⸻
+
+## 🦺 AI Code Generation Safety Rules
+
+AI MUST NOT:
+  * Introduce dependencies without explicit human approval.
+  * Generate network calls in core packages.
+  * Add hidden telemetry or analytics.
+  * Read external URLs unless part of provider spec.
+  * Use concurrency unless explicitly allowed.
+
+AI SHOULD:
+  * Prefer pure functions when possible.
+  * Minimize side effects.
+  * Minimize allocations.
+  * Avoid reflection unless required.
+
+⸻
+
+## 📕 Core Design Invariants
+
+These MUST hold at all times:
+
+1. Deterministic execution given identical inputs.
+2. Registry entries sorted lexicographically.
+3. No behaviour depends on import order.
+4. No environment variables are read by core.
+5. provider.Config is opaque to core.
+6. No timestamps unless explicitly part of the spec.
+7. Core NEVER shells out.
+
+⸻
+
+## ❤️‍🩹 AI Error Correction Protocol
+
+AI MUST:
+1. Undo incorrect generated diffs.
+2. Provide corrected minimal diffs.
+3. Explain what went wrong and why.
 
 ⸻
 
