@@ -1,288 +1,283 @@
+⸻
+
 # Agent Guide for Stagecraft
 
-> Audience: AI assistants (Cursor, ChatGPT, Copilot, Claude, etc.) and human collaborators using them.  
-> Purpose: Ensure deterministic, spec-driven, test-driven, provider-agnostic contributions to the Stagecraft codebase.
+_Deterministic development protocol for AI assistants and human contributors._
 
----
+>Audience: AI assistants (Cursor, ChatGPT, Copilot, Claude, etc.) and human collaborators.
+Purpose: Guarantee spec-driven, test-first, provider-agnostic, registry-based, and deterministic contributions to Stagecraft.
+
+⸻
 
 # 🔥 Project Purpose
 
-Stagecraft is a Go-based CLI that orchestrates local-first application development, deployment, and infrastructure workflows.  
+Stagecraft is a Go-based CLI orchestrating local-first development, single-host, and multi-host deployments of multi-service applications using Docker Compose.
 It reimagines tools like Kamal with:
 
-- A clean, composable, registry-driven core (planning, drivers, providers, plugins)
-- First-class developer UX for both local and remote workflows
-- Strong correctness guarantees through specs, tests, and docs
-- Extensibility through pluggable providers and migration engines
+  *	 A clean, composable, registry-driven architecture (planning, drivers, providers, plugins)
+  *  First-class developer UX for both local and remote environments
+  *	 Strong correctness guarantees enforced by specs, tests, and documentation
+  *	 Extensibility through pluggable providers and migration engines
 
-This repository is both a **production-grade tool** and a **public engineering portfolio**.  
-Clarity, reasoning, determinism, and documentation matter as much as functionality.
+This repository is both a production-grade tool and a public engineering portfolio.
+Clarity, determinism, traceability, and documentation matter as much as functionality.
 
----
+⸻
 
 # ⭐ Architectural Principles
-
-1. **Spec-driven behaviour**  
-2. **Test-first change flow**  
-3. **Registry-based extensibility**  
-4. **Opaque provider configuration**  
-5. **Predictable and idempotent operations**  
-6. **Strict package boundaries**  
-7. **Minimal diffs, maximal clarity**  
-8. **Traceability from spec → tests → code → docs → git**
+1.	Spec-driven behaviour – No behaviour exists without a spec.
+2.	Test-first change flow – Tests precede implementation.
+3.	Registry-based extensibility – No hardcoding, no special cases.
+4.	Opaque provider configuration – Core never interprets provider-specific config.
+5.	Predictable and idempotent operations
+6.	Strict package boundaries
+7.	Minimal diffs, maximal clarity
+8.	Traceability from spec → tests → code → docs → git
+9.	Determinism over convenience
+10.	No non-deterministic behaviour – No random data, timestamps, or environment-dependent logic unless specified.
 
 These principles override ambiguous instructions.
 
----
+⸻
 
 # 🧭 Golden Rules
 
-## 1. Spec-first, test-first
-- Before implementing or modifying behaviour, inspect the relevant location in:
-  - `spec/features.yaml`
-  - The spec markdown under `spec/<domain>/<feature>.md`
-- For new behaviour:
-  1. Write or update the spec  
-  2. Write failing tests  
-  3. Implement code  
-  4. Make tests pass  
-  5. Update docs  
+## 1. Spec-first, Test-first
 
-## 2. Every change MUST trace to a feature ID
-Each meaningful change references a feature ID from `spec/features.yaml`:
+Before modifying or creating behaviour, locate the relevant section of:
+  *	spec/features.yaml
+  *	spec/<domain>/<feature>.md
 
+New behaviour must follow this order:
+1.	Write or update the spec
+2.	Write failing tests
+3.	Implement the smallest behavioural change
+4.	Make tests pass
+5.	Update docs
+6.	Update feature status in spec/features.yaml
+
+AI must never skip steps.
+
+⸻
+
+## 2. Feature ID Rules
+
+All meaningful changes must reference a Feature ID:
 ```go
 // Feature: CLI_INIT
 // Spec: spec/commands/init.md
 ```
 
-When a new behaviour is introduced:
-	•	Add a feature entry with status: todo
-	•	Add or update its spec file
-	•	Write tests before implementation
+#### Creating a Feature ID
 
-Create a new feature ID when:
-	•	Adding new user-facing behaviour
-	•	Adding a new CLI command
-	•	Adding a new provider or migration engine
-	•	Changing config schema with behavioural impact
+Create a new Feature ID when:
+  *	Adding user-facing behaviour
+  *	Adding a CLI command
+  *	Adding a provider or migration engine
+  *	Changing config schema with behavioural impact
 
-Do NOT create new feature IDs for:
-	•	Pure refactors
-	•	Bug fixes
-	•	Docs-only changes
+Do NOT create a new Feature ID for:
+  *	Refactors
+  *	Bug fixes
+  *	Docs-only changes
 
-Feature ID Naming Rules:
-  • Feature IDs MUST be unique and stable.
-  • Format: SCREAMING_SNAKE_CASE.
-  • Feature IDs must map directly to a spec file in spec/<domain>/.
-  • Do not reuse or rename Feature IDs once merged.
+#### Feature ID Naming Rules
+  *	SCREAMING_SNAKE_CASE
+  *	Must map directly to a spec file
+  *	Must be unique and stable
+  *	Never renamed after merge
+  *	Never fork feature development across branches
 
 ⸻
 
-# 3. Tests and docs are non-optional
+## 3. Feature Lifecycle
 
-Every behavioural change must:
-	•	Add/update tests (*_test.go)
-	•	Update or create the feature spec in spec/
-	•	Update user docs in docs/ if applicable
-	•	Update the feature's status (todo → wip → done) only when implementation + tests + docs are complete
+Feature states live in spec/features.yaml:
+```
+todo → wip → done
+```
 
-Tests must fail before implementation.
+A feature becomes done only when:
+  *	Spec is complete
+  *	Tests are complete and passing
+  *	Implementation is complete
+  *	Docs are complete
+  *	No ambiguity remains
 
-Feature State Lifecycle:
-  • Feature states live in spec/features.yaml.
-  • Valid states: todo → wip → done.
-  • State MUST be updated by the contributor completing the feature.
-  • A feature is “done” only when:
-  – Spec is complete
-  – Tests are complete and passing
-  – Implementation is complete
-  – Docs are updated
+The contributor (AI or human) must update the feature state.
 
 ⸻
 
-# 4. Respect package boundaries
-	•	internal/ contains implementation details — no public APIs should leak from here.
-	•	pkg/ contains reusable and externally consumable packages.
-	•	cmd/ must stay thin — command wiring only.
+### 🧪 Test Discipline
+
+#### Core rules
+  *	Tests MUST be written before implementation.
+  *	Every behaviour change must include tests.
+  *	Tests must cover:
+    *	Happy path
+    *	Failure path
+    *	Edge conditions
+    *	CLI behaviour where appropriate
+    *	Registry integration
+  *	Avoid non-determinism:
+    *	No timestamps
+    *	No random UUIDs
+    *	No environment-dependent paths
+
+#### Golden Tests
+
+Used when testing CLI output, config generation, or structured text.
+
+Rules:
+  *	Golden files must live in testdata/
+  *	Golden files updated only when behaviour changes and spec is updated
+  *	Always review golden diffs carefully
+
+#### Parallelism
+  *	Tests MUST NOT use t.Parallel() unless explicitly allowed in the spec.
+
+⸻
+
+## 4. Package Boundaries
+   *	internal/ contains implementation details — no public APIs
+   *	pkg/ contains stable, reusable packages for external use
+   *	cmd/ must stay thin; wiring only
+
+Directional rule:
+  *	internal/ MAY import pkg/
+  *	pkg/ MUST NOT import internal/
+
 Never place business logic in cmd/.
 
 ⸻
 
-# 5. Do not modify certain files unless explicitly asked
+## 5. File Modification Restrictions
 
-Only change the following files when the human explicitly requests it or when required to complete a clearly defined task:
-	•	LICENSE
-	•	High-level README.md positioning or messaging
-	•	Existing ADRs (docs/adr/*) — append new ADRs instead of editing history
-	•	Global governance files
+Do not modify these without explicit human approval:
+  *	LICENSE
+  *	High-level README.md
+  *	ADRs (never rewrite history; append new ADRs)
+  *	Global governance files
+  *	NOTICE
+  *	CHANGELOG.md (if present)
 
-If such a modification is necessary:
-	•	Justify it in comments or commit messages
-	•	Keep diffs minimal
+If modification is necessary:
+  *	Justify in commit & PR
+  *	Keep diffs minimal
 
 ⸻
 
-# 6. Follow Go style and quality standards
-	•	Run go build ./...
-	•	Format code via gofmt and goimports
-	•	Run go test ./... and ensure full pass
-	•	Address golangci-lint findings unless explicitly suppressed with justification:
+## 6. Go Style and Quality Standards
+   *	go build ./... must pass
+   *	Format with gofmt, goimports, and gofumpt
+   *	go test ./... must fully pass
+   *	Fix all golangci-lint warnings unless suppressed with justification:
 
 ```go
-// nolint:gocritic // explanation: interface requires value
+// nolint:gocritic // interface requires value
 ```
 
 ⸻
 
-# 7. Provider and Engine Agnosticism
+## 7. Provider and Engine Agnosticism
 
-Hard rule: Never hardcode provider or engine IDs
+### Absolute Rules
+*	Never hardcode provider or engine IDs
+*	Never treat Encore.ts or Drizzle as special
 
-❌ Bad:
+__Bad__:
 ```go
-if provider != "encore-ts" && provider != "generic" { ... }
+if provider == "encore-ts" { ... }
 ```
-
-✅ Good:
+__Good__:
 ```go
 if !backendproviders.Has(provider) { ... }
 ```
 
-Provider-specific config must be scoped:
+### Provider/Engine Boundaries
+  *	Core defines interfaces and registries only
+  *	Providers/engines implement interfaces
+  *	Core must never interpret provider-specific config
+  *	Provider-specific logic must never leak into core
+  *	Providers must never modify core behaviour
+
+### Provider Registration Rules
+  *	Registration MUST occur via init() in the provider’s own package
+  *	Core MUST NOT instantiate providers manually
+  *	Registration occurs through import side-effects in pkg/config/config.go
+  *	Duplicate registration must be tested
+
+### Config Schema Rules
+
+Provider configuration keys must follow:
 ```code
 backend.providers.<id>.<env>.<configkey>
 ```
 
-Provider/engine rules:
-	•	Provider configuration is opaque to core (map[string]any)
-	•	Encore.ts is not special
-	•	Drizzle is not special
-	•	Provider-specific logic lives inside the provider implementation
-	•	Migration engine-specific logic lives inside the engine implementation
-	•	Core never contains exceptions for specific providers or engines
+__Non-determinism policy__
 
-Provider Registration:
-  • Providers MUST register themselves through init() side effects.
-  • Registration must occur inside the provider's own package.
-  • Core MUST NOT instantiate providers manually or via conditionals.
-
-Registry wiring requirements:
-	•	Reference:
-	•	CORE_BACKEND_REGISTRY
-	•	CORE_MIGRATION_REGISTRY
-	•	CORE_BACKEND_PROVIDER_CONFIG_SCHEMA
-	•	Update the spec before modifying code
-	•	Ensure provider/engine registration happens via import side effects in pkg/config/config.go
-	•	Never bypass the registry
-
-Provider and Engine Boundaries:
-  • Core defines interfaces and registries ONLY.
-  • Providers implement interfaces, never adjust core.
-  • No provider or engine is privileged (Encore.ts and Drizzle included).
+Provider/engine loading must not depend on environment ordering or file system randomness.
 
 ⸻
 
-📁 Folder-Level Instructions
+## 📁 Folder-Level Instructions
+  *	Some folders may contain additional Agent.md
+  *	Both top-level and local rules apply
+  *	If they conflict, human maintainer overrides all
 
-Some folders may contain their own Agent.md.
-When present:
-	•	Follow both the top-level Agent.md and the local version
-	•	If they conflict, defer to the human maintainer
-
-Local Agent.md Precedence:
-  • Local Agent.md files apply only to their folder subtree.
-  • When rules conflict, human maintainer’s instructions override both.
-⸻
-
-🧪 Test Discipline
-
-Write tests BEFORE implementation:
-	1.	Add feature spec
-	2.	Write failing tests
-	3.	Implement smallest possible change
-	4.	Make tests pass
-	5.	Add regressions for discovered edge cases
-	6.	Refactor only after green tests
-
-Tests must cover:
-	•	Happy path
-	•	Failure cases
-	•	Edge conditions
-	•	CLI-level behaviour where appropriate
-	•	Registry integration where applicable
-
-Golden Tests:
-  • Use golden files when testing CLI output, config generation, or structured text.
-  • Golden files belong in testdata/ subfolders.
-  • Update golden files only when behaviour changes AND after spec updates.
+Nested Agent.md files do not override parent definitions unless explicitly stated.
 
 ⸻
 
-🔄 Multi-File Change Protocol
+## 🧱 Naming Conventions
+  *	Go types: __PascalCase__
+  *	Interfaces: end with er (Provider, Planner)
+  *	Packages: short, lowercase, no underscores
+  *	Test files: <name>_test.go
+  *	Spec files: spec/<domain>/<feature>.md
+  *	Feature IDs: SCREAMING_SNAKE_CASE
+  *	Errors: prefix with domain/feature
+  *	Config keys: __kebab-case__
 
-When a task requires modifying multiple files:
-	1.	Update the spec first
-	2.	Write failing tests
-	3.	Modify implementation
-	4.	Adjust docs
-	5.	Produce commit message
-	6.	Prepare PR description
-
-AI should not skip steps.
-Minimal diffs preferred.
-
-⸻
-
-❓ Ambiguity Rule
-
-When the spec is ambiguous or unclear:
-	•	Do not guess.
-	•	Leave existing behaviour unchanged.
-	•	Produce a clarification request summarizing options.
-	•	Never invent new behaviour without explicit human approval.
+__CLI Command Names__
+  *	MUST use dashed names: stagecraft deploy-plan
+  *	NEVER camelCase or snake_case
 
 ⸻
 
-🧱 Naming Conventions
-	•	Go types: PascalCase
-	•	Interfaces: end with er (e.g., Provider, Planner)
-	•	Package names: short, lower-case, no underscores
-	•	Test files: <name>_test.go
-	•	Spec files: spec/<domain>/<feature>.md
-	•	Feature IDs: SCREAMING_SNAKE_CASE
-	•	Errors: prefix with domain or feature:
+## 🧩 Error Handling Rules
+  *	Wrap all errors using fmt.Errorf("context: %w", err)
+  *	Never return plain strings
+  *	Avoid shadowed variables
+  *	Errors must be deterministic and structured
 
-fmt.Errorf("backend provider validation failed: %w", err)
-
-CLI Command Names:
-  • CLI commands MUST use dashed names (e.g., stagecraft deploy-plan).
-  • Do not use underscores or camelCase for command names.
+__Sentinel Errors__
+  *	Used only when multiple packages must detect the same condition
+  *	Must live in the lowest-level appropriate package
+  *	Must be stable and documented
 
 ⸻
 
-🧩 Error Handling Rules
-	•	Wrap all errors (fmt.Errorf("context: %w", err))
-	•	Never return plain strings
-	•	Use deterministic, structured error messages
-	•	Avoid shadowing variables
+## 🧲 Behavioural Guardrails for AI
 
-Sentinel Errors:
-  • Use sentinel error variables when multiple packages must detect a specific error.
-  • Sentinel errors MUST live in the lowest-level appropriate package.
+AI MUST:
+  *	Make minimal diffs
+  *	Never refactor unless explicitly instructed
+  *	Never reorganize directories without approval
+  *	Stay within scope of the task
+  *	Always reference the Feature ID
+  *	Always follow spec → tests → code → docs → commit order
+  *	Ask for clarification when the spec is ambiguous
+  *	Prefer precision over creativity
+  *	Never introduce new dependencies without explicit approval
 
-⸻
-
-🧲 Behavioural Guardrails for AI
-	•	Make minimal diffs
-	•	Do not refactor unless explicitly instructed
-	•	Do not rewrite large blocks of code or reorganize directories without approval
-	•	Stay within scope of the requested task
-	•	Always reference the feature ID
-	•	Always follow spec → tests → code → docs → commit order
-	•	Ask for clarification when necessary
-	•	Prefer precision over creativity
+AI MUST NOT:
+  *	Guess behaviour
+  *	Invent features
+  *	Generate large speculative changes
+  *	Modify protected files
+  *	Change registry loading behaviour
+  *	Add non-deterministic code paths
 
 ⸻
 
@@ -292,86 +287,86 @@ Sentinel Errors:
 
 For each completed task, output:
 
-A. Human summary (free-form)
+A. Human summary
+B. Commit message (strict format)
 
-B. Commit message (strict-form)
-
-The commit message format:
+Commit message:
 ```code
-<type>(<feature_id>): <short summary>
+<type>(<FEATURE_ID>): <short summary>
 
-Longer explanation if necessary.
+Optional longer explanation.
 Spec: <path/to/spec.md>
 Tests: <path/to/tests>
 ```
 
-Allowed types:
-	•	feat
-	•	fix
-	•	refactor
-	•	docs
-	•	test
-	•	ci
-	•	chore
+Allowed types: feat, fix, refactor, docs, test, ci, chore
 
 ⸻
 
-### 2. Each behavioural feature must be implemented in a dedicated PR
+### 2. Each behavioural feature MUST be implemented in its own PR
 
-PR Title
+__PR Title__
+```code
+[FEATURE_ID] <Short human description>
+```
 
-[FEATURE_ID] <Short human-readable description>
+__PR Description__
+  *	Feature:
+  *	Spec:
+  *	Tests:
+  *	Summary
+  *	Rationale
+  *	Constraints
 
-PR Description
+__PR Requirements__
+  *	Atomic, spec-driven
+  *	No mixing multiple features
+  *	All tests pass
+  *	Spec updated
+  *	Docs updated
+  *	Feature status updated
 
-Feature: <id>
-Spec: <path>
-Tests: <list of test files>
-Summary:
-- What changed
-- Why it changed
-- Any constraints or alternatives considered
+__Branch Naming Rules__
+```code
+feature/<FEATURE_ID>-short-desc
+fix/<FEATURE_ID>-short-desc
+chore/<short-desc>
+docs/<short-desc>
+```
 
-PR Requirements
-	•	Small, atomic, spec-driven
-	•	Behavioural changes must not mix multiple features
-	•	Tests must pass
-	•	Specs must be updated
-	•	Docs must be updated
-	•	Feature status must be updated
+  *	No uppercase
+  *	No spaces
 
-Branch Naming Rules:
-  • Feature branches:
-      feature/<FEATURE_ID>-short-desc
-  • Bug fix branches:
-      fix/<FEATURE_ID>-short-desc
-  • Chore branches:
-      chore/<short-desc>
-  • Docs-only branches:
-      docs/<short-desc>
-  • Branch names MUST NOT contain spaces or uppercase letters.
-
-PR Metadata Requirements:
-  • Each PR MUST have:
-    – Label: feature, fix, docs, test, ci, chore
-    – Milestone: matching release cycle (if applicable)
-    – Draft state until tests pass
-  • Human reviewer required before merge.
+__PR Metadata__
+  *	Must include a label (feature, fix, docs, test, ci, chore)
+  *	Must be in draft until tests pass
+  *	Human reviewer required
+  *	Default target branch: main
 
 ⸻
 
-🚫 Non-Goals
-	•	Stagecraft is not a general-purpose automation framework
-	•	Avoid experimental or speculative changes unless backed by an ADR
-	•	Avoid adding behaviour not anchored to a feature
+## 🚫 Non-Goals
+  *	Stagecraft is NOT a general-purpose automation tool
+  *	Do not add speculative features without an ADR
+  *	All new behaviour must be anchored to a Feature ID and spec
 
 ⸻
 
-✔ When in doubt
+## ✔ When in Doubt
 
-Favor:
-	•	clarity
-	•	simplicity
-	•	determinism
-	•	traceability
+Prefer:
+  *	clarity
+  *	simplicity
+  *	determinism
+  *	traceability
+
 over cleverness or abstraction.
+
+When behaviour is ambiguous:
+  *	Do not modify code
+  *	Produce a clarification request summarizing options
+  *	Wait for explicit human direction
+
+⸻
+
+✅ End of Agent Guide
