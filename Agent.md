@@ -72,6 +72,12 @@ Do NOT create new feature IDs for:
 	•	Bug fixes
 	•	Docs-only changes
 
+Feature ID Naming Rules:
+  • Feature IDs MUST be unique and stable.
+  • Format: SCREAMING_SNAKE_CASE.
+  • Feature IDs must map directly to a spec file in spec/<domain>/.
+  • Do not reuse or rename Feature IDs once merged.
+
 ⸻
 
 # 3. Tests and docs are non-optional
@@ -83,6 +89,16 @@ Every behavioural change must:
 	•	Update the feature's status (todo → wip → done) only when implementation + tests + docs are complete
 
 Tests must fail before implementation.
+
+Feature State Lifecycle:
+  • Feature states live in spec/features.yaml.
+  • Valid states: todo → wip → done.
+  • State MUST be updated by the contributor completing the feature.
+  • A feature is “done” only when:
+  – Spec is complete
+  – Tests are complete and passing
+  – Implementation is complete
+  – Docs are updated
 
 ⸻
 
@@ -147,6 +163,11 @@ Provider/engine rules:
 	•	Migration engine-specific logic lives inside the engine implementation
 	•	Core never contains exceptions for specific providers or engines
 
+Provider Registration:
+  • Providers MUST register themselves through init() side effects.
+  • Registration must occur inside the provider's own package.
+  • Core MUST NOT instantiate providers manually or via conditionals.
+
 Registry wiring requirements:
 	•	Reference:
 	•	CORE_BACKEND_REGISTRY
@@ -155,6 +176,11 @@ Registry wiring requirements:
 	•	Update the spec before modifying code
 	•	Ensure provider/engine registration happens via import side effects in pkg/config/config.go
 	•	Never bypass the registry
+
+Provider and Engine Boundaries:
+  • Core defines interfaces and registries ONLY.
+  • Providers implement interfaces, never adjust core.
+  • No provider or engine is privileged (Encore.ts and Drizzle included).
 
 ⸻
 
@@ -165,6 +191,9 @@ When present:
 	•	Follow both the top-level Agent.md and the local version
 	•	If they conflict, defer to the human maintainer
 
+Local Agent.md Precedence:
+  • Local Agent.md files apply only to their folder subtree.
+  • When rules conflict, human maintainer’s instructions override both.
 ⸻
 
 🧪 Test Discipline
@@ -183,6 +212,11 @@ Tests must cover:
 	•	Edge conditions
 	•	CLI-level behaviour where appropriate
 	•	Registry integration where applicable
+
+Golden Tests:
+  • Use golden files when testing CLI output, config generation, or structured text.
+  • Golden files belong in testdata/ subfolders.
+  • Update golden files only when behaviour changes AND after spec updates.
 
 ⸻
 
@@ -222,6 +256,9 @@ When the spec is ambiguous or unclear:
 
 fmt.Errorf("backend provider validation failed: %w", err)
 
+CLI Command Names:
+  • CLI commands MUST use dashed names (e.g., stagecraft deploy-plan).
+  • Do not use underscores or camelCase for command names.
 
 ⸻
 
@@ -230,6 +267,10 @@ fmt.Errorf("backend provider validation failed: %w", err)
 	•	Never return plain strings
 	•	Use deterministic, structured error messages
 	•	Avoid shadowing variables
+
+Sentinel Errors:
+  • Use sentinel error variables when multiple packages must detect a specific error.
+  • Sentinel errors MUST live in the lowest-level appropriate package.
 
 ⸻
 
@@ -298,6 +339,24 @@ PR Requirements
 	•	Specs must be updated
 	•	Docs must be updated
 	•	Feature status must be updated
+
+Branch Naming Rules:
+  • Feature branches:
+      feature/<FEATURE_ID>-short-desc
+  • Bug fix branches:
+      fix/<FEATURE_ID>-short-desc
+  • Chore branches:
+      chore/<short-desc>
+  • Docs-only branches:
+      docs/<short-desc>
+  • Branch names MUST NOT contain spaces or uppercase letters.
+
+PR Metadata Requirements:
+  • Each PR MUST have:
+    – Label: feature, fix, docs, test, ci, chore
+    – Milestone: matching release cycle (if applicable)
+    – Draft state until tests pass
+  • Human reviewer required before merge.
 
 ⸻
 
