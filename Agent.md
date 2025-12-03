@@ -4,7 +4,7 @@
 
 __Deterministic development protocol for AI assistants and human contributors.__
 
-> Audience: AI assistants (Cursor, ChatGPT, Copilot, Claude, etc.) and human collaborators.
+> Audience: AI assistants (Cursor, ChatGPT, Copilot, Claude, etc.) and human collaborators using them.
 > Purpose: Guarantee spec‑driven, test‑first, provider‑agnostic, registry‑based, and deterministic contributions to
 > Stagecraft.
 
@@ -12,19 +12,176 @@ __Deterministic development protocol for AI assistants and human contributors.__
 
 # ⚡ AI Quickstart (TL;DR)
 
-Before doing anything:
+Before doing anything, AI MUST:
 
-1. Identify the Feature ID for the task. If none exists, stop and ask.
-2. Locate the spec: spec/features.yaml and spec/<domain>/<feature>.md.
-3. Write or update tests first – they must fail before you write code.
-4. Limit scope to a single feature – never mix multiple features in one change.
-5. Respect provider boundaries – core is provider‑agnostic.
-6. Do not touch protected files (LICENSE, top‑level README, ADRs, NOTICE, etc.).
-7. Keep changes deterministic – no randomness, timestamps, or environment‑dependent behaviour.
-8. Respond with the AI Response Format Contract (Summary, Diff Intent, File List, etc.).
-9. End with a commit message that follows the Git Workflow Rules.
+0. **Create or verify feature branch**
+   - Ensure a clean working directory
+   - Ensure you are not on main
+   - Create a feature branch from main if needed
+   - Follow the naming rules (see Git Branch Workflow below)
 
-If any of the above is unclear, stop and ask for clarification instead of guessing.
+1. **Identify the Feature ID for the task**
+   - If no Feature ID exists, STOP and ask
+
+2. **Locate the relevant spec**
+   - spec/features.yaml
+   - spec/<domain>/<feature>.md
+
+3. **Write or update tests first**
+   - Tests MUST fail before code is written
+
+4. **Limit work to a single feature**
+   - Never mix features in a single commit or PR
+
+5. **Respect provider boundaries**
+   - Core is always provider‑agnostic
+   - Providers implement interfaces, never core logic
+
+6. **Do not touch protected files**
+   - LICENSE
+   - Main README
+   - ADRs
+   - NOTICE
+   - Any file explicitly marked as protected
+
+7. **Keep changes deterministic**
+   - No randomness
+   - No timestamps
+   - No machine-dependent output
+   - No external network dependencies unless mocked
+
+8. **Use the AI Response Format Contract**
+   - Summary
+   - Diff Intent
+   - File List
+   - Risks / Reasoning
+
+9. **Stage → Commit → Verify after completing work**
+   - Commit message must follow strict rules
+   - Summaries MUST be included
+   - Branch state MUST be clean afterward
+
+10. **If anything is unclear: STOP and ask.**
+
+Guessing is forbidden.
+
+⸻
+
+# 🔀 Git Branch Workflow (Critical)
+
+This section defines the mandatory Git workflow for all AI-assisted development.
+
+## Pre-Work: Branch Creation
+
+Before starting work, AI MUST:
+
+1. **Check current branch**
+
+Run:
+```bash
+git branch --show-current
+```
+
+Rules:
+- If on `main` or `master` → MUST create new feature branch
+- If on a feature branch:
+  - MUST confirm it matches current FEATURE_ID
+  - If mismatch → STOP and ask for direction
+
+2. **Ensure working directory is clean**
+
+Run:
+```bash
+git status
+```
+
+If there are uncommitted changes:
+- AI MUST NOT proceed
+- AI MUST report the state and ask for instruction
+
+3. **Create feature branch from main**
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/<FEATURE_ID>-short-desc
+```
+
+Branch naming rules:
+- `feature/<FEATURE_ID>-short-desc`
+- Use lowercase for short-desc
+- Use hyphens instead of spaces
+- 3–5 word short description
+
+4. **Verify branch creation**
+
+AI MUST confirm:
+```bash
+git branch --show-current
+```
+
+Result MUST match the newly created branch.
+
+## Error Handling
+
+1. **If `git pull origin main` fails:**
+   - Check network connectivity
+   - Verify remote is configured: `git remote -v`
+   - If still failing: STOP and report error
+
+2. **If branch already exists locally:**
+   - Check if it matches current FEATURE_ID
+   - If match: Use existing branch
+   - If mismatch: STOP and ask for direction
+
+3. **If working directory is not clean:**
+   - List uncommitted changes: `git status`
+   - STOP and report state
+   - Wait for user instruction (stash, commit, or discard)
+
+⸻
+
+## Branch Naming Rules (Enhanced)
+
+```text
+feature/<FEATURE_ID>-short-desc     # New features
+fix/<FEATURE_ID>-short-desc         # Bug fixes
+test/<FEATURE_ID>-short-desc        # Test improvements
+docs/<short-desc>                   # Documentation-only changes
+chore/<short-desc>                  # Maintenance and cleanup
+```
+
+Constraints:
+- `<FEATURE_ID>` is uppercase (per spec)
+- `<short-desc>` is lowercase
+- Hyphens only
+- No spaces
+- Short, descriptive (3–5 words)
+
+### Branch Naming Examples
+
+**Correct:**
+- `feature/PROVIDER_FRONTEND_INTERFACE-frontend-provider`
+- `fix/CLI_DEV-bug-fix`
+- `chore/update-dependencies`
+
+**Incorrect:**
+- `feature/provider_frontend_interface` (FEATURE_ID should be uppercase)
+- `feature/PROVIDER_FRONTEND_INTERFACE Frontend Provider` (spaces not allowed)
+- `Feature/PROVIDER_FRONTEND_INTERFACE-frontend` (prefix must be lowercase)
+
+⸻
+
+## Branch State Requirements
+
+AI MUST obey the following:
+- Feature branch MUST be based on latest main
+- Working directory MUST be clean before generating or applying changes
+- After operations, AI must run:
+  ```bash
+  git status
+  ```
+  If uncommitted work remains → STOP and report.
 
 ⸻
 
@@ -103,7 +260,7 @@ For CLI_INIT:
 5. Ensure go test ./... passes.
 6. Update docs (usage, examples).
 7. Mark CLI_INIT as done in spec/features.yaml.
-8. Provide a commit message and PR description referencing CLI_INIT.
+8. Create feature branch and commit with proper message (see Git Workflow Rules).
 
 ⸻
 
@@ -299,7 +456,7 @@ if !backendproviders.Has(provider) {
 
 ### Provider Registration Rules
 
-* Registration MUST occur via init() in the provider’s own package.
+* Registration MUST occur via init() in the provider's own package.
 * Core MUST NOT instantiate providers manually.
 * Registration occurs through import side‑effects in pkg/config/config.go.
 * Duplicate registration must be tested.
@@ -450,12 +607,14 @@ Unless explicitly instructed otherwise, every AI task response MUST include:
 3. File List – list of files to be created, modified, or deleted.
 4. Patch – unified diff (if asked for), minimal and scope‑limited.
 5. Commit Message – formatted per Git Workflow Rules.
+6. Branch Status – current branch name and git status output.
+7. Commit Summary – after committing, show commit hash and verification.
 
 If the task involves new behaviour:
 
-6. Feature Reference – Feature ID and spec path.
-7. Test Plan – list of failing tests to be written or updated.
-8. Documentation Changes – list of sections to be updated.
+8. Feature Reference – Feature ID and spec path.
+9. Test Plan – list of failing tests to be written or updated.
+10. Documentation Changes – list of sections to be updated.
 
 AI MUST NOT produce fully applied diffs without explicit instruction.
 AI MUST NOT produce hidden changes beyond the listed file set.
@@ -481,47 +640,114 @@ If the spec is incomplete but a Feature ID exists:
 
 ## 🧵 Git Workflow Rules (Critical)
 
-### 1. Every task ends with a commit message
+These rules govern all commits, branches, and PRs.
 
-For each completed task (a coherent, single‑feature change), output:
+### 0. Pre-Work: Branch Setup
 
-A. Human‑readable summary.
-B. Commit message (strict format).
+Before modifying any file:
 
-Commit message:
+1. Ensure working directory is clean:
+   ```bash
+   git status
+   ```
 
-```text
-<type>(<FEATURE_ID>): <short summary>
+2. Switch to main:
+   ```bash
+   git checkout main
+   ```
 
-Optional longer explanation.
-Spec: <path/to/spec.md>
-Tests: <path/to/tests>
-```
+3. Pull latest main:
+   ```bash
+   git pull origin main
+   ```
 
-Allowed types: feat, fix, refactor, docs, test, ci, chore.
+4. Create feature branch:
+   ```bash
+   git checkout -b feature/<FEATURE_ID>-short-desc
+   ```
 
-Rules:
+5. Verify branch:
+   ```bash
+   git branch --show-current
+   ```
 
-* Commits must be as small and isolated as possible; avoid bundling unrelated changes.
-* PRs MUST be merged using “squash and merge” unless the maintainer requests otherwise.
-* AI MUST NOT rewrite commits once pushed to a PR branch, except when instructed.
-* AI MUST NOT reorder commits unless instructed.
-
-All commit messages MUST pass linting:
-
-* Max 72 chars in subject.
-* No trailing periods.
-
-Commit Granularity
-
-* One commit per completed, single‑feature task is preferred.
-* Multi‑step user instructions (e.g. “update spec, tests, and code for CLI_INIT”) SHOULD result in a single commit when
-  they all relate to the same feature and are completed within one task.
-* If the user explicitly asks for separate commits, follow that instruction.
+If any step fails: STOP, report the issue, request direction.
 
 ⸻
 
-### 2. Each behavioural feature MUST be implemented in its own PR
+### 1. Every task ends with a commit message
+
+A single coherent task == exactly one commit.
+
+Steps AI MUST follow:
+
+A. **Stage all changes**
+   ```bash
+   git add .
+   ```
+
+B. **Generate commit message in strict format**
+   ```text
+   <type>(<FEATURE_ID>): <short summary>
+   
+   Longer explanation if needed.
+   Spec: spec/<...>.md
+   Tests: <paths>
+   ```
+
+   Allowed commit types:
+   - feat
+   - fix
+   - refactor
+   - docs
+   - test
+   - ci
+   - chore
+
+   Constraints:
+   - Subject ≤ 72 characters
+   - No trailing periods
+   - Body lines wrap at 80 chars
+
+C. **Commit**
+   ```bash
+   git commit -m "<message>"
+   ```
+
+D. **Provide commit summary**
+
+   AI MUST output:
+   - Commit hash
+   - Branch name
+   - git status (must be clean)
+   - The summary of the work performed
+
+⸻
+
+### 2. Post-Commit Verification
+
+AI MUST:
+
+1. Run:
+   ```bash
+   git status
+   ```
+
+2. Run:
+   ```bash
+   git log --oneline -1
+   ```
+
+3. Confirm:
+   - No uncommitted changes remain
+   - Commit meets formatting rules
+   - Commit contains exactly the intended changes
+
+4. Provide a verbal summary of committed work.
+
+⸻
+
+### 3. Each behavioural feature MUST be implemented in its own PR
 
 PR Title
 
@@ -547,18 +773,6 @@ PR Requirements
 * Docs updated.
 * Feature status updated.
 
-Branch Naming Rules
-
-```text
-feature/<FEATURE_ID>-short-desc
-fix/<FEATURE_ID>-short-desc
-chore/<short-desc>
-docs/<short-desc>
-```
-
-* No uppercase.
-* No spaces.
-
 PR Metadata
 
 * Must include a label (feature, fix, docs, test, ci, chore).
@@ -571,6 +785,104 @@ AI and PRs
 * AI MAY propose branch names and PR titles/descriptions.
 * AI MUST NOT transition a PR to ready-for-review. Only humans can do this.
 * AI MUST NOT merge PRs.
+
+⸻
+
+### 4. Branch Cleanup (Post-Merge)
+
+AI MUST NOT delete branches.
+
+AI MAY suggest:
+```bash
+git checkout main
+git pull origin main
+```
+
+Human collaborator handles lifecycle management.
+
+⸻
+
+## 🔀 Git Integration Protocol
+
+This consolidates the mandatory Git behavior for AI.
+
+### Workflow Sequence
+
+1. **Pre-Work**
+   - Verify git availability
+   - Check git status
+   - Ensure clean workspace
+   - Create feature branch from main (if needed)
+
+2. **During Work**
+   - Follow strict order:
+     1. Read spec
+     2. Write/update tests
+     3. Implement code
+     4. Update docs
+   - Keep changes focused on a single feature
+   - Never modify outside the defined scope
+
+3. **Post-Work**
+   - Stage all changes:
+     ```bash
+     git add .
+     ```
+   - Generate commit message
+   - Commit work
+   - Verify commit
+   - Summarize results
+
+### Integration with Feature Lifecycle
+
+This workflow integrates with the Feature Lifecycle (see "Golden Rules" section):
+
+1. Pre-Work (Git) → Feature Planning (Spec)
+2. During Work → Test-First Development
+3. Post-Work (Git) → Feature Status Update
+
+The commit message MUST reference the Feature ID, ensuring traceability
+from spec → tests → code → docs → git commit.
+
+⸻
+
+### Commit Message Requirements
+
+AI MUST generate messages that:
+- Use: `<type>(<FEATURE_ID>): <summary>`
+- Contain spec and test references
+- Pass subject/body length rules
+- Clearly describe the intent of the change
+- Map to exactly one feature
+
+⸻
+
+### Branch Verification
+
+AI MUST confirm:
+```bash
+git status
+git branch --show-current
+```
+
+Requirements:
+- Working directory clean
+- On correct feature branch
+- Ahead of main by expected number of commits
+
+If mismatch: STOP and report.
+
+⸻
+
+### Error Handling
+
+If any git command fails, AI MUST:
+- Stop immediately
+- Report exact error
+- Suggest steps to resolve
+- Wait for user direction
+
+Proceeding after errors is not allowed.
 
 ⸻
 
@@ -824,7 +1136,7 @@ draft → ready-for-review → changes-requested → approved → merged
 
 AI MUST NOT compress multi‑step tasks into a single output unless explicitly instructed.
 
-If the user writes “do X then Y”:
+If the user writes "do X then Y":
 
 * AI MUST stop after X.
 * Wait for confirmation.
@@ -917,3 +1229,8 @@ When behaviour is ambiguous:
 ⸻
 
 ✅ End of Agent Guide
+```
+
+Now staging, committing, and verifying:
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+run_terminal_cmd
