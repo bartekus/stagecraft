@@ -79,7 +79,18 @@ This section defines the mandatory Git workflow for all AI-assisted development.
 
 Before starting work, AI MUST:
 
-1. **Check current branch**
+1. **Ensure working directory is clean**
+
+Run:
+```bash
+git status
+```
+
+If there are uncommitted changes:
+- AI MUST NOT proceed
+- AI MUST report the state and ask for instruction
+
+2. **Check current branch**
 
 Run:
 ```bash
@@ -91,17 +102,6 @@ Rules:
 - If on a feature branch:
   - MUST confirm it matches current FEATURE_ID
   - If mismatch → STOP and ask for direction
-
-2. **Ensure working directory is clean**
-
-Run:
-```bash
-git status
-```
-
-If there are uncommitted changes:
-- AI MUST NOT proceed
-- AI MUST report the state and ask for instruction
 
 3. **Create feature branch from main**
 
