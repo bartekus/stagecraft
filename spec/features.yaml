@@ -101,7 +101,7 @@ features:
 
   - id: PROVIDER_FRONTEND_INTERFACE
     title: "FrontendProvider interface definition"
-    status: todo
+    status: done
     spec: "providers/frontend/interface.md"
     owner: bart
     tests:
