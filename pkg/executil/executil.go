@@ -171,4 +171,3 @@ func (r *runner) RunStream(ctx context.Context, cmd Command, output io.Writer) e
 
 	return nil
 }
-

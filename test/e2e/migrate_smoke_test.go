@@ -63,7 +63,6 @@ func TestStagecraftMigrate_Smoke(t *testing.T) {
 	// This will fail if DATABASE_URL is not set, but that's expected
 	// We're just verifying the command exists and can parse the config
 	err = cmd.Run()
-
 	// Either it succeeds (if migrations dir exists) or fails with a helpful error
 	if err != nil {
 		// Check that error is about missing DATABASE_URL or migration path, not command not found

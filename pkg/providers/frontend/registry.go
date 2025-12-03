@@ -105,4 +105,3 @@ func Get(id string) (FrontendProvider, error) {
 func Has(id string) bool {
 	return DefaultRegistry.Has(id)
 }
-
