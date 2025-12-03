@@ -16,8 +16,9 @@ Before doing anything, AI MUST:
 
 0. **Create or verify feature branch**
    - Ensure a clean working directory
-   - Ensure you are not on main
-   - Create a feature branch from main if needed
+   - Check current branch (see Git Branch Workflow below)
+   - If on main → create feature branch from main
+   - If on feature branch → verify it matches FEATURE_ID
    - Follow the naming rules (see Git Branch Workflow below)
 
 1. **Identify the Feature ID for the task**
@@ -687,13 +688,13 @@ A. **Stage all changes**
    ```
 
 B. **Generate commit message in strict format**
-   ```text
-   <type>(<FEATURE_ID>): <short summary>
-   
-   Longer explanation if needed.
-   Spec: spec/<...>.md
-   Tests: <paths>
-   ```
+ ```text
+ <type>(<FEATURE_ID>): <short summary>
+ 
+ Longer explanation if needed.
+ Spec: spec/<...>.md
+ Tests: <paths>
+ ```
 
    Allowed commit types:
    - feat
@@ -1229,8 +1230,3 @@ When behaviour is ambiguous:
 ⸻
 
 ✅ End of Agent Guide
-```
-
-Now staging, committing, and verifying:
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-run_terminal_cmd
