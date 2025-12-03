@@ -652,20 +652,25 @@ Before modifying any file:
    git status
    ```
 
-2. Switch to main:
+2. Check current branch:
    ```bash
-   git checkout main
+   git branch --show-current
    ```
 
-3. Pull latest main:
-   ```bash
-   git pull origin main
-   ```
+3. If on `main` or `master`:
+   - Pull latest main:
+     ```bash
+     git pull origin main
+     ```
+   - Create feature branch:
+     ```bash
+     git checkout -b feature/<FEATURE_ID>-short-desc
+     ```
 
-4. Create feature branch:
-   ```bash
-   git checkout -b feature/<FEATURE_ID>-short-desc
-   ```
+4. If on a feature branch:
+   - Verify it matches current FEATURE_ID
+   - If mismatch → STOP and ask for direction
+   - If match → proceed with work (no branch creation needed)
 
 5. Verify branch:
    ```bash
