@@ -12,6 +12,8 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+//go:build e2e
+
 package e2e
 
 import (

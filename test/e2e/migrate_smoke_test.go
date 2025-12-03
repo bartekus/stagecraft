@@ -12,6 +12,8 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+//go:build e2e
+
 // test/e2e/migrate_smoke_test.go
 package e2e
 
