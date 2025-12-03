@@ -262,6 +262,9 @@ For CLI_INIT:
 1. Add or update spec/commands/init.md (including version).
 2. Mark CLI_INIT as wip in spec/features.yaml.
 3. Add or update tests (e.g. cmd/init_test.go) that fail.
+
+**CLI Command Test Location:** CLI command tests MUST live under `cmd/<name>_test.go` unless golden tests are stored in `cmd/<name>/testdata/`. This ensures consistent test organization across all commands.
+
 4. Implement minimal code in cmd/init.go and supporting packages.
 5. Ensure go test ./... passes.
 6. Update docs (usage, examples).
@@ -327,6 +330,8 @@ A feature becomes done only when:
 
 The contributor (AI or human) must update the feature state.
 
+**Timing Rule:** AI MUST update the feature state in spec/features.yaml only when the implementation is complete, tests pass, docs are updated, and the task is ready for commit. AI MUST NOT update feature states prematurely (e.g., before tests pass or before implementation is complete).
+
 ⸻
 
 ### 🧪 Test Discipline
@@ -354,7 +359,7 @@ Use golden tests for CLI output, config generation, or structured text.
 Rules:
 
 * Golden files must live in testdata/.
-* Golden files are updated only when behaviour changes and the spec is updated.
+* Golden files are updated only when behaviour changes and the spec is explicitly updated. Golden file updates MUST correspond exactly to explicit spec changes, not incidental formatting changes or test refactoring.
 * Always review golden diffs carefully.
 
 #### Parallelism
@@ -529,6 +534,8 @@ Nested Agent.md files do not override parent definitions unless explicitly state
 * Config keys: __kebab-case__.
 * All generated files must be placed under .stagecraft/ unless specified, and must use kebab-case.
 
+**Collision Prevention:** All generated files under `.stagecraft/` MUST include deterministic content and deterministic filenames. AI MUST NOT generate multiple files with overlapping roles without explicit instruction. Filenames MUST be unique and descriptive of their purpose.
+
 __CLI Command Names__
 
 * MUST use dashed names: stagecraft deploy-plan.
@@ -615,6 +622,8 @@ Unless explicitly instructed otherwise, every AI task response MUST include:
 5. Commit Message – formatted per Git Workflow Rules.
 6. Branch Status – current branch name and git status output.
 7. Commit Summary – after committing, show commit hash and verification.
+
+**Note:** When a task involves code modification, the commit message generated under Git Workflow Rules (section "🧵 Git Workflow Rules") MUST appear in section 5 of this contract. The commit message is part of the AI response, not a separate post-response step.
 
 If the task involves new behaviour:
 
@@ -1037,6 +1046,20 @@ Every spec file MUST contain:
 
 * A version field (e.g. v1, v1.1, etc.).
 
+**Template:**
+
+```yaml
+---
+feature: CLI_INIT
+version: v1
+status: wip
+---
+
+# CLI_INIT
+
+[Feature description]
+```
+
 ⸻
 
 ## 🧾 Logging Determinism Rules
@@ -1163,6 +1186,10 @@ This avoids premature implementation.
 
 Multi-step interaction rules govern how AI and humans collaborate, not commit boundaries. Commits SHOULD follow the commit granularity rules: typically a single commit per completed, single-feature change after all agreed steps for that feature are done, unless the user explicitly requests separate commits for intermediate steps.
 
+**Commit Boundary Rule for Multi-Step Tasks:**
+
+Multi-step tasks MAY NOT require commits between steps unless they produce completed, valid, spec-compliant work. Intermediate steps that produce incomplete or failing states MUST NOT be committed. Commit only after the full feature's agreed multi-step sequence is complete or when the user explicitly requests an intermediate commit.
+
 ⸻
 
 ## 📚 Canonical Error Categories
@@ -1174,6 +1201,10 @@ Multi-step interaction rules govern how AI and humans collaborate, not commit bo
 * ErrFeatureIncomplete
 * ErrSpecViolation
 
+**Error Naming Rule:**
+
+Canonical errors MUST be namespaced by the lowest-level package (e.g., `registry.ErrRegistryConflict`, `config.ErrInvalidConfig`). Test assertions MUST reference the qualified identifier. This ensures clear error ownership and prevents naming conflicts.
+
 ⸻
 
 ## 📦 Approved Dependencies List
@@ -1183,9 +1214,8 @@ Only the following external dependencies MAY be used without explicit approval:
 * cobra
 * testify
 * go-yaml
-* etc. (placeholder, to be replaced with a concrete list)
 
-All other dependencies require explicit human approval, justification, and ADR if architectural.
+**Important:** The "etc." placeholder MUST NOT be interpreted as permission to introduce additional dependencies. Only explicitly listed dependencies are allowed. All others require explicit human approval, justification, and ADR if architectural.
 
 ⸻
 
