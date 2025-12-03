@@ -20,8 +20,8 @@ import "context"
 // Feature: PROVIDER_FRONTEND_INTERFACE
 // Spec: spec/providers/frontend/interface.md
 
-// FrontendDevOptions contains options for running a frontend in development mode.
-type FrontendDevOptions struct {
+// DevOptions contains options for running a frontend in development mode.
+type DevOptions struct {
 	// Config is the provider-specific configuration decoded from
 	// frontend.providers[providerID] in stagecraft.yml.
 	// The provider implementation is responsible for unmarshaling this.
@@ -42,5 +42,5 @@ type FrontendProvider interface {
 	ID() string
 
 	// Dev runs the frontend in development mode.
-	Dev(ctx context.Context, opts FrontendDevOptions) error
+	Dev(ctx context.Context, opts DevOptions) error
 }
