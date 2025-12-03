@@ -257,6 +257,8 @@ Example: Full Feature Lifecycle
 
 For CLI_INIT:
 
+**Pre-Work:** Create feature branch (see Git Branch Workflow section).
+
 1. Add or update spec/commands/init.md (including version).
 2. Mark CLI_INIT as wip in spec/features.yaml.
 3. Add or update tests (e.g. cmd/init_test.go) that fail.
@@ -264,7 +266,7 @@ For CLI_INIT:
 5. Ensure go test ./... passes.
 6. Update docs (usage, examples).
 7. Mark CLI_INIT as done in spec/features.yaml.
-8. Create feature branch and commit with proper message (see Git Workflow Rules).
+8. Commit with proper message (see Git Workflow Rules).
 
 ⸻
 
