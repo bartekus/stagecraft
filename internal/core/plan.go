@@ -149,7 +149,6 @@ func (p *Planner) addDeployOps(plan *Plan) {
 			"environment": plan.Environment,
 		},
 	})
-
 }
 
 // addHealthCheckOps adds health check operations.

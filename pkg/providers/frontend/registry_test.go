@@ -35,4 +35,3 @@ func TestRegistry_ImplementsInterface(t *testing.T) {
 	_ = reg.Has
 	_ = reg.IDs
 }
-

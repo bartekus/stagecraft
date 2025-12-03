@@ -336,4 +336,3 @@ func TestRunner_RunStream_MultipleLines(t *testing.T) {
 		t.Errorf("expected 3 lines, got %d: %q", len(lines), output)
 	}
 }
-

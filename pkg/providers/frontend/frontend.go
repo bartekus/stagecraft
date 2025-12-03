@@ -44,4 +44,3 @@ type FrontendProvider interface {
 	// Dev runs the frontend in development mode.
 	Dev(ctx context.Context, opts FrontendDevOptions) error
 }
-

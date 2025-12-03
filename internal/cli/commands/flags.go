@@ -123,4 +123,3 @@ func parseBoolEnv(value string) bool {
 	}
 	return parsed
 }
-

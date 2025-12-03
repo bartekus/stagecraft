@@ -276,4 +276,3 @@ func TestDefaultRegistry_Has(t *testing.T) {
 		t.Error("Has() = true for unregistered provider, want false")
 	}
 }
-
