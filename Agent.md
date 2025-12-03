@@ -98,7 +98,7 @@ git branch --show-current
 ```
 
 Rules:
-- If on `main` or `master` → MUST create new feature branch
+- If on `main` → MUST create new feature branch
 - If on a feature branch:
   - MUST confirm it matches current FEATURE_ID
   - If mismatch → STOP and ask for direction
@@ -662,7 +662,11 @@ Before modifying any file:
    git branch --show-current
    ```
 
-3. If on `main` or `master`:
+3. If on `main`:
+   - Checkout main:
+     ```bash
+     git checkout main
+     ```
    - Pull latest main:
      ```bash
      git pull origin main
