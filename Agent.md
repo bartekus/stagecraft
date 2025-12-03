@@ -59,9 +59,10 @@ Before doing anything, AI MUST:
   - Risks / Reasoning
 
 9. **Stage → Commit → Verify after completing work**
-  - Commit message must follow strict rules
-  - Summaries MUST be included
-  - Branch state MUST be clean afterward
+   - Run `./scripts/run-all-checks.sh` to verify all CI checks pass
+   - Commit message must follow strict rules
+   - Summaries MUST be included
+   - Branch state MUST be clean afterward
 
 > (see Multi-Step Task Rules for when not to commit intermediate states)” so there’s zero chance of over-committing.
 
@@ -368,6 +369,16 @@ tests pass or before implementation is complete).
   * No environment‑dependent paths
 * All output lists must use deterministic ordering (prefer lexicographical ascending).
 
+#### Coverage Requirements
+
+* All tests MUST achieve minimum coverage thresholds as enforced by `scripts/check-coverage.sh`.
+* Coverage check MUST pass with `--fail-on-warning` flag before committing.
+* Overall coverage must meet minimum thresholds (see `scripts/check-coverage.sh` for current thresholds).
+* Core packages (e.g., `pkg/config`, `internal/core`) MUST meet higher coverage requirements.
+* Coverage thresholds are enforced in CI and MUST be maintained locally.
+
+AI MUST run `./scripts/check-coverage.sh --fail-on-warning` as part of pre-commit verification.
+
 #### Golden Tests
 
 Use golden tests for CLI output, config generation, or structured text.
@@ -431,9 +442,10 @@ If modification is necessary:
 
 ## 6. Go Style and Quality Standards
 
-* go build ./... must pass.
-* Format with gofmt, goimports, and gofumpt.
-* go test ./... must fully pass.
+* `go build ./...` must pass (all packages must compile).
+* Format with gofumpt (preferred, stricter than gofmt) or gofmt and goimports.
+* All code MUST pass `gofumpt -l .` check (or `gofmt -l .` if gofumpt is not available).
+* `go test ./...` must fully pass.
 * All exported symbols must include GoDoc comments.
 * Fix all golangci-lint warnings unless suppressed with justification:
 
@@ -446,6 +458,47 @@ If modification is necessary:
 * AI MUST NOT introduce new mocking frameworks without explicit approval.
 * Generated mocks MUST be deterministic.
 * If mocks are generated, their generator version and invocation MUST be documented in the spec or an ADR.
+
+⸻
+
+## 🔍 Pre-Commit Verification Requirements
+
+Before committing, AI MUST ensure all changes pass the complete CI check suite.
+
+### Mandatory Pre-Commit Checks
+
+AI MUST run `./scripts/run-all-checks.sh` before committing to verify all checks pass. This script
+matches the CI workflow and ensures local validation matches what CI will enforce.
+
+The following checks MUST pass:
+
+1. **Formatting Checks**
+   * `gofumpt -l .` (or `gofmt -l .`) must return no unformatted files
+   * All files must be properly formatted
+
+2. **Build Checks**
+   * `go build ./...` must pass (all packages must compile)
+   * Main binary must build: `go build -o stagecraft ./cmd/stagecraft`
+
+3. **Test Checks**
+   * `go test ./...` must fully pass
+   * Coverage thresholds must be met (see Coverage Requirements below)
+   * Coverage check must pass with `--fail-on-warning` flag
+
+4. **Lint Checks**
+   * `golangci-lint run ./...` must pass with no warnings (unless suppressed with justification)
+
+5. **Spec Validation**
+   * `spec/features.yaml` must be valid YAML
+   * `scripts/validate-spec.sh` must pass
+   * All referenced spec files must exist
+
+6. **License Headers**
+   * `addlicense -check .` must pass
+   * All files must have proper license headers
+
+If any check fails, AI MUST NOT commit until all checks pass. AI MUST report which checks failed and
+why.
 
 ⸻
 
@@ -733,13 +786,22 @@ A single coherent task == exactly one commit.
 
 Steps AI MUST follow:
 
-A. **Stage all changes**
+A. **Run pre-commit verification**
+
+   ```bash
+   ./scripts/run-all-checks.sh
+   ```
+
+   If any check fails, AI MUST NOT proceed with commit. AI MUST fix all issues and re-run the
+   checks until all pass.
+
+B. **Stage all changes**
 
    ```bash
    git add .
    ```
 
-B. **Generate commit message in strict format**
+C. **Generate commit message in strict format**
 
  ```text
  <type>(<FEATURE_ID>): <short summary>
@@ -765,13 +827,13 @@ Constraints:
 - No trailing periods
 - Body lines wrap at 80 chars
 
-C. **Commit**
+D. **Commit**
 
    ```bash
    git commit -m "<message>"
    ```
 
-D. **Provide commit summary**
+E. **Provide commit summary**
 
 AI MUST output:
 

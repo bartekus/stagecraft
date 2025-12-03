@@ -44,10 +44,20 @@ section() {
 section "Lint and Format Checks"
 
 info "Checking Go formatting..."
-gofmt_out=$(gofmt -l .)
-if [ -n "$gofmt_out" ]; then
-    error "The following files are not gofmt'ed:"
-    echo "$gofmt_out"
+# Prefer gofumpt (stricter), fall back to gofmt if not available
+if command -v gofumpt &> /dev/null; then
+    FORMAT_CMD="gofumpt"
+    FORMAT_TOOL="gofumpt"
+else
+    FORMAT_CMD="gofmt"
+    FORMAT_TOOL="gofmt"
+    warning "gofumpt not found, using gofmt (install with: go install mvdan.cc/gofumpt@latest)"
+fi
+
+format_out=$($FORMAT_CMD -l .)
+if [ -n "$format_out" ]; then
+    error "The following files are not ${FORMAT_TOOL}'ed:"
+    echo "$format_out"
     exit 1
 fi
 info "All files are properly formatted"
@@ -62,6 +72,13 @@ info "golangci-lint passed"
 
 # === Test Checks (matches CI test job) ===
 section "Tests and Coverage"
+
+info "Building all packages..."
+if ! go build ./...; then
+    error "Failed to build all packages"
+    exit 1
+fi
+info "All packages build successfully"
 
 info "Building stagecraft binary..."
 rm -rf bin
