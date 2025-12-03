@@ -14,15 +14,16 @@ __Deterministic development protocol for AI assistants and human contributors.__
 
 Before doing anything, AI MUST:
 
-0. **Create or verify feature branch**
+0. **Identify the Feature ID for the task**
+   - If no Feature ID exists, STOP and ask
+   - Feature ID is required before any branch operations
+
+1. **Create or verify feature branch**
    - Ensure a clean working directory
    - Check current branch (see Git Branch Workflow below)
-   - If on main → create feature branch from main
+   - If on main → create feature branch from main using FEATURE_ID
    - If on feature branch → verify it matches FEATURE_ID
    - Follow the naming rules (see Git Branch Workflow below)
-
-1. **Identify the Feature ID for the task**
-   - If no Feature ID exists, STOP and ask
 
 2. **Locate the relevant spec**
    - spec/features.yaml
@@ -73,6 +74,8 @@ Guessing is forbidden.
 This section defines the mandatory Git workflow for all AI-assisted development.
 
 ## Pre-Work: Branch Creation
+
+**Prerequisite:** Feature ID MUST be identified before branch creation (see AI Quickstart step 0).
 
 Before starting work, AI MUST:
 
@@ -644,6 +647,8 @@ If the spec is incomplete but a Feature ID exists:
 These rules govern all commits, branches, and PRs.
 
 ### 0. Pre-Work: Branch Setup
+
+**Prerequisite:** Feature ID MUST be identified before branch setup (see AI Quickstart step 0).
 
 Before modifying any file:
 
