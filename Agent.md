@@ -1254,9 +1254,9 @@ and prevents naming conflicts.
 
 Only the following external dependencies MAY be used without explicit approval:
 
-* cobra
-* testify
-* go-yaml
+* `github.com/spf13/cobra`
+* `github.com/stretchr/testify`
+* `gopkg.in/yaml.v3`
 
 **Important:** The "etc." placeholder MUST NOT be interpreted as permission to introduce additional dependencies. Only
 explicitly listed dependencies are allowed. All others require explicit human approval, justification, and ADR if
