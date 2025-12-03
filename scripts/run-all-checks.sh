@@ -64,7 +64,7 @@ info "All files are properly formatted"
 
 info "Running golangci-lint..."
 if ! command -v golangci-lint &> /dev/null; then
-    error "golangci-lint is not installed. Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.6.2"
+    error "golangci-lint is not installed. Install with: go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.6.2"
     exit 1
 fi
 golangci-lint run ./...

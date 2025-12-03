@@ -716,7 +716,7 @@ EncoreTsProvider implementation:
 
 FrontendProvider
 ```go
-type FrontendDevOptions struct {
+type DevOptions struct {
     Env     map[string]string
     WorkDir string
     Command []string
@@ -724,7 +724,7 @@ type FrontendDevOptions struct {
 
 type FrontendProvider interface {
     ID() string
-    Dev(ctx context.Context, opts FrontendDevOptions) error
+    Dev(ctx context.Context, opts DevOptions) error
 }
 ```
 

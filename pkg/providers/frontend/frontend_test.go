@@ -32,7 +32,7 @@ func (m *mockProvider) ID() string {
 	return m.id
 }
 
-func (m *mockProvider) Dev(ctx context.Context, opts FrontendDevOptions) error {
+func (m *mockProvider) Dev(ctx context.Context, opts DevOptions) error {
 	return nil
 }
 

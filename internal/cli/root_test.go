@@ -80,6 +80,22 @@ func parseFlagsForTesting(cmd *cobra.Command, args []string) error {
 	return cmd.ParseFlags(args)
 }
 
+// setEnvForTest sets an environment variable for testing and fails the test if it errors.
+func setEnvForTest(t *testing.T, key, value string) {
+	t.Helper()
+	if err := os.Setenv(key, value); err != nil {
+		t.Fatalf("failed to set env var %s: %v", key, err)
+	}
+}
+
+// unsetEnvForTest unsets an environment variable for testing and fails the test if it errors.
+func unsetEnvForTest(t *testing.T, key string) {
+	t.Helper()
+	if err := os.Unsetenv(key); err != nil {
+		t.Fatalf("failed to unset env var %s: %v", key, err)
+	}
+}
+
 func TestResolveFlags_CommandLineFlags(t *testing.T) {
 	cmd := NewRootCommand()
 	if err := parseFlagsForTesting(cmd, []string{"--env", "staging", "--config", "/custom/path.yml", "--verbose", "--dry-run", "version"}); err != nil {
@@ -113,31 +129,31 @@ func TestResolveFlags_EnvironmentVariables(t *testing.T) {
 	origDryRun := os.Getenv("STAGECRAFT_DRY_RUN")
 
 	// Set environment variables
-	os.Setenv("STAGECRAFT_ENV", "prod")
-	os.Setenv("STAGECRAFT_CONFIG", "/env/path.yml")
-	os.Setenv("STAGECRAFT_VERBOSE", "true")
-	os.Setenv("STAGECRAFT_DRY_RUN", "true")
+	setEnvForTest(t, "STAGECRAFT_ENV", "prod")
+	setEnvForTest(t, "STAGECRAFT_CONFIG", "/env/path.yml")
+	setEnvForTest(t, "STAGECRAFT_VERBOSE", "true")
+	setEnvForTest(t, "STAGECRAFT_DRY_RUN", "true")
 	defer func() {
 		// Restore original values
 		if origEnv != "" {
-			os.Setenv("STAGECRAFT_ENV", origEnv)
+			setEnvForTest(t, "STAGECRAFT_ENV", origEnv)
 		} else {
-			os.Unsetenv("STAGECRAFT_ENV")
+			unsetEnvForTest(t, "STAGECRAFT_ENV")
 		}
 		if origConfig != "" {
-			os.Setenv("STAGECRAFT_CONFIG", origConfig)
+			setEnvForTest(t, "STAGECRAFT_CONFIG", origConfig)
 		} else {
-			os.Unsetenv("STAGECRAFT_CONFIG")
+			unsetEnvForTest(t, "STAGECRAFT_CONFIG")
 		}
 		if origVerbose != "" {
-			os.Setenv("STAGECRAFT_VERBOSE", origVerbose)
+			setEnvForTest(t, "STAGECRAFT_VERBOSE", origVerbose)
 		} else {
-			os.Unsetenv("STAGECRAFT_VERBOSE")
+			unsetEnvForTest(t, "STAGECRAFT_VERBOSE")
 		}
 		if origDryRun != "" {
-			os.Setenv("STAGECRAFT_DRY_RUN", origDryRun)
+			setEnvForTest(t, "STAGECRAFT_DRY_RUN", origDryRun)
 		} else {
-			os.Unsetenv("STAGECRAFT_DRY_RUN")
+			unsetEnvForTest(t, "STAGECRAFT_DRY_RUN")
 		}
 	}()
 
@@ -167,10 +183,10 @@ func TestResolveFlags_EnvironmentVariables(t *testing.T) {
 
 func TestResolveFlags_Defaults(t *testing.T) {
 	// Ensure no env vars are set
-	os.Unsetenv("STAGECRAFT_ENV")
-	os.Unsetenv("STAGECRAFT_CONFIG")
-	os.Unsetenv("STAGECRAFT_VERBOSE")
-	os.Unsetenv("STAGECRAFT_DRY_RUN")
+	unsetEnvForTest(t, "STAGECRAFT_ENV")
+	unsetEnvForTest(t, "STAGECRAFT_CONFIG")
+	unsetEnvForTest(t, "STAGECRAFT_VERBOSE")
+	unsetEnvForTest(t, "STAGECRAFT_DRY_RUN")
 
 	cmd := NewRootCommand()
 	if err := parseFlagsForTesting(cmd, []string{"version"}); err != nil {
@@ -198,11 +214,11 @@ func TestResolveFlags_Defaults(t *testing.T) {
 
 func TestResolveFlags_Precedence(t *testing.T) {
 	// Set environment variables
-	os.Setenv("STAGECRAFT_ENV", "env-value")
-	os.Setenv("STAGECRAFT_VERBOSE", "true")
+	setEnvForTest(t, "STAGECRAFT_ENV", "env-value")
+	setEnvForTest(t, "STAGECRAFT_VERBOSE", "true")
 	defer func() {
-		os.Unsetenv("STAGECRAFT_ENV")
-		os.Unsetenv("STAGECRAFT_VERBOSE")
+		unsetEnvForTest(t, "STAGECRAFT_ENV")
+		unsetEnvForTest(t, "STAGECRAFT_VERBOSE")
 	}()
 
 	// Command-line flags should override environment variables
@@ -298,8 +314,8 @@ func TestResolveFlags_BoolEnvParsing(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			os.Setenv("STAGECRAFT_VERBOSE", tc.envValue)
-			defer os.Unsetenv("STAGECRAFT_VERBOSE")
+			setEnvForTest(t, "STAGECRAFT_VERBOSE", tc.envValue)
+			defer unsetEnvForTest(t, "STAGECRAFT_VERBOSE")
 
 			cmd := NewRootCommand()
 			if err := parseFlagsForTesting(cmd, []string{"version"}); err != nil {
@@ -319,7 +335,7 @@ func TestResolveFlags_BoolEnvParsing(t *testing.T) {
 }
 
 func TestResolveFlags_ConfigDefaultPath(t *testing.T) {
-	os.Unsetenv("STAGECRAFT_CONFIG")
+	unsetEnvForTest(t, "STAGECRAFT_CONFIG")
 
 	cmd := NewRootCommand()
 	if err := parseFlagsForTesting(cmd, []string{"version"}); err != nil {

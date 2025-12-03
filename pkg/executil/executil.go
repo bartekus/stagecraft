@@ -14,6 +14,7 @@ See https://www.gnu.org/licenses/ for license details.
 // Feature: CORE_EXECUTIL
 // Spec: spec/core/executil.md
 
+// Package executil provides utilities for executing external commands.
 package executil
 
 import (
@@ -70,7 +71,9 @@ func NewCommand(name string, args ...string) Command {
 }
 
 // Run executes a command and returns the result.
-func (r *runner) Run(ctx context.Context, cmd Command) (*Result, error) {
+func (r *runner) Run(ctx context.Context, cmd Command) (*Result, error) { //nolint:gocritic // hugeParam: intentional for immutability
+	//nolint:gosec // This package is designed to execute arbitrary commands;
+	// validation should be done by callers.
 	execCmd := exec.CommandContext(ctx, cmd.Name, cmd.Args...)
 
 	// Set working directory if specified
@@ -125,7 +128,9 @@ func (r *runner) Run(ctx context.Context, cmd Command) (*Result, error) {
 }
 
 // RunStream executes a command and streams output to the provided writer.
-func (r *runner) RunStream(ctx context.Context, cmd Command, output io.Writer) error {
+func (r *runner) RunStream(ctx context.Context, cmd Command, output io.Writer) error { //nolint:gocritic // hugeParam: intentional for immutability
+	//nolint:gosec // This package is designed to execute arbitrary commands;
+	// validation should be done by callers.
 	execCmd := exec.CommandContext(ctx, cmd.Name, cmd.Args...)
 
 	// Set working directory if specified
