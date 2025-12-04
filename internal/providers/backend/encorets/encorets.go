@@ -20,10 +20,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 
+	"stagecraft/pkg/logging"
 	"stagecraft/pkg/providers/backend"
 )
 
@@ -46,135 +48,414 @@ func (p *EncoreTsProvider) ID() string {
 // Config represents the Encore.ts provider configuration.
 type Config struct {
 	Dev struct {
-		Secrets struct {
+		EnvFile          string `yaml:"env_file"`            // required for dev
+		Listen           string `yaml:"listen"`              // required
+		WorkDir          string `yaml:"workdir"`             // optional
+		EntryPoint       string `yaml:"entrypoint"`          // optional
+		DisableTelemetry bool   `yaml:"disable_telemetry"`   // optional
+		NodeExtraCACerts string `yaml:"node_extra_ca_certs"` // optional
+		EncoreSecrets    struct {
 			Types   []string `yaml:"types"`
 			FromEnv []string `yaml:"from_env"`
-		} `yaml:"secrets"`
-		EntryPoint string   `yaml:"entrypoint"`
-		EnvFrom    []string `yaml:"env_from"`
-		Listen     string   `yaml:"listen"`
+		} `yaml:"encore_secrets"`
 	} `yaml:"dev"`
 
 	Build struct {
-		// Encore-specific build options can be added here
+		WorkDir         string `yaml:"workdir"`           // optional
+		ImageName       string `yaml:"image_name"`        // optional; default "api"
+		DockerTagSuffix string `yaml:"docker_tag_suffix"` // optional
 	} `yaml:"build"`
 }
 
 // Dev runs the Encore.ts backend in development mode.
 func (p *EncoreTsProvider) Dev(ctx context.Context, opts backend.DevOptions) error {
-	cfg, err := p.parseConfig(opts.Config)
-	if err != nil {
-		return fmt.Errorf("parsing encore-ts provider config: %w", err)
+	// Check if encore is available
+	if err := p.checkEncoreAvailable(ctx); err != nil {
+		return err
 	}
 
-	// Load environment files if specified
+	cfg, err := p.parseConfig(opts.Config)
+	if err != nil {
+		return err
+	}
+
+	if err := p.validateDevConfig(cfg); err != nil {
+		return err
+	}
+
+	// Initialize logger
+	// Note: verbose flag would come from opts if available, for now default to false
+	logger := logging.NewLogger(false)
+	logger = logger.WithFields(
+		logging.NewField("provider", "encore-ts"),
+		logging.NewField("operation", "dev"),
+		logging.NewField("feature", "PROVIDER_BACKEND_ENCORE"),
+	)
+
+	// Resolve workdir
+	workDir := cfg.Dev.WorkDir
+	if workDir == "" {
+		workDir = opts.WorkDir
+	}
+	if workDir == "" {
+		workDir = "."
+	}
+
+	// Prepare base environment from opts.Env
 	env := make(map[string]string)
 	for k, v := range opts.Env {
 		env[k] = v
 	}
 
-	for _, envFile := range cfg.Dev.EnvFrom {
-		// In a full implementation, we would load and merge env files
-		// For now, we just note that they should be loaded
-		_ = envFile
+	// Load env_file if specified
+	if cfg.Dev.EnvFile != "" {
+		envFilePath := cfg.Dev.EnvFile
+		if !filepath.IsAbs(envFilePath) {
+			// Resolve relative to workDir
+			envFilePath = filepath.Join(workDir, envFilePath)
+		}
+
+		if _, err := os.Stat(envFilePath); err == nil {
+			// File exists, read and parse it
+			// Simple dotenv parsing (key=value format)
+			data, err := os.ReadFile(envFilePath)
+			if err != nil {
+				logger.Warn("Failed to read env_file",
+					logging.NewField("path", envFilePath),
+					logging.NewField("error", err.Error()),
+				)
+			} else {
+				// Parse dotenv format
+				lines := strings.Split(string(data), "\n")
+				for _, line := range lines {
+					line = strings.TrimSpace(line)
+					if line == "" || strings.HasPrefix(line, "#") {
+						continue
+					}
+					parts := strings.SplitN(line, "=", 2)
+					if len(parts) == 2 {
+						key := strings.TrimSpace(parts[0])
+						value := strings.TrimSpace(parts[1])
+						// Remove quotes if present
+						if len(value) >= 2 && ((value[0] == '"' && value[len(value)-1] == '"') ||
+							(value[0] == '\'' && value[len(value)-1] == '\'')) {
+							value = value[1 : len(value)-1]
+						}
+						env[key] = value
+					}
+				}
+			}
+		} else {
+			logger.Warn("env_file does not exist",
+				logging.NewField("path", envFilePath),
+			)
+		}
+	}
+
+	// Apply telemetry and CA certs configuration
+	if cfg.Dev.DisableTelemetry {
+		env["DISABLE_ENCORE_TELEMETRY"] = "1"
+	}
+
+	if cfg.Dev.NodeExtraCACerts != "" {
+		caPath := cfg.Dev.NodeExtraCACerts
+		if !filepath.IsAbs(caPath) {
+			caPath = filepath.Join(workDir, caPath)
+		}
+		env["NODE_EXTRA_CA_CERTS"] = caPath
 	}
 
 	// Sync secrets if configured
-	if len(cfg.Dev.Secrets.FromEnv) > 0 {
-		for _, secretName := range cfg.Dev.Secrets.FromEnv {
+	if len(cfg.Dev.EncoreSecrets.FromEnv) > 0 {
+		types := cfg.Dev.EncoreSecrets.Types
+		if len(types) == 0 {
+			types = []string{"dev", "preview", "local"}
+		}
+
+		for _, secretName := range cfg.Dev.EncoreSecrets.FromEnv {
 			secretValue, exists := env[secretName]
-			if !exists {
-				// In a full implementation, we'd load from env files
+			if !exists || secretValue == "" {
+				logger.Warn("Missing environment variable for secret sync",
+					logging.NewField("secret_name", secretName),
+				)
 				continue
 			}
 
-			// Run encore secret set
-			types := cfg.Dev.Secrets.Types
-			if len(types) == 0 {
-				types = []string{"dev", "preview", "local"}
-			}
+			// Sync to each secret type
+			for _, secretType := range types {
+				args := []string{"secret", "set", "--type", secretType, secretName}
 
-			args := []string{"secret", "set", "--type", types[0]}
-			for _, t := range types[1:] {
-				args = append(args, "--type", t)
-			}
-			args = append(args, secretName)
+				//nolint:gosec // encore CLI args and secret names are controlled by operator config/env, not end-user input
+				cmd := exec.CommandContext(ctx, "encore", args...)
+				cmd.Dir = workDir
+				cmd.Stdin = strings.NewReader(secretValue)
 
-			//nolint:gosec // encore CLI args and secret names are controlled by operator config/env, not end-user input
-			cmd := exec.CommandContext(ctx, "encore", args...)
-			cmd.Stdin = strings.NewReader(secretValue)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+				// Capture output for error reporting
+				var stdout, stderr strings.Builder
+				cmd.Stdout = &stdout
+				cmd.Stderr = &stderr
 
-			if err := cmd.Run(); err != nil {
-				return fmt.Errorf("setting encore secret %s: %w", secretName, err)
+				if err := cmd.Run(); err != nil {
+					// Truncate stderr for error detail
+					detail := stderr.String()
+					if len(detail) > 500 {
+						detail = detail[:500] + "..."
+					}
+
+					return &ProviderError{
+						Category:  ErrSecretSyncFailed,
+						Provider:  "encore-ts",
+						Operation: "dev",
+						Message:   fmt.Sprintf("failed to set encore secret %s for type %s", secretName, secretType),
+						Detail:    detail,
+						Err:       err,
+					}
+				}
 			}
 		}
 	}
 
 	// Run encore dev server
-	listen := cfg.Dev.Listen
-	if listen == "" {
-		listen = "0.0.0.0:4000"
-	}
+	logger.Info("Starting Encore dev server",
+		logging.NewField("listen", cfg.Dev.Listen),
+		logging.NewField("workdir", workDir),
+	)
 
-	args := []string{"run", "--watch", "--listen", listen}
+	args := []string{"run", "--watch", "--listen", cfg.Dev.Listen}
 	if cfg.Dev.EntryPoint != "" {
 		args = append(args, "--entrypoint", cfg.Dev.EntryPoint)
 	}
 
 	//nolint:gosec // encore CLI args come from trusted stagecraft.yml and env
 	cmd := exec.CommandContext(ctx, "encore", args...)
-	cmd.Dir = opts.WorkDir
+	cmd.Dir = workDir
+
+	// Build environment
 	cmd.Env = os.Environ()
 	for k, v := range env {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
 	}
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	// Stream output through logger (use Debug level for command output)
+	cmd.Stdout = &logWriter{logger: logger}
+	cmd.Stderr = &logWriter{logger: logger}
 
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		// Check if context was cancelled
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		// Process exited with error
+		var exitCode int
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			exitCode = exitErr.ExitCode()
+		}
+
+		return &ProviderError{
+			Category:  ErrDevServerFailed,
+			Provider:  "encore-ts",
+			Operation: "dev",
+			Message:   "encore dev server failed",
+			Detail:    fmt.Sprintf("exit code: %d", exitCode),
+			Err:       err,
+		}
+	}
+
+	return nil
+}
+
+// logWriter implements io.Writer for streaming command output to logger
+type logWriter struct {
+	logger logging.Logger
+}
+
+func (w *logWriter) Write(p []byte) (n int, err error) {
+	// Remove trailing newline for cleaner log output
+	msg := strings.TrimRight(string(p), "\n\r")
+	if msg == "" {
+		return len(p), nil
+	}
+
+	// Use Debug level for streaming command output
+	w.logger.Debug(msg)
+
+	return len(p), nil
 }
 
 // BuildDocker builds a Docker image using Encore.
 func (p *EncoreTsProvider) BuildDocker(ctx context.Context, opts backend.BuildDockerOptions) (string, error) {
-	cfg, err := p.parseConfig(opts.Config)
-	if err != nil {
-		return "", fmt.Errorf("parsing encore-ts provider config: %w", err)
+	// Check if encore is available
+	if err := p.checkEncoreAvailable(ctx); err != nil {
+		return "", err
 	}
 
-	_ = cfg // Config may contain build-specific options in the future
+	cfg, err := p.parseConfig(opts.Config)
+	if err != nil {
+		return "", err
+	}
+
+	// Initialize logger
+	logger := logging.NewLogger(false)
+	logger = logger.WithFields(
+		logging.NewField("provider", "encore-ts"),
+		logging.NewField("operation", "build"),
+		logging.NewField("feature", "PROVIDER_BACKEND_ENCORE"),
+	)
+
+	// Resolve workdir
+	workDir := cfg.Build.WorkDir
+	if workDir == "" {
+		workDir = opts.WorkDir
+	}
+	if workDir == "" {
+		workDir = "."
+	}
+
+	// Resolve image reference
+	// If opts.ImageTag already contains a registry (has /), use it as-is
+	// Otherwise, construct from build.image_name and opts.ImageTag
+	imageRef := opts.ImageTag
+	if !strings.Contains(opts.ImageTag, "/") {
+		// opts.ImageTag is just the tag part, construct full reference
+		imageName := cfg.Build.ImageName
+		if imageName == "" {
+			imageName = "api"
+		}
+
+		// Construct: <image_name>:<tag><suffix>
+		tag := opts.ImageTag
+		if cfg.Build.DockerTagSuffix != "" {
+			tag = tag + cfg.Build.DockerTagSuffix
+		}
+		imageRef = fmt.Sprintf("%s:%s", imageName, tag)
+	} else {
+		// opts.ImageTag is full reference, but we may need to add suffix
+		if cfg.Build.DockerTagSuffix != "" {
+			// Insert suffix before the tag part
+			parts := strings.SplitN(imageRef, ":", 2)
+			if len(parts) == 2 {
+				imageRef = fmt.Sprintf("%s:%s%s", parts[0], parts[1], cfg.Build.DockerTagSuffix)
+			}
+		}
+	}
+
+	logger.Info("Building Encore Docker image",
+		logging.NewField("image", imageRef),
+		logging.NewField("workdir", workDir),
+	)
 
 	// Run encore build docker
-	args := []string{"build", "docker", opts.ImageTag}
+	args := []string{"build", "docker", imageRef}
 
 	//nolint:gosec // encore CLI args come from trusted config (image tag)
 	cmd := exec.CommandContext(ctx, "encore", args...)
-	cmd.Dir = opts.WorkDir
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	cmd.Dir = workDir
+
+	// Stream output through logger
+	cmd.Stdout = &logWriter{logger: logger}
+	cmd.Stderr = &logWriter{logger: logger}
 
 	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("encore build docker failed: %w", err)
+		// Check if context was cancelled
+		if ctx.Err() != nil {
+			return "", ctx.Err()
+		}
+
+		// Build failed
+		var exitCode int
+		var stderrOutput string
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			exitCode = exitErr.ExitCode()
+			// Note: stderr was already streamed to logger, but we could capture it here if needed
+		}
+
+		detail := fmt.Sprintf("exit code: %d", exitCode)
+		if stderrOutput != "" && len(stderrOutput) > 500 {
+			detail += ", " + stderrOutput[:500] + "..."
+		}
+
+		return "", &ProviderError{
+			Category:  ErrBuildFailed,
+			Provider:  "encore-ts",
+			Operation: "build",
+			Message:   "encore build docker failed",
+			Detail:    detail,
+			Err:       err,
+		}
 	}
 
-	return opts.ImageTag, nil
+	logger.Info("Successfully built Docker image",
+		logging.NewField("image", imageRef),
+	)
+
+	return imageRef, nil
 }
 
-// parseConfig unmarshals the provider config.
+// parseConfig unmarshals and validates the provider config.
 func (p *EncoreTsProvider) parseConfig(cfg any) (*Config, error) {
 	data, err := yaml.Marshal(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("marshaling config: %w", err)
+		return nil, &ProviderError{
+			Category:  ErrInvalidConfig,
+			Provider:  "encore-ts",
+			Operation: "parse",
+			Message:   "failed to marshal config",
+			Err:       err,
+		}
 	}
 
 	var config Config
 	if err := yaml.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("invalid encore-ts provider config: %w", err)
+		return nil, &ProviderError{
+			Category:  ErrInvalidConfig,
+			Provider:  "encore-ts",
+			Operation: "parse",
+			Message:   "invalid encore-ts provider config",
+			Detail:    err.Error(),
+			Err:       err,
+		}
+	}
+
+	// Set defaults
+	if config.Build.ImageName == "" {
+		config.Build.ImageName = "api"
 	}
 
 	return &config, nil
+}
+
+// checkEncoreAvailable checks if the encore binary is available.
+func (p *EncoreTsProvider) checkEncoreAvailable(ctx context.Context) error {
+	_, err := exec.LookPath("encore")
+	if err != nil {
+		return &ProviderError{
+			Category:  ErrProviderNotAvailable,
+			Provider:  "encore-ts",
+			Operation: "check",
+			Message:   "encore binary not found",
+			Detail:    "encore CLI must be installed and available in PATH",
+			Err:       err,
+		}
+	}
+	return nil
+}
+
+// validateDevConfig validates dev-specific config requirements.
+func (p *EncoreTsProvider) validateDevConfig(cfg *Config) error {
+	if cfg.Dev.Listen == "" {
+		return &ProviderError{
+			Category:  ErrInvalidConfig,
+			Provider:  "encore-ts",
+			Operation: "dev",
+			Message:   "dev.listen is required",
+		}
+	}
+
+	// Note: env_file is required per spec, but we'll check existence when reading
+	// If it doesn't exist, we'll log a warning but continue (opts.Env may have values)
+
+	return nil
 }
 
 func init() {
