@@ -78,3 +78,22 @@ type CloudProvider interface {
 	// Apply applies the given infrastructure plan, creating and deleting hosts as needed.
 	Apply(ctx context.Context, opts ApplyOptions) error
 }
+
+// ProviderMetadata contains metadata about a provider.
+type ProviderMetadata struct {
+	Name         string
+	Description  string
+	Version      string
+	Author       string
+	Experimental bool
+}
+
+// MetadataProvider is an optional interface that providers can implement
+// to expose descriptive metadata.
+type MetadataProvider interface {
+	// Base provider interface
+	CloudProvider
+
+	// Metadata returns descriptive metadata about the provider.
+	Metadata() ProviderMetadata
+}

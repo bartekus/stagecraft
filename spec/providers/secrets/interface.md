@@ -57,6 +57,52 @@ Secrets providers follow the same registry pattern as other providers:
 - Registry IDs are returned in deterministic lexicographic order
 - Duplicate registration panics
 
+## Registry Contract
+
+All Secrets provider registries follow a unified contract:
+
+1. **Thread Safety**  
+
+   All registry methods use an internal RWMutex to guarantee safe concurrent registration and lookups.
+
+2. **Deterministic Ordering**  
+
+   - `IDs()` returns provider IDs in lexicographic order.  
+
+   - `List()` returns provider instances sorted lexicographically by their `ID()`.
+
+3. **Duplicate & Empty ID Prevention**  
+
+   - Registering a provider with an empty ID panics with `ErrEmptyProviderID`.  
+
+   - Registering a provider with an already-registered ID panics with `ErrDuplicateProvider`.
+
+4. **Error Semantics**  
+
+   - `Get(id)` returns the matching provider or an error.  
+
+   - When no provider exists for the given ID, `Get` returns an error that wraps `ErrUnknownProvider` and includes the ID.
+
+5. **Panic Messages**  
+
+   All panic messages are prefixed with `<package>.Registry.Register` to make stack traces searchable and self-describing.
+
+6. **Instrumentation Hooks**  
+
+   Registries expose two optional hooks:
+
+   - `OnProviderRegistered(kind, id string)` – called after a provider is successfully registered.  
+
+   - `OnProviderLookup(kind, id string, found bool)` – called on each `Get`, indicating lookup success or failure.
+
+### Error Types
+
+- `ErrUnknownProvider`: Base error returned (wrapped) whenever `Get()` is called with an unknown provider ID.
+
+- `ErrDuplicateProvider`: Base error used when attempting to register a provider with a duplicate ID.
+
+- `ErrEmptyProviderID`: Base error used when attempting to register a provider with an empty ID.
+
 ## Usage Example
 
 ```go

@@ -16,12 +16,19 @@ package secrets
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 )
 
-// Feature: CORE_SECRETS_REGISTRY
+// Feature: PROVIDER_SECRETS_INTERFACE
 // Spec: spec/providers/secrets/interface.md
+
+// resetDefaultRegistry resets the global registry for testing.
+// This prevents test pollution when tests run in parallel.
+func resetDefaultRegistry() {
+	DefaultRegistry = NewRegistry()
+}
 
 // mockProvider is a test implementation of SecretsProvider.
 type mockProvider struct {
@@ -185,7 +192,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			p := &mockProvider{id: string(rune('a' + id))}
+			p := &mockProvider{id: fmt.Sprintf("p-%d", id)}
 			reg.Register(p)
 		}(i)
 	}
@@ -203,8 +210,8 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			reg.Has("a")
-			_, _ = reg.Get("a") // Ignore error in concurrent test
+			reg.Has("p-0")
+			_, _ = reg.Get("p-0") // Ignore error in concurrent test
 			reg.IDs()
 		}()
 	}
@@ -213,6 +220,8 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 }
 
 func TestDefaultRegistry(t *testing.T) {
+	resetDefaultRegistry()
+
 	p := &mockProvider{id: "default-test"}
 
 	DefaultRegistry.Register(p)
@@ -232,6 +241,8 @@ func TestDefaultRegistry(t *testing.T) {
 }
 
 func TestDefaultRegistry_Register(t *testing.T) {
+	resetDefaultRegistry()
+
 	p := &mockProvider{id: "global-test"}
 
 	Register(p)
@@ -242,6 +253,8 @@ func TestDefaultRegistry_Register(t *testing.T) {
 }
 
 func TestDefaultRegistry_Get(t *testing.T) {
+	resetDefaultRegistry()
+
 	p := &mockProvider{id: "global-get-test"}
 	Register(p)
 
@@ -256,6 +269,8 @@ func TestDefaultRegistry_Get(t *testing.T) {
 }
 
 func TestDefaultRegistry_Has(t *testing.T) {
+	resetDefaultRegistry()
+
 	p := &mockProvider{id: "global-has-test"}
 	Register(p)
 
@@ -265,5 +280,45 @@ func TestDefaultRegistry_Has(t *testing.T) {
 
 	if Has("not-registered") {
 		t.Error("Has() = true for unregistered provider, want false")
+	}
+}
+
+func TestRegistry_List(t *testing.T) {
+	reg := NewRegistry()
+
+	p1 := &mockProvider{id: "b-provider"}
+	p2 := &mockProvider{id: "a-provider"}
+	p3 := &mockProvider{id: "c-provider"}
+
+	reg.Register(p1)
+	reg.Register(p2)
+	reg.Register(p3)
+
+	list := reg.List()
+	if len(list) != 3 {
+		t.Fatalf("List() length = %d, want 3", len(list))
+	}
+
+	if list[0].ID() != "a-provider" || list[1].ID() != "b-provider" || list[2].ID() != "c-provider" {
+		t.Errorf("List() order = [%s, %s, %s], want [a-provider, b-provider, c-provider]",
+			list[0].ID(), list[1].ID(), list[2].ID())
+	}
+}
+
+func TestDefaultRegistry_List(t *testing.T) {
+	resetDefaultRegistry()
+
+	p1 := &mockProvider{id: "z-provider"}
+	p2 := &mockProvider{id: "a-provider"}
+
+	Register(p1)
+	Register(p2)
+
+	list := List()
+	if len(list) != 2 {
+		t.Fatalf("List() length = %d, want 2", len(list))
+	}
+	if list[0].ID() != "a-provider" || list[1].ID() != "z-provider" {
+		t.Errorf("List() order incorrect")
 	}
 }

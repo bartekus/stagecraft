@@ -59,3 +59,22 @@ type BackendProvider interface {
 	// BuildDocker builds a Docker image for the backend.
 	BuildDocker(ctx context.Context, opts BuildDockerOptions) (string, error)
 }
+
+// ProviderMetadata contains metadata about a provider.
+type ProviderMetadata struct {
+	Name         string
+	Description  string
+	Version      string
+	Author       string
+	Experimental bool
+}
+
+// MetadataProvider is an optional interface that providers can implement
+// to expose descriptive metadata.
+type MetadataProvider interface {
+	// Base provider interface
+	BackendProvider
+
+	// Metadata returns descriptive metadata about the provider.
+	Metadata() ProviderMetadata
+}

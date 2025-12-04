@@ -15,6 +15,7 @@ See https://www.gnu.org/licenses/ for license details.
 package migration
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"sync"
@@ -22,6 +23,23 @@ import (
 
 // Feature: CORE_MIGRATION_REGISTRY
 // Spec: spec/core/migration-registry.md
+
+const registryName = "migration.Registry"
+
+var (
+	// ErrUnknownProvider is returned when Get() is called with an unknown provider ID.
+	ErrUnknownProvider = errors.New("unknown provider")
+	// ErrDuplicateProvider is used when attempting to register a provider with a duplicate ID.
+	ErrDuplicateProvider = errors.New("duplicate provider ID")
+	// ErrEmptyProviderID is used when attempting to register a provider with an empty ID.
+	ErrEmptyProviderID = errors.New("empty provider ID")
+)
+
+// Instrumentation hooks for observability (optional).
+var (
+	OnProviderRegistered func(kind, id string)
+	OnProviderLookup     func(kind, id string, found bool)
+)
 
 // Registry manages migration engine registration and lookup.
 type Registry struct {
@@ -44,13 +62,17 @@ func (r *Registry) Register(e Engine) {
 
 	id := e.ID()
 	if id == "" {
-		panic("migration engine registration: empty ID")
+		panic(fmt.Sprintf("%s.Register: %v", registryName, ErrEmptyProviderID))
 	}
 	if _, exists := r.engines[id]; exists {
-		panic(fmt.Sprintf("migration engine registration: duplicate ID %q", id))
+		panic(fmt.Sprintf("%s.Register: %v: %q", registryName, ErrDuplicateProvider, id))
 	}
 
 	r.engines[id] = e
+
+	if OnProviderRegistered != nil {
+		OnProviderRegistered(registryName, id)
+	}
 }
 
 // Get retrieves an engine by ID.
@@ -60,8 +82,11 @@ func (r *Registry) Get(id string) (Engine, error) {
 	defer r.mu.RUnlock()
 
 	e, ok := r.engines[id]
+	if OnProviderLookup != nil {
+		OnProviderLookup(registryName, id, ok)
+	}
 	if !ok {
-		return nil, fmt.Errorf("unknown migration engine %q", id)
+		return nil, fmt.Errorf("%w: %q", ErrUnknownProvider, id)
 	}
 	return e, nil
 }
@@ -88,6 +113,24 @@ func (r *Registry) IDs() []string {
 	return ids
 }
 
+// List returns all registered engines in lexicographic order by ID.
+func (r *Registry) List() []Engine {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	engines := make([]Engine, 0, len(r.engines))
+	for _, e := range r.engines {
+		engines = append(engines, e)
+	}
+
+	// Deterministic order by ID
+	sort.Slice(engines, func(i, j int) bool {
+		return engines[i].ID() < engines[j].ID()
+	})
+
+	return engines
+}
+
 // DefaultRegistry is the global default registry.
 var DefaultRegistry = NewRegistry()
 
@@ -104,4 +147,9 @@ func Get(id string) (Engine, error) {
 // Has checks if an engine exists in the default registry.
 func Has(id string) bool {
 	return DefaultRegistry.Has(id)
+}
+
+// List returns all engines from the default registry.
+func List() []Engine {
+	return DefaultRegistry.List()
 }
