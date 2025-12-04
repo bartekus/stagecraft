@@ -57,3 +57,22 @@ type CIProvider interface {
 	// Trigger triggers a CI run for the given environment and version.
 	Trigger(ctx context.Context, opts TriggerOptions) error
 }
+
+// ProviderMetadata contains metadata about a provider.
+type ProviderMetadata struct {
+	Name         string
+	Description  string
+	Version      string
+	Author       string
+	Experimental bool
+}
+
+// MetadataProvider is an optional interface that providers can implement
+// to expose descriptive metadata.
+type MetadataProvider interface {
+	// Base provider interface
+	CIProvider
+
+	// Metadata returns descriptive metadata about the provider.
+	Metadata() ProviderMetadata
+}

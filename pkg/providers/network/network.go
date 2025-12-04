@@ -60,3 +60,22 @@ type NetworkProvider interface {
 	// For example, "plat-db-1.mytailnet.ts.net" for Tailscale.
 	NodeFQDN(host string) (string, error)
 }
+
+// ProviderMetadata contains metadata about a provider.
+type ProviderMetadata struct {
+	Name         string
+	Description  string
+	Version      string
+	Author       string
+	Experimental bool
+}
+
+// MetadataProvider is an optional interface that providers can implement
+// to expose descriptive metadata.
+type MetadataProvider interface {
+	// Base provider interface
+	NetworkProvider
+
+	// Metadata returns descriptive metadata about the provider.
+	Metadata() ProviderMetadata
+}

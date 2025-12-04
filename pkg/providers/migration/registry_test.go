@@ -16,12 +16,19 @@ package migration
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 )
 
 // Feature: CORE_MIGRATION_REGISTRY
 // Spec: spec/core/migration-registry.md
+
+// resetDefaultRegistry resets the global registry for testing.
+// This prevents test pollution when tests run in parallel.
+func resetDefaultRegistry() {
+	DefaultRegistry = NewRegistry()
+}
 
 // mockEngine is a test implementation of Engine.
 type mockEngine struct {
@@ -191,7 +198,7 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			e := &mockEngine{id: string(rune('a' + id))}
+			e := &mockEngine{id: fmt.Sprintf("p-%d", id)}
 			reg.Register(e)
 		}(i)
 	}
@@ -210,8 +217,8 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			reg.Has("a")
-			_, _ = reg.Get("a") // Ignore error in concurrent test
+			reg.Has("p-0")
+			_, _ = reg.Get("p-0") // Ignore error in concurrent test
 			reg.IDs()
 		}()
 	}
@@ -220,6 +227,8 @@ func TestRegistry_ConcurrentAccess(t *testing.T) {
 }
 
 func TestDefaultRegistry(t *testing.T) {
+	resetDefaultRegistry()
+
 	e := &mockEngine{id: "default-test"}
 
 	// This would normally be called in init(), but for testing we call directly
@@ -240,6 +249,8 @@ func TestDefaultRegistry(t *testing.T) {
 }
 
 func TestDefaultRegistry_Register(t *testing.T) {
+	resetDefaultRegistry()
+
 	e := &mockEngine{id: "global-test"}
 
 	Register(e)
@@ -250,6 +261,8 @@ func TestDefaultRegistry_Register(t *testing.T) {
 }
 
 func TestDefaultRegistry_Get(t *testing.T) {
+	resetDefaultRegistry()
+
 	e := &mockEngine{id: "global-get-test"}
 	Register(e)
 
@@ -264,6 +277,8 @@ func TestDefaultRegistry_Get(t *testing.T) {
 }
 
 func TestDefaultRegistry_Has(t *testing.T) {
+	resetDefaultRegistry()
+
 	e := &mockEngine{id: "global-has-test"}
 	Register(e)
 
@@ -273,5 +288,45 @@ func TestDefaultRegistry_Has(t *testing.T) {
 
 	if Has("not-registered") {
 		t.Error("Has() = true for unregistered engine, want false")
+	}
+}
+
+func TestRegistry_List(t *testing.T) {
+	reg := NewRegistry()
+
+	e1 := &mockEngine{id: "b-provider"}
+	e2 := &mockEngine{id: "a-provider"}
+	e3 := &mockEngine{id: "c-provider"}
+
+	reg.Register(e1)
+	reg.Register(e2)
+	reg.Register(e3)
+
+	list := reg.List()
+	if len(list) != 3 {
+		t.Fatalf("List() length = %d, want 3", len(list))
+	}
+
+	if list[0].ID() != "a-provider" || list[1].ID() != "b-provider" || list[2].ID() != "c-provider" {
+		t.Errorf("List() order = [%s, %s, %s], want [a-provider, b-provider, c-provider]",
+			list[0].ID(), list[1].ID(), list[2].ID())
+	}
+}
+
+func TestDefaultRegistry_List(t *testing.T) {
+	resetDefaultRegistry()
+
+	e1 := &mockEngine{id: "z-provider"}
+	e2 := &mockEngine{id: "a-provider"}
+
+	Register(e1)
+	Register(e2)
+
+	list := List()
+	if len(list) != 2 {
+		t.Fatalf("List() length = %d, want 2", len(list))
+	}
+	if list[0].ID() != "a-provider" || list[1].ID() != "z-provider" {
+		t.Errorf("List() order incorrect")
 	}
 }

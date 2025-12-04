@@ -15,13 +15,31 @@ See https://www.gnu.org/licenses/ for license details.
 package secrets
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"sync"
 )
 
-// Feature: CORE_SECRETS_REGISTRY
+// Feature: PROVIDER_SECRETS_INTERFACE
 // Spec: spec/providers/secrets/interface.md
+
+const registryName = "secrets.Registry"
+
+var (
+	// ErrUnknownProvider is returned when Get() is called with an unknown provider ID.
+	ErrUnknownProvider = errors.New("unknown provider")
+	// ErrDuplicateProvider is used when attempting to register a provider with a duplicate ID.
+	ErrDuplicateProvider = errors.New("duplicate provider ID")
+	// ErrEmptyProviderID is used when attempting to register a provider with an empty ID.
+	ErrEmptyProviderID = errors.New("empty provider ID")
+)
+
+// Instrumentation hooks for observability (optional).
+var (
+	OnProviderRegistered func(kind, id string)
+	OnProviderLookup     func(kind, id string, found bool)
+)
 
 // Registry manages secrets provider registration and lookup.
 type Registry struct {
@@ -44,13 +62,17 @@ func (r *Registry) Register(p SecretsProvider) {
 
 	id := p.ID()
 	if id == "" {
-		panic("secrets provider registration: empty ID")
+		panic(fmt.Sprintf("%s.Register: %v", registryName, ErrEmptyProviderID))
 	}
 	if _, exists := r.providers[id]; exists {
-		panic(fmt.Sprintf("secrets provider registration: duplicate ID %q", id))
+		panic(fmt.Sprintf("%s.Register: %v: %q", registryName, ErrDuplicateProvider, id))
 	}
 
 	r.providers[id] = p
+
+	if OnProviderRegistered != nil {
+		OnProviderRegistered(registryName, id)
+	}
 }
 
 // Get retrieves a provider by ID.
@@ -60,8 +82,11 @@ func (r *Registry) Get(id string) (SecretsProvider, error) {
 	defer r.mu.RUnlock()
 
 	p, ok := r.providers[id]
+	if OnProviderLookup != nil {
+		OnProviderLookup(registryName, id, ok)
+	}
 	if !ok {
-		return nil, fmt.Errorf("unknown secrets provider %q", id)
+		return nil, fmt.Errorf("%w: %q", ErrUnknownProvider, id)
 	}
 	return p, nil
 }
@@ -87,6 +112,24 @@ func (r *Registry) IDs() []string {
 	return ids
 }
 
+// List returns all registered providers in lexicographic order by ID.
+func (r *Registry) List() []SecretsProvider {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	providers := make([]SecretsProvider, 0, len(r.providers))
+	for _, p := range r.providers {
+		providers = append(providers, p)
+	}
+
+	// Deterministic order by ID
+	sort.Slice(providers, func(i, j int) bool {
+		return providers[i].ID() < providers[j].ID()
+	})
+
+	return providers
+}
+
 // DefaultRegistry is the global default registry.
 var DefaultRegistry = NewRegistry()
 
@@ -103,4 +146,9 @@ func Get(id string) (SecretsProvider, error) {
 // Has checks if a provider exists in the default registry.
 func Has(id string) bool {
 	return DefaultRegistry.Has(id)
+}
+
+// List returns all providers from the default registry.
+func List() []SecretsProvider {
+	return DefaultRegistry.List()
 }
