@@ -158,11 +158,11 @@ features:
 
   - id: CORE_STATE
     title: "State management (release history)"
-    status: todo
+    status: done
     spec: "core/state.md"
     owner: bart
     tests:
-      - "internal/state/state_test.go"
+      - "internal/core/state/state_test.go"
 
   - id: CORE_COMPOSE
     title: "Docker Compose integration"
