@@ -70,7 +70,7 @@ type Config struct {
 // Dev runs the Encore.ts backend in development mode.
 func (p *EncoreTsProvider) Dev(ctx context.Context, opts backend.DevOptions) error {
 	// Check if encore is available
-	if err := p.checkEncoreAvailable(ctx); err != nil {
+	if err := p.checkEncoreAvailable(); err != nil {
 		return err
 	}
 
@@ -118,6 +118,7 @@ func (p *EncoreTsProvider) Dev(ctx context.Context, opts backend.DevOptions) err
 		if _, err := os.Stat(envFilePath); err == nil {
 			// File exists, read and parse it
 			// Simple dotenv parsing (key=value format)
+			//nolint:gosec // G304: envFilePath comes from trusted stagecraft.yml config, not user input
 			data, err := os.ReadFile(envFilePath)
 			if err != nil {
 				logger.Warn("Failed to read env_file",
@@ -286,7 +287,7 @@ func (w *logWriter) Write(p []byte) (n int, err error) {
 // BuildDocker builds a Docker image using Encore.
 func (p *EncoreTsProvider) BuildDocker(ctx context.Context, opts backend.BuildDockerOptions) (string, error) {
 	// Check if encore is available
-	if err := p.checkEncoreAvailable(ctx); err != nil {
+	if err := p.checkEncoreAvailable(); err != nil {
 		return "", err
 	}
 
@@ -326,17 +327,15 @@ func (p *EncoreTsProvider) BuildDocker(ctx context.Context, opts backend.BuildDo
 		// Construct: <image_name>:<tag><suffix>
 		tag := opts.ImageTag
 		if cfg.Build.DockerTagSuffix != "" {
-			tag = tag + cfg.Build.DockerTagSuffix
+			tag += cfg.Build.DockerTagSuffix
 		}
 		imageRef = fmt.Sprintf("%s:%s", imageName, tag)
-	} else {
+	} else if cfg.Build.DockerTagSuffix != "" {
 		// opts.ImageTag is full reference, but we may need to add suffix
-		if cfg.Build.DockerTagSuffix != "" {
-			// Insert suffix before the tag part
-			parts := strings.SplitN(imageRef, ":", 2)
-			if len(parts) == 2 {
-				imageRef = fmt.Sprintf("%s:%s%s", parts[0], parts[1], cfg.Build.DockerTagSuffix)
-			}
+		// Insert suffix before the tag part
+		parts := strings.SplitN(imageRef, ":", 2)
+		if len(parts) == 2 {
+			imageRef = fmt.Sprintf("%s:%s%s", parts[0], parts[1], cfg.Build.DockerTagSuffix)
 		}
 	}
 
@@ -426,7 +425,7 @@ func (p *EncoreTsProvider) parseConfig(cfg any) (*Config, error) {
 }
 
 // checkEncoreAvailable checks if the encore binary is available.
-func (p *EncoreTsProvider) checkEncoreAvailable(ctx context.Context) error {
+func (p *EncoreTsProvider) checkEncoreAvailable() error {
 	_, err := exec.LookPath("encore")
 	if err != nil {
 		return &ProviderError{

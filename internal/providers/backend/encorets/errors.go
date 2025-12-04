@@ -72,4 +72,3 @@ func GetProviderError(err error) *ProviderError {
 	}
 	return nil
 }
-
