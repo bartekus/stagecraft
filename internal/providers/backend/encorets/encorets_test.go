@@ -84,11 +84,11 @@ func TestEncoreTsProvider_ParseConfig_WithAllFields(t *testing.T) {
 
 	cfg := map[string]any{
 		"dev": map[string]any{
-			"env_file":          ".env.local",
-			"listen":            "0.0.0.0:4000",
-			"workdir":           "./backend",
-			"entrypoint":        "./src/index.ts",
-			"disable_telemetry": true,
+			"env_file":            ".env.local",
+			"listen":              "0.0.0.0:4000",
+			"workdir":             "./backend",
+			"entrypoint":          "./src/index.ts",
+			"disable_telemetry":   true,
 			"node_extra_ca_certs": "./certs/ca.pem",
 			"encore_secrets": map[string]any{
 				"types":    []string{"dev", "preview"},
@@ -96,8 +96,8 @@ func TestEncoreTsProvider_ParseConfig_WithAllFields(t *testing.T) {
 			},
 		},
 		"build": map[string]any{
-			"workdir":          "./backend",
-			"image_name":       "my-api",
+			"workdir":           "./backend",
+			"image_name":        "my-api",
 			"docker_tag_suffix": "-encore",
 		},
 	}
