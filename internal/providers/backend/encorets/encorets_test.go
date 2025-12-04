@@ -952,9 +952,9 @@ func TestEncoreTsProvider_BuildDocker_ImageReferenceResolution(t *testing.T) {
 	defer os.Unsetenv("ENCORE_MOCK_MODE")
 
 	tests := []struct {
-		name        string
-		config      map[string]any
-		imageTag    string
+		name         string
+		config       map[string]any
+		imageTag     string
 		wantImageRef string
 	}{
 		{

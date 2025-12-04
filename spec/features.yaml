@@ -166,7 +166,7 @@ features:
 
   - id: CORE_COMPOSE
     title: "Docker Compose integration"
-    status: todo
+    status: done
     spec: "core/compose.md"
     owner: bart
     tests:
