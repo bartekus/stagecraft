@@ -15,6 +15,7 @@ See https://www.gnu.org/licenses/ for license details.
 package compose
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -29,9 +30,11 @@ import (
 // Spec: spec/core/compose.md
 
 // ErrComposeNotFound is returned when the Compose file does not exist.
-var ErrComposeNotFound = fmt.Errorf("docker-compose.yml not found")
+var ErrComposeNotFound = errors.New("compose file not found")
 
 // ComposeFile represents a parsed Docker Compose file.
+//
+//nolint:revive // ComposeFile is intentionally descriptive, not stuttering
 type ComposeFile struct {
 	data map[string]any
 	path string
@@ -53,8 +56,11 @@ func (l *Loader) Load(path string) (*ComposeFile, error) {
 	}
 
 	// Check if file exists
-	if _, err := os.Stat(absPath); os.IsNotExist(err) {
-		return nil, ErrComposeNotFound
+	if _, err := os.Stat(absPath); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil, fmt.Errorf("%w: %s", ErrComposeNotFound, absPath)
+		}
+		return nil, fmt.Errorf("checking compose file: %w", err)
 	}
 
 	// nolint:gosec // G304: reading compose file from user-specified path is expected behavior
@@ -226,6 +232,32 @@ func (c *ComposeFile) resolveVolumePath(
 	cfg *config.Config,
 ) string {
 	// Handle volume mount format: "source:target:options"
+	// If source starts with ${, we need to find the closing } before splitting
+	var sourceEnd int
+	if strings.HasPrefix(volumeSpec, "${") {
+		// Find the matching closing brace
+		braceCount := 0
+		for i, r := range volumeSpec {
+			if r == '{' {
+				braceCount++
+			} else if r == '}' {
+				braceCount--
+				if braceCount == 0 {
+					sourceEnd = i + 1
+					break
+				}
+			}
+		}
+		// If we found the closing brace, extract source and resolve it
+		if sourceEnd > 0 && sourceEnd < len(volumeSpec) && volumeSpec[sourceEnd] == ':' {
+			source := volumeSpec[:sourceEnd]
+			rest := volumeSpec[sourceEnd+1:]
+			resolvedSource := c.resolveVolumeVariable(source, env, envCfg, cfg)
+			return resolvedSource + ":" + rest
+		}
+	}
+
+	// Fallback to simple split if no variable pattern found
 	parts := strings.Split(volumeSpec, ":")
 	if len(parts) < 2 {
 		return volumeSpec
@@ -254,23 +286,27 @@ func (c *ComposeFile) resolveVolumeVariable(
 	envCfg config.EnvironmentConfig,
 	cfg *config.Config,
 ) string {
-	// Check for ${VAR:-default} pattern
+	// Check for ${VAR:-default} or ${VAR} pattern
 	if strings.HasPrefix(varRef, "${") && strings.HasSuffix(varRef, "}") {
 		inner := strings.TrimPrefix(strings.TrimSuffix(varRef, "}"), "${")
 
 		// Handle default value: VAR:-default
-		defaultValue := ""
 		if idx := strings.Index(inner, ":-"); idx > 0 {
-			defaultValue = inner[idx+2:]
+			defaultValue := inner[idx+2:]
+			// For v1, return default value
+			// Future: resolve from environment config when EnvironmentConfig is extended
+			_ = env
+			_ = envCfg
+			_ = cfg
+			return defaultValue
 		}
 
-		// For v1, return default value
-		// Future: resolve from environment config when EnvironmentConfig is extended
+		// No default provided; for v1, preserve the original reference
+		// until we have proper env resolution.
 		_ = env
 		_ = envCfg
 		_ = cfg
-
-		return defaultValue
+		return varRef
 	}
 
 	return varRef
@@ -319,52 +355,65 @@ func (c *ComposeFile) resolvePortVariable(
 	envCfg config.EnvironmentConfig,
 	cfg *config.Config,
 ) string {
-	// Check for ${VAR:-default} pattern
+	// Check for ${VAR:-default} or ${VAR} pattern
 	if strings.HasPrefix(varRef, "${") && strings.HasSuffix(varRef, "}") {
 		inner := strings.TrimPrefix(strings.TrimSuffix(varRef, "}"), "${")
 
-		defaultValue := ""
 		if idx := strings.Index(inner, ":-"); idx > 0 {
-			defaultValue = inner[idx+2:]
+			defaultValue := inner[idx+2:]
+			// For v1, return default value
+			// Future: resolve from environment config when EnvironmentConfig is extended
+			// Empty default string still means "do not publish".
+			_ = serviceName
+			_ = env
+			_ = envCfg
+			_ = cfg
+			return defaultValue
 		}
 
-		// For v1, return default value
-		// Future: resolve from environment config when EnvironmentConfig is extended
-		// Empty string means don't publish (port will be removed)
+		// No default; keep as-is for now so we don't accidentally
+		// drop ports that should be resolved later.
 		_ = serviceName
 		_ = env
 		_ = envCfg
 		_ = cfg
-
-		return defaultValue
+		return varRef
 	}
 
 	return varRef
 }
 
 // resolveEnvironment resolves environment variables.
+// Supports both list and map forms of environment configuration.
 func (c *ComposeFile) resolveEnvironment(
 	serviceMap map[string]any,
 	env string,
 	envCfg config.EnvironmentConfig,
 	cfg *config.Config,
-) []any {
-	envVars, ok := serviceMap["environment"].([]any)
-	if !ok {
-		return nil
+) any {
+	if envSlice, ok := serviceMap["environment"].([]any); ok {
+		// For v1, return environment as-is
+		// Future: full variable interpolation
+		_ = env
+		_ = envCfg
+		_ = cfg
+		return envSlice
 	}
 
-	// For v1, return environment as-is
-	// Future: full variable interpolation
-	_ = env
-	_ = envCfg
-	_ = cfg
+	if envMap, ok := serviceMap["environment"].(map[string]any); ok {
+		// For v1, return environment as-is
+		// Future: full variable interpolation
+		_ = env
+		_ = envCfg
+		_ = cfg
+		return envMap
+	}
 
-	return envVars
+	return nil
 }
 
 // shouldExcludeService checks if a service should be excluded from override.
-func shouldExcludeService(serviceName string, env string, cfg *config.Config) bool {
+func shouldExcludeService(serviceName, env string, cfg *config.Config) bool {
 	// For v1, check if service has mode: external in environment config
 	// This will be implemented when environment config includes service modes
 	_ = serviceName

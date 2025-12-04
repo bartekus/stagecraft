@@ -14,10 +14,14 @@ See https://www.gnu.org/licenses/ for license details.
 package compose
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
+
+	"gopkg.in/yaml.v3"
 
 	"stagecraft/pkg/config"
 )
@@ -41,6 +45,7 @@ services:
     image: myapp:latest
 `
 
+	//nolint:gosec // G306: 0644 is acceptable for test fixtures
 	if err := os.WriteFile(composePath, []byte(composeContent), 0o644); err != nil {
 		t.Fatalf("failed to create compose file: %v", err)
 	}
@@ -81,8 +86,8 @@ func TestLoader_Load_NotFound(t *testing.T) {
 		t.Error("Load() error = nil, want error for missing file")
 	}
 
-	if err != ErrComposeNotFound && !strings.Contains(err.Error(), "not found") {
-		t.Errorf("Load() error = %v, want ErrComposeNotFound or similar", err)
+	if !errors.Is(err, ErrComposeNotFound) {
+		t.Errorf("Load() error = %v, want ErrComposeNotFound", err)
 	}
 }
 
@@ -96,6 +101,7 @@ services:
   - another: invalid
 `
 
+	//nolint:gosec // G306: 0644 is acceptable for test fixtures
 	if err := os.WriteFile(composePath, []byte(invalidContent), 0o644); err != nil {
 		t.Fatalf("failed to create compose file: %v", err)
 	}
@@ -279,43 +285,6 @@ func TestComposeFile_GenerateOverride_PortResolution(t *testing.T) {
 	}
 }
 
-func TestComposeFile_GenerateOverride_EmptyPorts(t *testing.T) {
-	compose := &ComposeFile{
-		data: map[string]any{
-			"version": "3.9",
-			"services": map[string]any{
-				"db": map[string]any{
-					"image": "postgres:16",
-					"ports": []any{
-						"${DB_PORT_PUBLISH:-}",
-					},
-				},
-			},
-		},
-	}
-
-	cfg := &config.Config{
-		Project: config.ProjectConfig{Name: "test"},
-		Environments: map[string]config.EnvironmentConfig{
-			"dev": {Driver: "local"},
-		},
-	}
-
-	override, err := compose.GenerateOverride("dev", cfg)
-	if err != nil {
-		t.Fatalf("GenerateOverride() error = %v, want nil", err)
-	}
-
-	overrideStr := string(override)
-	// Empty port should result in empty ports array or no ports
-	// For v1, we keep the empty string which results in empty array
-	if strings.Contains(overrideStr, "ports: []") {
-		// This is acceptable - empty ports array
-	} else if !strings.Contains(overrideStr, "ports") {
-		// Also acceptable - ports section omitted
-	}
-}
-
 func TestComposeFile_GenerateOverride_NoServices(t *testing.T) {
 	compose := &ComposeFile{
 		data: map[string]any{
@@ -492,5 +461,60 @@ func TestComposeFile_GenerateOverride_ComplexVolumeSpec(t *testing.T) {
 	// Should preserve volume mount options
 	if !strings.Contains(overrideStr, ":ro") {
 		t.Error("GenerateOverride() did not preserve volume mount options")
+	}
+}
+
+// TestComposeFile_GenerateOverride_Golden verifies the v1 override behavior
+// with defaults-only interpolation. If EnvironmentConfig starts influencing
+// overrides (e.g., per-env service modes, volumes, ports), update the golden.
+func TestComposeFile_GenerateOverride_Golden(t *testing.T) {
+	basePath := filepath.Join("testdata", "docker-compose.base.yml")
+	goldenPath := filepath.Join("testdata", "override.dev.golden.yml")
+
+	loader := NewLoader()
+	compose, err := loader.Load(basePath)
+	if err != nil {
+		t.Fatalf("Load(%q) error = %v, want nil", basePath, err)
+	}
+
+	cfg := &config.Config{
+		Project: config.ProjectConfig{
+			Name: "test",
+		},
+		Environments: map[string]config.EnvironmentConfig{
+			"dev": {
+				Driver: "local",
+				// Other fields can be added later; v1 GenerateOverride
+				// only relies on defaults in the compose file.
+			},
+		},
+	}
+
+	gotBytes, err := compose.GenerateOverride("dev", cfg)
+	if err != nil {
+		t.Fatalf("GenerateOverride() error = %v, want nil", err)
+	}
+
+	//nolint:gosec // G304: golden file path is derived from test directory
+	wantBytes, err := os.ReadFile(goldenPath)
+	if err != nil {
+		t.Fatalf("failed to read golden file %q: %v", goldenPath, err)
+	}
+
+	// Unmarshal both YAML documents to compare structures, not formatting.
+	var gotData any
+	var wantData any
+
+	if err := yaml.Unmarshal(gotBytes, &gotData); err != nil {
+		t.Fatalf("yaml.Unmarshal(got) error = %v\nGot YAML:\n%s", err, string(gotBytes))
+	}
+
+	if err := yaml.Unmarshal(wantBytes, &wantData); err != nil {
+		t.Fatalf("yaml.Unmarshal(want) error = %v\nGolden YAML:\n%s", err, string(wantBytes))
+	}
+
+	if !reflect.DeepEqual(gotData, wantData) {
+		t.Errorf("GenerateOverride() output does not match golden %q.\nGot:\n%s\nWant:\n%s",
+			goldenPath, string(gotBytes), string(wantBytes))
 	}
 }

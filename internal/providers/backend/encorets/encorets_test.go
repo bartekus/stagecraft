@@ -30,6 +30,22 @@ import (
 // Feature: PROVIDER_BACKEND_ENCORE
 // Spec: spec/providers/backend/encore-ts.md
 
+// setEnv sets an environment variable, failing the test if it fails.
+func setEnv(t *testing.T, key, value string) {
+	t.Helper()
+	if err := os.Setenv(key, value); err != nil {
+		t.Fatalf("failed to set env %s: %v", key, err)
+	}
+}
+
+// unsetEnv unsets an environment variable, failing the test if it fails.
+func unsetEnv(t *testing.T, key string) {
+	t.Helper()
+	if err := os.Unsetenv(key); err != nil {
+		t.Fatalf("failed to unset env %s: %v", key, err)
+	}
+}
+
 func TestEncoreTsProvider_ID(t *testing.T) {
 	p := &EncoreTsProvider{}
 	if got := p.ID(); got != "encore-ts" {
@@ -508,6 +524,7 @@ esac
 		scriptPath += ".bat"
 	}
 
+	//nolint:gosec // G306: 0755 is required for executable test scripts
 	if err := os.WriteFile(scriptPath, []byte(scriptContent), 0o755); err != nil {
 		t.Fatalf("failed to create mock encore script: %v", err)
 	}
@@ -525,10 +542,10 @@ func setupMockEncorePath(t *testing.T, mockScriptPath string) func() {
 
 	// Prepend script directory to PATH
 	newPath := scriptDir + string(filepath.ListSeparator) + originalPath
-	os.Setenv("PATH", newPath)
+	setEnv(t, "PATH", newPath)
 
 	return func() {
-		os.Setenv("PATH", originalPath)
+		setEnv(t, "PATH", originalPath)
 	}
 }
 
@@ -539,11 +556,12 @@ func TestEncoreTsProvider_Dev_Success(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	// Create env file
 	envFile := filepath.Join(tmpDir, ".env.test")
+	//nolint:gosec // G306: 0644 is acceptable for test fixtures
 	if err := os.WriteFile(envFile, []byte("TEST_VAR=test_value\n"), 0o644); err != nil {
 		t.Fatalf("failed to create env file: %v", err)
 	}
@@ -582,8 +600,8 @@ func TestEncoreTsProvider_Dev_CommandFailure(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to failure
-	os.Setenv("ENCORE_MOCK_MODE", "failure")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "failure")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	p := &EncoreTsProvider{}
 	opts := backend.DevOptions{
@@ -621,10 +639,10 @@ func TestEncoreTsProvider_Dev_ContextCancellation(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success with delay
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	os.Setenv("ENCORE_MOCK_DELAY", "10") // 10 second delay
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
-	defer os.Unsetenv("ENCORE_MOCK_DELAY")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	setEnv(t, "ENCORE_MOCK_DELAY", "10") // 10 second delay
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
+	defer unsetEnv(t, "ENCORE_MOCK_DELAY")
 
 	p := &EncoreTsProvider{}
 	opts := backend.DevOptions{
@@ -657,8 +675,8 @@ func TestEncoreTsProvider_Dev_SecretSync_Success(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success for secret sync
-	os.Setenv("ENCORE_MOCK_MODE", "secret_success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "secret_success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	p := &EncoreTsProvider{}
 	opts := backend.DevOptions{
@@ -701,8 +719,8 @@ func TestEncoreTsProvider_Dev_SecretSync_Failure(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to failure for secret sync
-	os.Setenv("ENCORE_MOCK_MODE", "secret_failure")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "secret_failure")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	p := &EncoreTsProvider{}
 	opts := backend.DevOptions{
@@ -746,8 +764,8 @@ func TestEncoreTsProvider_Dev_MissingSecrets(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	p := &EncoreTsProvider{}
 	opts := backend.DevOptions{
@@ -789,8 +807,8 @@ func TestEncoreTsProvider_Dev_EnvFileLoading(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	// Create env file with test values
 	envFile := filepath.Join(tmpDir, ".env.test")
@@ -798,6 +816,7 @@ func TestEncoreTsProvider_Dev_EnvFileLoading(t *testing.T) {
 NUMBER_VAR=123
 QUOTED_VAR="quoted value"
 `
+	//nolint:gosec // G306: 0644 is acceptable for test fixtures
 	if err := os.WriteFile(envFile, []byte(envContent), 0o644); err != nil {
 		t.Fatalf("failed to create env file: %v", err)
 	}
@@ -835,13 +854,14 @@ func TestEncoreTsProvider_Dev_TelemetryAndCACerts(t *testing.T) {
 
 	// Create CA cert file
 	caCertFile := filepath.Join(tmpDir, "ca.pem")
+	//nolint:gosec // G306: 0644 is acceptable for test fixtures
 	if err := os.WriteFile(caCertFile, []byte("fake CA cert"), 0o644); err != nil {
 		t.Fatalf("failed to create CA cert file: %v", err)
 	}
 
 	// Set mock mode to success
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	p := &EncoreTsProvider{}
 	opts := backend.DevOptions{
@@ -876,8 +896,8 @@ func TestEncoreTsProvider_BuildDocker_Success(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	p := &EncoreTsProvider{}
 	opts := backend.BuildDockerOptions{
@@ -911,8 +931,8 @@ func TestEncoreTsProvider_BuildDocker_Failure(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to failure
-	os.Setenv("ENCORE_MOCK_MODE", "failure")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "failure")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	p := &EncoreTsProvider{}
 	opts := backend.BuildDockerOptions{
@@ -948,8 +968,8 @@ func TestEncoreTsProvider_BuildDocker_ImageReferenceResolution(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	tests := []struct {
 		name         string
@@ -1038,8 +1058,8 @@ func TestEncoreTsProvider_Dev_WorkDirResolution(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	tests := []struct {
 		name    string
@@ -1108,8 +1128,8 @@ func TestEncoreTsProvider_BuildDocker_WorkDirResolution(t *testing.T) {
 	defer cleanup()
 
 	// Set mock mode to success
-	os.Setenv("ENCORE_MOCK_MODE", "success")
-	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	setEnv(t, "ENCORE_MOCK_MODE", "success")
+	defer unsetEnv(t, "ENCORE_MOCK_MODE")
 
 	tests := []struct {
 		name    string
@@ -1176,8 +1196,8 @@ func TestEncoreTsProvider_CheckEncoreAvailable(t *testing.T) {
 
 	// Test when encore is not available (by temporarily removing from PATH)
 	originalPath := os.Getenv("PATH")
-	os.Setenv("PATH", "")
-	defer os.Setenv("PATH", originalPath)
+	setEnv(t, "PATH", "")
+	defer setEnv(t, "PATH", originalPath)
 
 	err := p.checkEncoreAvailable()
 	if err == nil {
