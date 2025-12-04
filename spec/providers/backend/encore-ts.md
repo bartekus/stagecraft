@@ -171,7 +171,77 @@ The Encore.ts provider MUST interpret this config as follows:
 * build.docker_tag_suffix:
   * Optional suffix appended to ImageTag (e.g. -encore) for clarity.
 
-3.3 Validation Rules
+### 3.3 Environment File Parsing
+
+The provider reads and parses `dev.env_file` using a custom dotenv parser. This parser handles common dotenv semantics while maintaining simplicity and avoiding external dependencies.
+
+#### Supported Features
+
+The parser supports the following dotenv features:
+
+**Comments:**
+- Full-line comments starting with `#` are ignored
+- Inline comments after values are stripped (e.g., `KEY=value # comment`)
+- Comments inside quoted strings are preserved (e.g., `KEY="value # not comment"`)
+
+**Export Keyword:**
+- Lines prefixed with `export` are supported (e.g., `export KEY=value`)
+- The `export` keyword is stripped before parsing
+
+**Quoted Values:**
+- **Double-quoted strings**: Support escape sequences (`\"`, `\n`, `\t`, `\r`, `\\`)
+- **Single-quoted strings**: No escape processing, quotes are removed
+- Unquoted values are used as-is
+
+**Empty Values:**
+- `KEY=` parses to `env["KEY"] = ""` (empty string)
+- Lines with empty keys (e.g., `=value`) are skipped
+
+**Override Semantics:**
+- Later declarations override earlier ones (e.g., `KEY=first\nKEY=second` → `KEY=second`)
+
+**Whitespace:**
+- Leading and trailing whitespace around keys and values is trimmed
+- Blank lines are ignored
+
+#### Example
+
+```dotenv
+# Full-line comment
+export API_DOMAIN=api.example.com
+LOGTO_APP_ID=app_123 # inline comment
+LOGTO_APP_SECRET="secret with \"quotes\""
+DATABASE_URL="postgres://host/db\nwith newline"
+NODE_ENV=production
+```
+
+This parses to:
+```go
+env["API_DOMAIN"] = "api.example.com"
+env["LOGTO_APP_ID"] = "app_123"
+env["LOGTO_APP_SECRET"] = "secret with \"quotes\""
+env["DATABASE_URL"] = "postgres://host/db\nwith newline"
+env["NODE_ENV"] = "production"
+```
+
+#### Limitations
+
+The parser explicitly does **not** support:
+- Multi-line values (backslash continuation)
+- Advanced escape sequences (`\uXXXX`, `\b`, etc.)
+- Variable interpolation (e.g., `KEY=$OTHER_KEY` or `${OTHER_KEY}`)
+- Nested quoting or complex shell-like expansion
+
+These limitations are documented in code with a TODO suggesting migration to a well-tested dotenv library (e.g., `github.com/joho/godotenv`) if more complex parsing is needed in the future.
+
+#### Error Handling
+
+- Malformed lines (missing `=`) are silently skipped
+- Empty keys are skipped (prevents `env[""]` pollution)
+- Missing files log a warning but do not fail the operation
+- File read errors log a warning and continue with existing env values
+
+### 3.4 Validation Rules
 
 On entry to Dev or BuildDocker, the provider MUST:
 

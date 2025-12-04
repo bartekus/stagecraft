@@ -271,3 +271,156 @@ func TestGetProviderError(t *testing.T) {
 		t.Error("GetProviderError() should return nil for regular error")
 	}
 }
+
+func TestProviderError_Category(t *testing.T) {
+	err := &ProviderError{
+		Category:  ErrInvalidConfig,
+		Provider:  "encore-ts",
+		Operation: "dev",
+		Message:   "test",
+	}
+
+	if got := err.Category; got != ErrInvalidConfig {
+		t.Errorf("Category = %q, want %q", got, ErrInvalidConfig)
+	}
+}
+
+func TestParseEnvFileInto(t *testing.T) {
+	tests := []struct {
+		name    string
+		envFile string
+		wantEnv map[string]string
+	}{
+		{
+			name: "inline comments",
+			envFile: `KEY1=value1 # inline comment
+KEY2=value2`,
+			wantEnv: map[string]string{
+				"KEY1": "value1",
+				"KEY2": "value2",
+			},
+		},
+		{
+			name: "export keyword",
+			envFile: `export KEY1=value1
+KEY2=value2`,
+			wantEnv: map[string]string{
+				"KEY1": "value1",
+				"KEY2": "value2",
+			},
+		},
+		{
+			name: "quoted values with escapes",
+			envFile: `KEY1="value with spaces"
+KEY2="value with \"quotes\""
+KEY3="value with\nnewline"
+KEY4='single quoted'
+KEY5=unquoted`,
+			wantEnv: map[string]string{
+				"KEY1": "value with spaces",
+				"KEY2": "value with \"quotes\"",
+				"KEY3": "value with\nnewline",
+				"KEY4": "single quoted",
+				"KEY5": "unquoted",
+			},
+		},
+		{
+			name: "empty values",
+			envFile: `KEY1=
+KEY2=value2`,
+			wantEnv: map[string]string{
+				"KEY1": "",
+				"KEY2": "value2",
+			},
+		},
+		{
+			name: "preserve # inside quotes",
+			envFile: `KEY1="value # not a comment"
+KEY2=value # this is a comment`,
+			wantEnv: map[string]string{
+				"KEY1": "value # not a comment",
+				"KEY2": "value",
+			},
+		},
+		{
+			name: "later values override earlier",
+			envFile: `KEY=first
+KEY=second`,
+			wantEnv: map[string]string{
+				"KEY": "second",
+			},
+		},
+		{
+			name: "blank lines and comments",
+			envFile: `# This is a comment
+KEY1=value1
+
+KEY2=value2
+# Another comment
+KEY3=value3`,
+			wantEnv: map[string]string{
+				"KEY1": "value1",
+				"KEY2": "value2",
+				"KEY3": "value3",
+			},
+		},
+		{
+			name: "escape sequences in double quotes",
+			envFile: `KEY1="tab\there"
+KEY2="newline\nhere"
+KEY3="backslash\\here"
+KEY4="quote\"here"`,
+			wantEnv: map[string]string{
+				"KEY1": "tab\there",
+				"KEY2": "newline\nhere",
+				"KEY3": "backslash\\here",
+				"KEY4": "quote\"here",
+			},
+		},
+		{
+			name: "malformed lines are skipped",
+			envFile: `KEY1=value1
+MALFORMED
+KEY2=value2`,
+			wantEnv: map[string]string{
+				"KEY1": "value1",
+				"KEY2": "value2",
+			},
+		},
+		{
+			name: "empty keys are skipped",
+			envFile: `KEY1=value1
+=value2
+KEY2=value3`,
+			wantEnv: map[string]string{
+				"KEY1": "value1",
+				"KEY2": "value3",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			env := make(map[string]string)
+			parseEnvFileInto(env, []byte(tt.envFile))
+
+			// Manual comparison
+			if len(env) != len(tt.wantEnv) {
+				t.Errorf("parseEnvFileInto() got %d keys, want %d", len(env), len(tt.wantEnv))
+			}
+			for k, wantV := range tt.wantEnv {
+				if gotV, ok := env[k]; !ok {
+					t.Errorf("parseEnvFileInto() missing key %q", k)
+				} else if gotV != wantV {
+					t.Errorf("parseEnvFileInto() key %q = %q, want %q", k, gotV, wantV)
+				}
+			}
+			// Check for unexpected keys
+			for k := range env {
+				if _, ok := tt.wantEnv[k]; !ok {
+					t.Errorf("parseEnvFileInto() unexpected key %q", k)
+				}
+			}
+		})
+	}
+}
