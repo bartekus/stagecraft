@@ -31,6 +31,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | CORE_CONFIG | Config loading and validation | done | bart | [core/config.md](../spec/core/config.md) | [config_test.go](../pkg/config/config_test.go) |
 | CORE_LOGGING | Structured logging helpers | done | bart | [core/logging.md](../spec/core/logging.md) | [logging_test.go](../pkg/logging/logging_test.go) |
 | CORE_PLAN | Deployment planning engine | done | bart | [core/plan.md](../spec/core/plan.md) | [plan_test.go](../internal/core/plan_test.go) |
+| CORE_COMPOSE | Docker Compose integration | done | bart | [core/compose.md](../spec/core/compose.md) | [compose_test.go](../internal/compose/compose_test.go) |
 | CORE_BACKEND_REGISTRY | Backend provider registry system | done | bart | [core/backend-registry.md](../spec/core/backend-registry.md) | [registry_test.go](../pkg/providers/backend/registry_test.go) |
 | CORE_MIGRATION_REGISTRY | Migration engine registry system | done | bart | [core/migration-registry.md](../spec/core/migration-registry.md) | [registry_test.go](../pkg/providers/migration/registry_test.go) |
 | CORE_BACKEND_PROVIDER_CONFIG_SCHEMA | Provider-scoped backend configuration schema | done | bart | [core/backend-provider-config.md](../spec/core/backend-provider-config.md) | [config_test.go](../pkg/config/config_test.go) |
@@ -71,6 +72,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **CLI_INIT**: Project bootstrap command with interactive and non-interactive modes
 - **CORE_LOGGING**: Structured logging helpers with verbose mode support
 - **CORE_PLAN**: Deployment planning engine
+- **CORE_COMPOSE**: Docker Compose file loading, parsing, and environment-specific override generation
 - **CORE_BACKEND_REGISTRY**: Backend provider registry system with registration support
 - **CORE_MIGRATION_REGISTRY**: Migration engine registry system with registration support
 - **CORE_BACKEND_PROVIDER_CONFIG_SCHEMA**: Provider-scoped backend configuration schema
