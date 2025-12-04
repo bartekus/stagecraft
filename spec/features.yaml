@@ -150,11 +150,11 @@ features:
 
   - id: CORE_ENV_RESOLUTION
     title: "Environment resolution and context"
-    status: todo
+    status: done
     spec: "core/env-resolution.md"
     owner: bart
     tests:
-      - "internal/core/env_test.go"
+      - "internal/core/env/env_test.go"
 
   - id: CORE_STATE
     title: "State management (release history)"
