@@ -14,6 +14,19 @@ __Deterministic development protocol for AI assistants and human contributors.__
 
 Before doing anything, AI MUST:
 
+**Pre-Work Checklist:**
+- [ ] Feature ID identified
+- [ ] Git hooks verified (see Hook Verification section)
+- [ ] Working directory clean
+- [ ] On correct feature branch
+
+**Post-Work Checklist (before finishing):**
+- [ ] `./scripts/goformat.sh` run (for Go changes)
+- [ ] `./scripts/run-all-checks.sh` passes
+- [ ] Commit created with correct message format
+- [ ] PR created or instructions provided to create PR
+- [ ] Branch is clean (`git status` empty)
+
 0. **Identify the Feature ID for the task**
   - If no Feature ID exists, STOP and ask
   - Feature ID is required before any branch operations
@@ -58,9 +71,11 @@ Before doing anything, AI MUST:
   - File List
   - Risks / Reasoning
 
-9. **Stage → Commit → Verify after completing work**
+9. **Stage → Format → Commit → Create/Update PR → Verify after completing work**
+   - For Go changes: Run `./scripts/goformat.sh` before staging
    - Run `./scripts/run-all-checks.sh` to verify all CI checks pass
    - Commit message must follow strict rules
+   - Create or update PR for the feature branch (see Git Workflow Rules section 3)
    - Summaries MUST be included
    - Branch state MUST be clean afterward
 
@@ -72,6 +87,24 @@ Guessing is forbidden.
 
 ⸻
 
+# 🔧 Hook Verification (Required)
+
+Git hooks are required for all development work. The pre-commit hook runs gofumpt and basic checks, and will block commits on formatting errors. See CONTRIBUTING.md "Git Hooks" section for details.
+
+**Before any work begins, AI MUST:**
+
+1. **Verify hook exists:**
+   ```bash
+   ls -la .git/hooks/pre-commit
+   ```
+
+2. **If hook is missing:**
+   - Run: `./scripts/install-hooks.sh`
+   - Verify again: `ls -la .git/hooks/pre-commit`
+   - If installation fails: STOP and report error
+
+⸻
+
 # 🔀 Git Branch Workflow (Critical)
 
 This section defines the mandatory Git workflow for all AI-assisted development.
@@ -79,6 +112,8 @@ This section defines the mandatory Git workflow for all AI-assisted development.
 ## Pre-Work: Branch Creation
 
 **Prerequisite:** Feature ID MUST be identified before branch creation (see AI Quickstart step 0).
+
+**Prerequisite:** AI MUST complete Hook Verification steps above.
 
 Before starting work, AI MUST:
 
@@ -443,8 +478,9 @@ If modification is necessary:
 ## 6. Go Style and Quality Standards
 
 * `go build ./...` must pass (all packages must compile).
-* Format with gofumpt (preferred, stricter than gofmt) or gofmt and goimports.
-* All code MUST pass `gofumpt -l .` check (or `gofmt -l .` if gofumpt is not available).
+* Format with gofumpt (MANDATORY - stricter than gofmt). AI MUST use `./scripts/goformat.sh`, which uses the pinned gofumpt version.
+* All code MUST pass `gofumpt -l .` check. If gofumpt is not available, AI MUST install the version specified in `scripts/goformat.sh`.
+* For non-Go changes (docs, YAML, etc.) gofumpt is not required, but the pre-commit hook must still pass.
 * `go test ./...` must fully pass.
 * All exported symbols must include GoDoc comments.
 * Fix all golangci-lint warnings unless suppressed with justification:
@@ -473,8 +509,10 @@ matches the CI workflow and ensures local validation matches what CI will enforc
 The following checks MUST pass:
 
 1. **Formatting Checks**
-   * `gofumpt -l .` (or `gofmt -l .`) must return no unformatted files
-   * All files must be properly formatted
+   * For Go changes: AI MUST run `./scripts/goformat.sh` before staging files
+   * `gofumpt -l .` must return no unformatted files
+   * All Go files must be properly formatted with gofumpt
+   * For non-Go changes, formatting is handled by the pre-commit hook
 
 2. **Build Checks**
    * `go build ./...` must pass (all packages must compile)
@@ -740,6 +778,8 @@ These rules govern all commits, branches, and PRs.
 
 **Prerequisite:** Feature ID MUST be identified before branch setup (see AI Quickstart step 0).
 
+**Prerequisite:** AI MUST complete Hook Verification steps above.
+
 Before modifying any file:
 
 1. Ensure working directory is clean:
@@ -782,11 +822,18 @@ If any step fails: STOP, report the issue, request direction.
 
 ### 1. Every task ends with a commit message
 
-A single coherent task == exactly one commit.
+Each task should normally end with a single cohesive commit. If multiple commits are necessary, they must still follow the same rules and summarize the work clearly.
 
 Steps AI MUST follow:
 
-A. **Run pre-commit verification**
+A. **Format Go files (if Go changes were made)**
+
+   ```bash
+   ./scripts/goformat.sh
+   git add .
+   ```
+
+B. **Run pre-commit verification**
 
    ```bash
    ./scripts/run-all-checks.sh
@@ -795,52 +842,93 @@ A. **Run pre-commit verification**
    If any check fails, AI MUST NOT proceed with commit. AI MUST fix all issues and re-run the
    checks until all pass.
 
-B. **Stage all changes**
+C. **Stage all changes**
 
    ```bash
    git add .
    ```
 
-C. **Generate commit message in strict format**
+D. **Generate commit message in strict format**
 
- ```text
- <type>(<FEATURE_ID>): <short summary>
- 
- Longer explanation if needed.
- Spec: spec/<...>.md
- Tests: <paths>
- ```
+    ```text
+    <type>(<FEATURE_ID>): <short summary>
+    
+    Longer explanation if needed.
+    Spec: spec/<...>.md
+    Tests: <paths>
+    ```
 
-Allowed commit types:
+   Allowed commit types:
 
-- feat
-- fix
-- refactor
-- docs
-- test
-- ci
-- chore
+   - feat
+   - fix
+   - refactor
+   - docs
+   - test
+   - ci
+   - chore
 
-Constraints:
+   Constraints:
 
-- Subject ≤ 72 characters
-- No trailing periods
-- Body lines wrap at 80 chars
+   - Subject ≤ 72 characters
+   - No trailing periods
+   - Body lines wrap at 80 chars
 
-D. **Commit**
+E. **Commit**
 
    ```bash
    git commit -m "<message>"
    ```
 
-E. **Provide commit summary**
+F. **Provide structured commit summary**
 
-AI MUST output:
+   AI MUST output in this format:
 
-- Commit hash
-- Branch name
-- git status (must be clean)
-- The summary of the work performed
+   ```text
+   Commit Summary:
+   - Feature: <FEATURE_ID>
+   - Commit: <hash>
+   - Branch: <branch-name>
+   - Scope: <packages/files changed>
+   - Changes:
+     - <change 1>
+     - <change 2>
+   - Tests:
+     - <test files/paths>
+   - Spec: <spec file path>
+   ```
+
+G. **Create or update PR**
+
+   AI MUST ensure a PR exists for the feature branch:
+
+   - **PR Title MUST include:** `[FEATURE_ID] <Short human description>`
+   - **PR Body MUST include:**
+     - Feature ID
+     - Summary of changes
+     - Testing performed
+     - Spec reference
+
+   - **If AI has access to GitHub CLI:**
+     - Propose: `gh pr create --title "[FEATURE_ID] <description>" --body "<body>" --draft`
+     
+   - **If AI does not have GitHub CLI access:**
+     - Provide PR title and body that the human can paste into the GitHub UI
+     - Clearly state: "Please create a PR with the following title and body:"
+
+   - **AI MUST NOT:**
+     - Transition PR to ready-for-review (only humans can do this)
+     - Merge PRs
+
+   - **PR Requirement:** Every feature branch MUST have a PR, even for small changes. This ensures all work is reviewed and tracked.
+
+H. **Verify final state**
+
+   AI MUST confirm:
+   - No uncommitted changes remain (`git status` must be clean)
+   - Commit meets formatting rules
+   - Commit contains exactly the intended changes
+   - PR exists or instructions provided
 
 ⸻
 
@@ -875,14 +963,14 @@ PR Title
 [FEATURE_ID] <Short human description>
 ```
 
-PR Description
+PR Description (MUST include):
 
-* Feature:
-* Spec:
-* Tests:
-* Summary
-* Rationale
-* Constraints
+* Feature: `<FEATURE_ID>`
+* Spec: `spec/<...>.md`
+* Tests: `<test paths>`
+* Summary: `<what was changed>`
+* Rationale: `<why this change>`
+* Constraints: `<any limitations or considerations>`
 
 PR Requirements
 
@@ -902,6 +990,7 @@ PR Metadata
 
 AI and PRs
 
+* AI MUST create PR or provide PR title/body for human to create.
 * AI MAY propose branch names and PR titles/descriptions.
 * AI MUST NOT transition a PR to ready-for-review. Only humans can do this.
 * AI MUST NOT merge PRs.

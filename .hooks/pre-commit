@@ -47,6 +47,10 @@ verbose() {
     fi
 }
 
+# Get project root (where .git directory is)
+PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$PROJECT_ROOT"
+
 # Get list of staged files using null-delimited format (handles spaces/newlines)
 staged_files=$(git diff --cached --name-only -z --diff-filter=ACM 2>/dev/null | tr '\0' '\n' || true)
 
@@ -104,8 +108,28 @@ fi
 # === 2. Auto-format Go files with gofumpt (AFTER imports, gofumpt is final authority) ===
 formatted_files=""
 if [ -n "$staged_go_files" ]; then
-    if command -v gofumpt >/dev/null 2>&1; then
-        info "Formatting Go files with gofumpt..."
+    if [ -x "$PROJECT_ROOT/scripts/goformat.sh" ]; then
+        info "Formatting Go files with gofumpt (via scripts/goformat.sh)..."
+        verbose "Using canonical formatting script"
+        
+        # Run the canonical formatting script
+        if bash "$PROJECT_ROOT/scripts/goformat.sh" 2>/dev/null; then
+            # Re-stage all Go files that might have been formatted
+            while IFS= read -r file; do
+                [ -z "$file" ] && continue
+                [ ! -f "$file" ] && continue
+                git add "$file"
+            done <<EOF
+$staged_go_files
+EOF
+            info "Go files formatted"
+        else
+            error "Formatting failed. Run ./scripts/goformat.sh manually"
+            exit 1
+        fi
+    elif command -v gofumpt >/dev/null 2>&1; then
+        # Fallback to direct gofumpt if script not available
+        warn "scripts/goformat.sh not found, using gofumpt directly"
         verbose "gofumpt is the final formatting authority (runs after goimports)"
 
         # Format only staged files, using while-read for safety
@@ -128,26 +152,9 @@ EOF
             done
             info "Go files formatted"
         fi
-    elif command -v gofmt >/dev/null 2>&1; then
-        warn "gofumpt not found, using gofmt (install: go install mvdan.cc/gofumpt@latest)"
-        while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            [ ! -f "$file" ] && continue
-            if gofmt -w "$file" 2>/dev/null; then
-                formatted_files="$formatted_files$file"$'\n'
-            fi
-        done <<EOF
-$staged_go_files
-EOF
-        if [ -n "$formatted_files" ]; then
-            echo "$formatted_files" | while IFS= read -r file; do
-                [ -z "$file" ] && continue
-                git add "$file"
-            done
-            info "Go files formatted"
-        fi
     else
-        warn "Neither gofumpt nor gofmt found, skipping formatting"
+        error "Neither scripts/goformat.sh nor gofumpt found. Install gofumpt: go install mvdan.cc/gofumpt@v0.6.0"
+        exit 1
     fi
 fi
 

@@ -44,23 +44,26 @@ section() {
 section "Lint and Format Checks"
 
 info "Checking Go formatting..."
-# Prefer gofumpt (stricter), fall back to gofmt if not available
-if command -v gofumpt &> /dev/null; then
-    FORMAT_CMD="gofumpt"
-    FORMAT_TOOL="gofumpt"
+# Use canonical formatting script
+if [ -x ./scripts/goformat.sh ]; then
+    # Check formatting (dry run)
+    if command -v gofumpt &> /dev/null; then
+        format_out=$(gofumpt -l .)
+        if [ -n "$format_out" ]; then
+            error "The following files are not gofumpt'ed:"
+            echo "$format_out"
+            error "Run ./scripts/goformat.sh to fix formatting"
+            exit 1
+        fi
+        info "All files are properly formatted"
+    else
+        error "gofumpt not found. Install with: go install mvdan.cc/gofumpt@v0.6.0"
+        exit 1
+    fi
 else
-    FORMAT_CMD="gofmt"
-    FORMAT_TOOL="gofmt"
-    warning "gofumpt not found, using gofmt (install with: go install mvdan.cc/gofumpt@latest)"
-fi
-
-format_out=$($FORMAT_CMD -l .)
-if [ -n "$format_out" ]; then
-    error "The following files are not ${FORMAT_TOOL}'ed:"
-    echo "$format_out"
+    error "scripts/goformat.sh not found"
     exit 1
 fi
-info "All files are properly formatted"
 
 info "Running golangci-lint..."
 if ! command -v golangci-lint &> /dev/null; then

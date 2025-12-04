@@ -140,10 +140,12 @@ go build ./cmd/stagecraft
 
 If you're contributing to Stagecraft:
 
-1. Read [Agent.md](../../Agent.md) for development guidelines
-2. Review [Architecture Decision Records](adr/) for design decisions
-3. Check [Implementation Status](implementation-status.md) for feature progress
-4. Follow the spec-first, test-first workflow
+1. Follow the [Development Setup instructions](../../CONTRIBUTING.md#development-setup) in CONTRIBUTING.md, including installing git hooks.
+
+2. Read [Agent.md](../../Agent.md) for development guidelines
+3. Review [Architecture Decision Records](adr/) for design decisions
+4. Check [Implementation Status](implementation-status.md) for feature progress
+5. Follow the spec-first, test-first workflow
 
 ## Further Reading
 

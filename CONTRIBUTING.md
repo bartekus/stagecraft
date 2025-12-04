@@ -191,15 +191,38 @@ Every pull request must satisfy:
    go mod download
    ```
 
-3. **Install git hooks** (optional but recommended):
+3. **Install git hooks** (required):
    ```bash
    ./scripts/install-hooks.sh
    ```
+   
+   The pre-commit hook runs gofumpt and basic checks, and will block commits on formatting errors. See the "Git Hooks" section below for details.
 
 4. **Run tests**:
    ```bash
    go test ./...
    ```
+
+## Git Hooks
+
+Stagecraft requires git hooks to be installed for all contributors. The pre-commit hook:
+
+- Automatically formats Go files with gofumpt
+- Organizes imports with goimports
+- Adds license headers to new files
+- Runs basic build checks
+
+**Installation:**
+```bash
+./scripts/install-hooks.sh
+```
+
+**Verification:**
+```bash
+ls -la .git/hooks/pre-commit
+```
+
+If the hook is missing, formatting or basic checks may fail in CI and PRs will be blocked.
 
 ## Code Style
 
