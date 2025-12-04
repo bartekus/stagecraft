@@ -71,7 +71,8 @@ type MigrationConfig struct {
 
 // EnvironmentConfig describes per-environment settings.
 type EnvironmentConfig struct {
-	Driver string `yaml:"driver"`
+	Driver  string `yaml:"driver"`
+	EnvFile string `yaml:"env_file,omitempty"` // Path to environment file
 	// Future: region, registry, etc.
 }
 
