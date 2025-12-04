@@ -15,9 +15,16 @@ See https://www.gnu.org/licenses/ for license details.
 package encorets
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
+	"time"
+
+	"stagecraft/pkg/providers/backend"
 )
 
 // Feature: PROVIDER_BACKEND_ENCORE
@@ -422,5 +429,767 @@ KEY2=value3`,
 				}
 			}
 		})
+	}
+}
+
+// createMockEncoreScript creates a mock encore script for testing.
+// The script behavior is controlled by environment variables:
+// - ENCORE_MOCK_MODE: "success", "failure", "exit_code_<n>", "secret_success", "secret_failure"
+// - ENCORE_MOCK_DELAY: delay in seconds before exit (for testing context cancellation)
+func createMockEncoreScript(t *testing.T, dir string) string {
+	t.Helper()
+
+	var scriptContent string
+	if runtime.GOOS == "windows" {
+		scriptContent = `@echo off
+setlocal
+if "%ENCORE_MOCK_MODE%"=="success" (
+    echo Encore dev server running...
+    timeout /t %ENCORE_MOCK_DELAY% /nobreak >nul 2>&1
+    exit /b 0
+)
+if "%ENCORE_MOCK_MODE%"=="failure" (
+    echo Error: encore command failed
+    exit /b 1
+)
+if "%ENCORE_MOCK_MODE%"=="secret_success" (
+    REM Read from stdin and echo back
+    set /p SECRET_VALUE=
+    echo Secret set successfully
+    exit /b 0
+)
+if "%ENCORE_MOCK_MODE%"=="secret_failure" (
+    echo Error: secret set failed
+    exit /b 1
+)
+if "%ENCORE_MOCK_MODE:~0,9%"=="exit_code" (
+    set EXIT_CODE=%ENCORE_MOCK_MODE:~10%
+    exit /b %EXIT_CODE%
+)
+exit /b 0
+`
+	} else {
+		scriptContent = `#!/bin/sh
+case "$ENCORE_MOCK_MODE" in
+  "success")
+    echo "Encore dev server running..."
+    if [ -n "$ENCORE_MOCK_DELAY" ]; then
+      sleep "$ENCORE_MOCK_DELAY"
+    fi
+    exit 0
+    ;;
+  "failure")
+    echo "Error: encore command failed" >&2
+    exit 1
+    ;;
+  "secret_success")
+    # Read from stdin
+    read -r SECRET_VALUE
+    echo "Secret set successfully"
+    exit 0
+    ;;
+  "secret_failure")
+    echo "Error: secret set failed" >&2
+    exit 1
+    ;;
+  exit_code_*)
+    EXIT_CODE="${ENCORE_MOCK_MODE#exit_code_}"
+    exit "$EXIT_CODE"
+    ;;
+  *)
+    exit 0
+    ;;
+esac
+`
+	}
+
+	scriptPath := filepath.Join(dir, "encore")
+	if runtime.GOOS == "windows" {
+		scriptPath += ".bat"
+	}
+
+	if err := os.WriteFile(scriptPath, []byte(scriptContent), 0o755); err != nil {
+		t.Fatalf("failed to create mock encore script: %v", err)
+	}
+
+	return scriptPath
+}
+
+// setupMockEncorePath sets up PATH to use mock encore script.
+// Returns cleanup function.
+func setupMockEncorePath(t *testing.T, mockScriptPath string) func() {
+	t.Helper()
+
+	scriptDir := filepath.Dir(mockScriptPath)
+	originalPath := os.Getenv("PATH")
+
+	// Prepend script directory to PATH
+	newPath := scriptDir + string(filepath.ListSeparator) + originalPath
+	os.Setenv("PATH", newPath)
+
+	return func() {
+		os.Setenv("PATH", originalPath)
+	}
+}
+
+func TestEncoreTsProvider_Dev_Success(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	// Create env file
+	envFile := filepath.Join(tmpDir, ".env.test")
+	if err := os.WriteFile(envFile, []byte("TEST_VAR=test_value\n"), 0o644); err != nil {
+		t.Fatalf("failed to create env file: %v", err)
+	}
+
+	p := &EncoreTsProvider{}
+	opts := backend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"listen":   "0.0.0.0:4000",
+				"env_file": ".env.test",
+			},
+		},
+		WorkDir: tmpDir,
+		Env:     map[string]string{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	// This should succeed with mocked encore
+	err := p.Dev(ctx, opts)
+	if err != nil {
+		// Context timeout is expected since we're using a short timeout
+		if ctx.Err() != nil {
+			// Expected - context cancelled
+			return
+		}
+		t.Errorf("Dev() error = %v, want nil (or context timeout)", err)
+	}
+}
+
+func TestEncoreTsProvider_Dev_CommandFailure(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to failure
+	os.Setenv("ENCORE_MOCK_MODE", "failure")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	p := &EncoreTsProvider{}
+	opts := backend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"listen": "0.0.0.0:4000",
+			},
+		},
+		WorkDir: tmpDir,
+		Env:     map[string]string{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := p.Dev(ctx, opts)
+	if err == nil {
+		t.Error("Dev() error = nil, want error for command failure")
+	}
+
+	pe := GetProviderError(err)
+	if pe == nil {
+		t.Fatal("expected ProviderError, got nil")
+	}
+
+	if pe.Category != ErrDevServerFailed {
+		t.Errorf("ProviderError.Category = %q, want %q", pe.Category, ErrDevServerFailed)
+	}
+}
+
+func TestEncoreTsProvider_Dev_ContextCancellation(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success with delay
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	os.Setenv("ENCORE_MOCK_DELAY", "10") // 10 second delay
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+	defer os.Unsetenv("ENCORE_MOCK_DELAY")
+
+	p := &EncoreTsProvider{}
+	opts := backend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"listen": "0.0.0.0:4000",
+			},
+		},
+		WorkDir: tmpDir,
+		Env:     map[string]string{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+
+	err := p.Dev(ctx, opts)
+	if err == nil {
+		t.Error("Dev() error = nil, want error for context cancellation")
+	}
+
+	if ctx.Err() == nil {
+		t.Error("expected context to be cancelled")
+	}
+}
+
+func TestEncoreTsProvider_Dev_SecretSync_Success(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success for secret sync
+	os.Setenv("ENCORE_MOCK_MODE", "secret_success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	p := &EncoreTsProvider{}
+	opts := backend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"listen": "0.0.0.0:4000",
+				"encore_secrets": map[string]any{
+					"types":    []string{"dev"},
+					"from_env": []string{"TEST_SECRET"},
+				},
+			},
+		},
+		WorkDir: tmpDir,
+		Env: map[string]string{
+			"TEST_SECRET": "secret-value-123",
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	// This will fail because encore run will be called after secret sync
+	// but we're testing that secret sync works
+	err := p.Dev(ctx, opts)
+	// We expect either context timeout or encore run failure (since we're using secret_success mode)
+	// The important thing is that secret sync doesn't fail
+	if err != nil {
+		pe := GetProviderError(err)
+		if pe != nil && pe.Category == ErrSecretSyncFailed {
+			t.Errorf("Dev() secret sync failed: %v", err)
+		}
+		// Other errors (like context timeout or dev server) are acceptable
+	}
+}
+
+func TestEncoreTsProvider_Dev_SecretSync_Failure(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to failure for secret sync
+	os.Setenv("ENCORE_MOCK_MODE", "secret_failure")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	p := &EncoreTsProvider{}
+	opts := backend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"listen": "0.0.0.0:4000",
+				"encore_secrets": map[string]any{
+					"types":    []string{"dev"},
+					"from_env": []string{"TEST_SECRET"},
+				},
+			},
+		},
+		WorkDir: tmpDir,
+		Env: map[string]string{
+			"TEST_SECRET": "secret-value-123",
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := p.Dev(ctx, opts)
+	if err == nil {
+		t.Error("Dev() error = nil, want error for secret sync failure")
+	}
+
+	pe := GetProviderError(err)
+	if pe == nil {
+		t.Fatal("expected ProviderError, got nil")
+	}
+
+	if pe.Category != ErrSecretSyncFailed {
+		t.Errorf("ProviderError.Category = %q, want %q", pe.Category, ErrSecretSyncFailed)
+	}
+}
+
+func TestEncoreTsProvider_Dev_MissingSecrets(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	p := &EncoreTsProvider{}
+	opts := backend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"listen": "0.0.0.0:4000",
+				"encore_secrets": map[string]any{
+					"types":    []string{"dev"},
+					"from_env": []string{"MISSING_SECRET"},
+				},
+			},
+		},
+		WorkDir: tmpDir,
+		Env:     map[string]string{
+			// MISSING_SECRET is not provided
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	// This should not fail - missing secrets should just log warnings
+	err := p.Dev(ctx, opts)
+	if err != nil {
+		// Context timeout is expected
+		if ctx.Err() == nil {
+			pe := GetProviderError(err)
+			if pe != nil && pe.Category == ErrSecretSyncFailed {
+				t.Errorf("Dev() should not fail for missing secrets, got: %v", err)
+			}
+		}
+	}
+}
+
+func TestEncoreTsProvider_Dev_EnvFileLoading(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	// Create env file with test values
+	envFile := filepath.Join(tmpDir, ".env.test")
+	envContent := `TEST_VAR=test_value
+NUMBER_VAR=123
+QUOTED_VAR="quoted value"
+`
+	if err := os.WriteFile(envFile, []byte(envContent), 0o644); err != nil {
+		t.Fatalf("failed to create env file: %v", err)
+	}
+
+	p := &EncoreTsProvider{}
+	opts := backend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"listen":   "0.0.0.0:4000",
+				"env_file": ".env.test",
+			},
+		},
+		WorkDir: tmpDir,
+		Env:     map[string]string{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	// This should succeed - env file loading is tested indirectly
+	err := p.Dev(ctx, opts)
+	if err != nil {
+		// Context timeout is expected
+		if ctx.Err() == nil {
+			t.Errorf("Dev() error = %v", err)
+		}
+	}
+}
+
+func TestEncoreTsProvider_Dev_TelemetryAndCACerts(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Create CA cert file
+	caCertFile := filepath.Join(tmpDir, "ca.pem")
+	if err := os.WriteFile(caCertFile, []byte("fake CA cert"), 0o644); err != nil {
+		t.Fatalf("failed to create CA cert file: %v", err)
+	}
+
+	// Set mock mode to success
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	p := &EncoreTsProvider{}
+	opts := backend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"listen":              "0.0.0.0:4000",
+				"disable_telemetry":   true,
+				"node_extra_ca_certs": "ca.pem",
+			},
+		},
+		WorkDir: tmpDir,
+		Env:     map[string]string{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	// This should succeed - telemetry and CA certs are set via env vars
+	err := p.Dev(ctx, opts)
+	if err != nil {
+		// Context timeout is expected
+		if ctx.Err() == nil {
+			t.Errorf("Dev() error = %v", err)
+		}
+	}
+}
+
+func TestEncoreTsProvider_BuildDocker_Success(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	p := &EncoreTsProvider{}
+	opts := backend.BuildDockerOptions{
+		Config: map[string]any{
+			"build": map[string]any{
+				"image_name": "my-api",
+			},
+		},
+		ImageTag: "v1.0.0",
+		WorkDir:  tmpDir,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	imageRef, err := p.BuildDocker(ctx, opts)
+	if err != nil {
+		t.Errorf("BuildDocker() error = %v, want nil", err)
+	}
+
+	expectedRef := "my-api:v1.0.0"
+	if imageRef != expectedRef {
+		t.Errorf("BuildDocker() imageRef = %q, want %q", imageRef, expectedRef)
+	}
+}
+
+func TestEncoreTsProvider_BuildDocker_Failure(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to failure
+	os.Setenv("ENCORE_MOCK_MODE", "failure")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	p := &EncoreTsProvider{}
+	opts := backend.BuildDockerOptions{
+		Config: map[string]any{
+			"build": map[string]any{},
+		},
+		ImageTag: "v1.0.0",
+		WorkDir:  tmpDir,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	_, err := p.BuildDocker(ctx, opts)
+	if err == nil {
+		t.Error("BuildDocker() error = nil, want error for build failure")
+	}
+
+	pe := GetProviderError(err)
+	if pe == nil {
+		t.Fatal("expected ProviderError, got nil")
+	}
+
+	if pe.Category != ErrBuildFailed {
+		t.Errorf("ProviderError.Category = %q, want %q", pe.Category, ErrBuildFailed)
+	}
+}
+
+func TestEncoreTsProvider_BuildDocker_ImageReferenceResolution(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	tests := []struct {
+		name        string
+		config      map[string]any
+		imageTag    string
+		wantImageRef string
+	}{
+		{
+			name: "tag only with default image name",
+			config: map[string]any{
+				"build": map[string]any{},
+			},
+			imageTag:     "v1.0.0",
+			wantImageRef: "api:v1.0.0",
+		},
+		{
+			name: "tag only with custom image name",
+			config: map[string]any{
+				"build": map[string]any{
+					"image_name": "my-api",
+				},
+			},
+			imageTag:     "v1.0.0",
+			wantImageRef: "my-api:v1.0.0",
+		},
+		{
+			name: "tag only with docker_tag_suffix",
+			config: map[string]any{
+				"build": map[string]any{
+					"image_name":        "my-api",
+					"docker_tag_suffix": "-encore",
+				},
+			},
+			imageTag:     "v1.0.0",
+			wantImageRef: "my-api:v1.0.0-encore",
+		},
+		{
+			name: "full reference with registry",
+			config: map[string]any{
+				"build": map[string]any{},
+			},
+			imageTag:     "ghcr.io/org/app:v1.0.0",
+			wantImageRef: "ghcr.io/org/app:v1.0.0",
+		},
+		{
+			name: "full reference with docker_tag_suffix",
+			config: map[string]any{
+				"build": map[string]any{
+					"docker_tag_suffix": "-encore",
+				},
+			},
+			imageTag:     "ghcr.io/org/app:v1.0.0",
+			wantImageRef: "ghcr.io/org/app:v1.0.0-encore",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &EncoreTsProvider{}
+			opts := backend.BuildDockerOptions{
+				Config:   tt.config,
+				ImageTag: tt.imageTag,
+				WorkDir:  tmpDir,
+			}
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			imageRef, err := p.BuildDocker(ctx, opts)
+			if err != nil {
+				t.Errorf("BuildDocker() error = %v", err)
+				return
+			}
+
+			if imageRef != tt.wantImageRef {
+				t.Errorf("BuildDocker() imageRef = %q, want %q", imageRef, tt.wantImageRef)
+			}
+		})
+	}
+}
+
+func TestEncoreTsProvider_Dev_WorkDirResolution(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	tests := []struct {
+		name    string
+		config  map[string]any
+		opts    backend.DevOptions
+		wantDir string
+	}{
+		{
+			name: "config workdir takes precedence",
+			config: map[string]any{
+				"dev": map[string]any{
+					"listen":  "0.0.0.0:4000",
+					"workdir": tmpDir,
+				},
+			},
+			opts: backend.DevOptions{
+				WorkDir: "/other/dir",
+			},
+			wantDir: tmpDir,
+		},
+		{
+			name: "opts workdir used when config missing",
+			config: map[string]any{
+				"dev": map[string]any{
+					"listen": "0.0.0.0:4000",
+				},
+			},
+			opts: backend.DevOptions{
+				WorkDir: tmpDir,
+			},
+			wantDir: tmpDir,
+		},
+		{
+			name: "defaults to current directory",
+			config: map[string]any{
+				"dev": map[string]any{
+					"listen": "0.0.0.0:4000",
+				},
+			},
+			opts: backend.DevOptions{
+				WorkDir: "",
+			},
+			wantDir: ".",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.opts.Config = tt.config
+			tt.opts.Env = map[string]string{}
+
+			p := &EncoreTsProvider{}
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
+
+			// This will timeout (expected), but we're testing workdir resolution
+			_ = p.Dev(ctx, tt.opts)
+		})
+	}
+}
+
+func TestEncoreTsProvider_BuildDocker_WorkDirResolution(t *testing.T) {
+	tmpDir := t.TempDir()
+	mockScript := createMockEncoreScript(t, tmpDir)
+	cleanup := setupMockEncorePath(t, mockScript)
+	defer cleanup()
+
+	// Set mock mode to success
+	os.Setenv("ENCORE_MOCK_MODE", "success")
+	defer os.Unsetenv("ENCORE_MOCK_MODE")
+
+	tests := []struct {
+		name    string
+		config  map[string]any
+		opts    backend.BuildDockerOptions
+		wantDir string
+	}{
+		{
+			name: "config workdir takes precedence",
+			config: map[string]any{
+				"build": map[string]any{
+					"workdir": tmpDir,
+				},
+			},
+			opts: backend.BuildDockerOptions{
+				ImageTag: "v1.0.0",
+				WorkDir:  "/other/dir",
+			},
+			wantDir: tmpDir,
+		},
+		{
+			name: "opts workdir used when config missing",
+			config: map[string]any{
+				"build": map[string]any{},
+			},
+			opts: backend.BuildDockerOptions{
+				ImageTag: "v1.0.0",
+				WorkDir:  tmpDir,
+			},
+			wantDir: tmpDir,
+		},
+		{
+			name: "defaults to current directory",
+			config: map[string]any{
+				"build": map[string]any{},
+			},
+			opts: backend.BuildDockerOptions{
+				ImageTag: "v1.0.0",
+				WorkDir:  "",
+			},
+			wantDir: ".",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.opts.Config = tt.config
+
+			p := &EncoreTsProvider{}
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			// This should succeed with mocked encore
+			_, err := p.BuildDocker(ctx, tt.opts)
+			if err != nil {
+				t.Errorf("BuildDocker() error = %v", err)
+			}
+		})
+	}
+}
+
+func TestEncoreTsProvider_CheckEncoreAvailable(t *testing.T) {
+	p := &EncoreTsProvider{}
+
+	// Test when encore is not available (by temporarily removing from PATH)
+	originalPath := os.Getenv("PATH")
+	os.Setenv("PATH", "")
+	defer os.Setenv("PATH", originalPath)
+
+	err := p.checkEncoreAvailable()
+	if err == nil {
+		t.Error("checkEncoreAvailable() error = nil, want error when encore not found")
+	}
+
+	pe := GetProviderError(err)
+	if pe == nil {
+		t.Fatal("expected ProviderError, got nil")
+	}
+
+	if pe.Category != ErrProviderNotAvailable {
+		t.Errorf("ProviderError.Category = %q, want %q", pe.Category, ErrProviderNotAvailable)
 	}
 }

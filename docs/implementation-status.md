@@ -51,6 +51,7 @@ This document tracks the implementation status of Stagecraft features. It should
 |----|-------|--------|-------|------|-------|
 | PROVIDER_BACKEND_INTERFACE | BackendProvider interface definition | done | bart | [core/backend-registry.md](../spec/core/backend-registry.md) | [backend_test.go](../pkg/providers/backend/backend_test.go) |
 | PROVIDER_BACKEND_GENERIC | Generic command-based BackendProvider implementation | done | bart | [providers/backend/generic.md](../spec/providers/backend/generic.md) | [generic_test.go](../internal/providers/backend/generic/generic_test.go) |
+| PROVIDER_BACKEND_ENCORE | Encore.ts BackendProvider implementation | done | bart | [providers/backend/encore-ts.md](../spec/providers/backend/encore-ts.md) | [encorets_test.go](../internal/providers/backend/encorets/encorets_test.go) |
 | PROVIDER_FRONTEND_INTERFACE | FrontendProvider interface definition | done | bart | [providers/frontend/interface.md](../spec/providers/frontend/interface.md) | [frontend_test.go](../pkg/providers/frontend/frontend_test.go) |
 | MIGRATION_ENGINE_RAW | Raw SQL migration engine implementation | done | bart | [providers/migration/raw.md](../spec/providers/migration/raw.md) | [raw_test.go](../internal/providers/migration/raw/raw_test.go) |
 
@@ -76,6 +77,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **PROVIDER_BACKEND_INTERFACE**: BackendProvider interface definition
 - **CLI_DEV_BASIC**: Basic dev command that delegates to backend provider
 - **PROVIDER_BACKEND_GENERIC**: Generic command-based BackendProvider implementation
+- **PROVIDER_BACKEND_ENCORE**: Encore.ts BackendProvider implementation with secret syncing, env file parsing, and Docker build support
 - **PROVIDER_FRONTEND_INTERFACE**: FrontendProvider interface definition with registry system
 - **MIGRATION_ENGINE_RAW**: Raw SQL migration engine implementation
 - **CLI_MIGRATE_BASIC**: Basic migrate command with plan and run support

@@ -225,7 +225,7 @@ features:
 
   - id: PROVIDER_BACKEND_ENCORE
     title: "Encore.ts BackendProvider implementation"
-    status: todo
+    status: done
     spec: "providers/backend/encore-ts.md"
     owner: bart
     tests:

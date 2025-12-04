@@ -1,7 +1,7 @@
 # Encore.ts Backend Provider
 
 - Feature ID: `PROVIDER_BACKEND_ENCORE`
-- Status: draft
+- Status: done
 - Depends on: `CORE_BACKEND_REGISTRY`, `PROVIDER_BACKEND_INTERFACE`, `CORE_BACKEND_PROVIDER_CONFIG_SCHEMA`, `CLI_DEV`,
   `CLI_BUILD`
 - Provider ID: `encore-ts`
