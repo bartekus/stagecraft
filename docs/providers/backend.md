@@ -82,7 +82,7 @@ backend:
 
 ### Encore.ts Provider
 
-The Encore.ts provider integrates with the Encore framework.
+The Encore.ts provider integrates with the Encore framework for backend development and deployment.
 
 **Config Example:**
 ```yaml
@@ -91,21 +91,44 @@ backend:
   providers:
     encore-ts:
       dev:
-        secrets:
-          types: ["dev", "preview", "local"]
-          from_env:
+        env_file: .env.local                   # Path to environment file
+        listen: "0.0.0.0:4000"                 # Dev server bind address
+        workdir: "./backend"                    # Optional: working directory
+        entrypoint: "./src/index.ts"            # Optional: entry point
+        disable_telemetry: true                 # Optional: disable Encore telemetry
+        node_extra_ca_certs: "./certs/ca.pem"   # Optional: custom CA certs
+        encore_secrets:
+          types: ["dev", "preview", "local"]    # Secret types to sync
+          from_env:                             # Environment variables to sync
             - DOMAIN
             - API_DOMAIN
-        entrypoint: "./backend"
-        env_from:
-          - .env.local
-        listen: "0.0.0.0:4000"
+            - LOGTO_APP_ID
+            - LOGTO_APP_SECRET
+      build:
+        workdir: "./backend"                   # Optional: build working directory
+        image_name: "api"                      # Optional: image name (default: "api")
+        docker_tag_suffix: "-encore"           # Optional: tag suffix
 ```
 
 **Features:**
 - Automatic secret syncing via `encore secret set`
+- Environment file parsing (dotenv format with inline comments, quoted values, escape sequences)
 - Encore dev server integration
 - Docker builds via `encore build docker`
+- Telemetry control and custom CA certificate support
+
+**Environment File Format:**
+
+Environment files are parsed early in the dev/build pipeline and their values populate the environment passed into the Encore dev server and build commands. This ensures parity between local `.env` files and the secrets / env expected by Encore services.
+
+The `dev.env_file` supports standard dotenv syntax:
+- Comments: `# full-line` and `KEY=value # inline`
+- Export keyword: `export KEY=value`
+- Quoted values: `KEY="value with spaces"` or `KEY='single quoted'`
+- Escape sequences in double quotes: `\"`, `\n`, `\t`, `\r`, `\\`
+- Empty values: `KEY=` (sets to empty string)
+
+See the [Encore.ts Provider Spec](../../spec/providers/backend/encore-ts.md#33-environment-file-parsing) for complete parsing behavior and limitations.
 
 ## Creating a Custom Provider
 

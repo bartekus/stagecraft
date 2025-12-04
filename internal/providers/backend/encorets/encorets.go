@@ -126,25 +126,8 @@ func (p *EncoreTsProvider) Dev(ctx context.Context, opts backend.DevOptions) err
 					logging.NewField("error", err.Error()),
 				)
 			} else {
-				// Parse dotenv format
-				lines := strings.Split(string(data), "\n")
-				for _, line := range lines {
-					line = strings.TrimSpace(line)
-					if line == "" || strings.HasPrefix(line, "#") {
-						continue
-					}
-					parts := strings.SplitN(line, "=", 2)
-					if len(parts) == 2 {
-						key := strings.TrimSpace(parts[0])
-						value := strings.TrimSpace(parts[1])
-						// Remove quotes if present
-						if len(value) >= 2 && ((value[0] == '"' && value[len(value)-1] == '"') ||
-							(value[0] == '\'' && value[len(value)-1] == '\'')) {
-							value = value[1 : len(value)-1]
-						}
-						env[key] = value
-					}
-				}
+				// Parse dotenv format using helper
+				parseEnvFileInto(env, data)
 			}
 		} else {
 			logger.Warn("env_file does not exist",
@@ -155,6 +138,8 @@ func (p *EncoreTsProvider) Dev(ctx context.Context, opts backend.DevOptions) err
 
 	// Apply telemetry and CA certs configuration
 	if cfg.Dev.DisableTelemetry {
+		// DISABLE_ENCORE_TELEMETRY is the environment variable that Encore.ts
+		// respects to disable telemetry. See: https://encore.dev/docs/observability/telemetry
 		env["DISABLE_ENCORE_TELEMETRY"] = "1"
 	}
 
@@ -226,6 +211,13 @@ func (p *EncoreTsProvider) Dev(ctx context.Context, opts backend.DevOptions) err
 	if cfg.Dev.EntryPoint != "" {
 		args = append(args, "--entrypoint", cfg.Dev.EntryPoint)
 	}
+
+	// Log command execution details
+	logger.Info("Executing encore command",
+		logging.NewField("command", "encore"),
+		logging.NewField("args", strings.Join(args, " ")),
+		logging.NewField("workdir", workDir),
+	)
 
 	//nolint:gosec // encore CLI args come from trusted stagecraft.yml and env
 	cmd := exec.CommandContext(ctx, "encore", args...)
@@ -347,6 +339,13 @@ func (p *EncoreTsProvider) BuildDocker(ctx context.Context, opts backend.BuildDo
 	// Run encore build docker
 	args := []string{"build", "docker", imageRef}
 
+	// Log command execution details
+	logger.Info("Executing encore build command",
+		logging.NewField("command", "encore"),
+		logging.NewField("args", strings.Join(args, " ")),
+		logging.NewField("workdir", workDir),
+	)
+
 	//nolint:gosec // encore CLI args come from trusted config (image tag)
 	cmd := exec.CommandContext(ctx, "encore", args...)
 	cmd.Dir = workDir
@@ -455,6 +454,81 @@ func (p *EncoreTsProvider) validateDevConfig(cfg *Config) error {
 	// If it doesn't exist, we'll log a warning but continue (opts.Env may have values)
 
 	return nil
+}
+
+// parseEnvFileInto parses a dotenv-format file and merges key-value pairs into env.
+// Handles: comments, export keyword, quoted values, inline comments,
+// escaped characters in quoted strings, and empty values.
+// Note: Multi-line values (backslash continuation) are not supported.
+// TODO: If env parsing needs to get more complex, consider replacing this
+// with a well-tested dotenv library (e.g. github.com/joho/godotenv).
+func parseEnvFileInto(env map[string]string, data []byte) {
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		// Handle export keyword (e.g., "export KEY=value")
+		if strings.HasPrefix(line, "export ") {
+			line = strings.TrimPrefix(line, "export ")
+			line = strings.TrimSpace(line)
+		}
+
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			// Skip malformed lines (no = found)
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		if key == "" {
+			// Skip lines with empty keys (e.g., "=value")
+			continue
+		}
+		value := strings.TrimSpace(parts[1])
+
+		// Handle inline comments (but preserve # inside quoted strings)
+		// Find the first unquoted # character
+		commentIdx := -1
+		inDoubleQuote := false
+		inSingleQuote := false
+		for i, r := range value {
+			if r == '"' && (i == 0 || value[i-1] != '\\') {
+				inDoubleQuote = !inDoubleQuote
+			} else if r == '\'' && (i == 0 || value[i-1] != '\\') {
+				inSingleQuote = !inSingleQuote
+			} else if r == '#' && !inDoubleQuote && !inSingleQuote {
+				commentIdx = i
+				break
+			}
+		}
+		if commentIdx >= 0 {
+			value = strings.TrimSpace(value[:commentIdx])
+		}
+
+		// Handle quoted values with escaped characters
+		if len(value) >= 2 {
+			if value[0] == '"' && value[len(value)-1] == '"' {
+				// Double-quoted string: handle escaped characters
+				unquoted := value[1 : len(value)-1]
+				// Process escape sequences (order matters: \\ first to avoid double-processing)
+				unquoted = strings.ReplaceAll(unquoted, "\\\\", "\\")
+				unquoted = strings.ReplaceAll(unquoted, "\\\"", "\"")
+				unquoted = strings.ReplaceAll(unquoted, "\\n", "\n")
+				unquoted = strings.ReplaceAll(unquoted, "\\t", "\t")
+				unquoted = strings.ReplaceAll(unquoted, "\\r", "\r")
+				value = unquoted
+			} else if value[0] == '\'' && value[len(value)-1] == '\'' {
+				// Single-quoted string: no escape sequences (remove quotes only)
+				value = value[1 : len(value)-1]
+			}
+		}
+
+		// Later values override earlier ones (map behavior)
+		env[key] = value
+	}
 }
 
 func init() {

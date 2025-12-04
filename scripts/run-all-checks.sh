@@ -157,7 +157,7 @@ if ! command -v addlicense &> /dev/null; then
     exit 1
 fi
 
-addlicense -ignore 'internal/providers/backend/generic/test_script.sh' -check .
+addlicense -ignore 'internal/providers/backend/generic/test_script.sh' -ignore '.bin/vendor/**' -check .
 info "License headers check passed"
 
 # === Summary ===
