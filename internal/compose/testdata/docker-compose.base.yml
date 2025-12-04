@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    volumes:
+      - ${POSTGRES_VOLUME:-postgres_data}:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT_PUBLISH:-5433:5432}"
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-secret}
+    labels:
+      stagecraft.role: "db"
+      stagecraft.mode: "container"
+  redis:
+    image: redis:7
+    volumes:
+      - ${REDIS_VOLUME:-redis_data}:/data
+    ports:
+      - "${REDIS_PORT_PUBLISH:-6379:6379}"
+    labels:
+      stagecraft.role: "cache"
+      stagecraft.mode: "container"
+  api:
+    image: myapp:latest
+    depends_on:
+      - db
+      - redis
+    labels:
+      stagecraft.role: "app"
+      stagecraft.mode: "container"
+  monitoring:
+    image: prometheus:latest
+    labels:
+      stagecraft.role: "infra"
+      stagecraft.mode: "external"
+
