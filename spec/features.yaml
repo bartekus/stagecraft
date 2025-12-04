@@ -109,35 +109,35 @@ features:
 
   - id: PROVIDER_NETWORK_INTERFACE
     title: "NetworkProvider interface definition"
-    status: todo
+    status: done
     spec: "providers/network/interface.md"
     owner: bart
     tests:
-      - "pkg/providers/network/network_test.go"
+      - "pkg/providers/network/registry_test.go"
 
   - id: PROVIDER_CLOUD_INTERFACE
     title: "CloudProvider interface definition"
-    status: todo
+    status: done
     spec: "providers/cloud/interface.md"
     owner: bart
     tests:
-      - "pkg/providers/cloud/cloud_test.go"
+      - "pkg/providers/cloud/registry_test.go"
 
   - id: PROVIDER_CI_INTERFACE
     title: "CIProvider interface definition"
-    status: todo
+    status: done
     spec: "providers/ci/interface.md"
     owner: bart
     tests:
-      - "pkg/providers/ci/ci_test.go"
+      - "pkg/providers/ci/registry_test.go"
 
   - id: PROVIDER_SECRETS_INTERFACE
     title: "SecretsProvider interface definition"
-    status: todo
+    status: done
     spec: "providers/secrets/interface.md"
     owner: bart
     tests:
-      - "pkg/providers/secrets/secrets_test.go"
+      - "pkg/providers/secrets/registry_test.go"
 
   # Phase 2: Core Orchestration
   - id: CORE_PLAN

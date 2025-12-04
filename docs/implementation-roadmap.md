@@ -204,17 +204,17 @@ Each category has **dependencies** that must be respected.
 
 ## Implementation Phases
 
-### Phase 0: Foundation (Current → MVP Config System)
+### Phase 0: Foundation ✅ COMPLETE
 
 **Goal**: Complete the config system and basic CLI infrastructure
 
 | Feature ID | Title | Status | Dependencies | Source |
 |------------|-------|--------|--------------|--------|
-| `CORE_CONFIG` | Config loading and validation | todo | None | `05-development-strategy.md` |
-| `CLI_INIT` | Project bootstrap command | todo | `CORE_CONFIG` | `02-project-scaffold.md` |
-| `CORE_LOGGING` | Structured logging helpers | todo | None | `docs/stagecraft-spec.md` |
-| `CORE_EXECUTIL` | Process execution utilities | todo | `CORE_LOGGING` | `docs/stagecraft-spec.md` |
-| `CLI_GLOBAL_FLAGS` | Global flags (--env, --config, --verbose, --dry-run) | todo | `CORE_CONFIG` | `docs/stagecraft-spec.md` |
+| `CORE_CONFIG` | Config loading and validation | ✅ done | None | `05-development-strategy.md` |
+| `CLI_INIT` | Project bootstrap command | ✅ done | `CORE_CONFIG` | `02-project-scaffold.md` |
+| `CORE_LOGGING` | Structured logging helpers | ✅ done | None | `docs/stagecraft-spec.md` |
+| `CORE_EXECUTIL` | Process execution utilities | ✅ done | `CORE_LOGGING` | `docs/stagecraft-spec.md` |
+| `CLI_GLOBAL_FLAGS` | Global flags (--env, --config, --verbose, --dry-run) | ✅ done | `CORE_CONFIG` | `docs/stagecraft-spec.md` |
 
 **Deliverables**:
 - Complete `pkg/config` with full `stagecraft.yml` schema
@@ -229,18 +229,18 @@ Each category has **dependencies** that must be respected.
 
 ---
 
-### Phase 1: Provider Interfaces (Foundation for Everything)
+### Phase 1: Provider Interfaces (Foundation for Everything) - 2/6 Complete
 
 **Goal**: Define all provider interfaces and create stub implementations
 
 | Feature ID | Title | Status | Dependencies | Source |
 |------------|-------|--------|--------------|--------|
-| `PROVIDER_BACKEND_INTERFACE` | BackendProvider interface definition | todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `PROVIDER_FRONTEND_INTERFACE` | FrontendProvider interface definition | todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `PROVIDER_NETWORK_INTERFACE` | NetworkProvider interface definition | todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `PROVIDER_CLOUD_INTERFACE` | CloudProvider interface definition | todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `PROVIDER_CI_INTERFACE` | CIProvider interface definition | todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `PROVIDER_SECRETS_INTERFACE` | SecretsProvider interface definition | todo | `CORE_CONFIG` | `docs/stagecraft-spec.md` |
+| `PROVIDER_BACKEND_INTERFACE` | BackendProvider interface definition | ✅ done | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `PROVIDER_FRONTEND_INTERFACE` | FrontendProvider interface definition | ✅ done | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `PROVIDER_NETWORK_INTERFACE` | NetworkProvider interface definition | 🔄 todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `PROVIDER_CLOUD_INTERFACE` | CloudProvider interface definition | 🔄 todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `PROVIDER_CI_INTERFACE` | CIProvider interface definition | 🔄 todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `PROVIDER_SECRETS_INTERFACE` | SecretsProvider interface definition | 🔄 todo | `CORE_CONFIG` | `docs/stagecraft-spec.md` |
 
 **Deliverables**:
 - All provider interfaces defined in `pkg/providers/` or `internal/providers/`
@@ -254,16 +254,16 @@ Each category has **dependencies** that must be respected.
 
 ---
 
-### Phase 2: Core Orchestration Engine
+### Phase 2: Core Orchestration Engine - 2/4 Complete
 
 **Goal**: Build the planning and orchestration engine
 
 | Feature ID | Title | Status | Dependencies | Source |
 |------------|-------|--------|--------------|--------|
-| `CORE_PLAN` | Deployment planning engine | todo | `CORE_CONFIG`, `PROVIDER_*_INTERFACE` | `05-development-strategy.md` |
-| `CORE_ENV_RESOLUTION` | Environment resolution and context | todo | `CORE_CONFIG` | `docs/stagecraft-spec.md` |
-| `CORE_STATE` | State management (release history) | todo | `CORE_CONFIG` | `03-migration-strategies.md` |
-| `CORE_COMPOSE` | Docker Compose integration | todo | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `CORE_PLAN` | Deployment planning engine | ✅ done | `CORE_CONFIG`, `PROVIDER_*_INTERFACE` | `05-development-strategy.md` |
+| `CORE_ENV_RESOLUTION` | Environment resolution and context | 🔄 todo | `CORE_CONFIG` | `docs/stagecraft-spec.md` |
+| `CORE_STATE` | State management (release history) | 🔄 todo | `CORE_CONFIG` | `03-migration-strategies.md` |
+| `CORE_COMPOSE` | Docker Compose integration | ✅ done | `CORE_CONFIG` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
 
 **Deliverables**:
 - `internal/core/plan.go` - Deployment planning logic
@@ -279,20 +279,21 @@ Each category has **dependencies** that must be respected.
 
 ---
 
-### Phase 3: Local Development (`stagecraft dev`)
+### Phase 3: Local Development (`stagecraft dev`) - 1/8 Complete
 
 **Goal**: Full local development experience
 
 | Feature ID | Title | Status | Dependencies | Source |
 |------------|-------|--------|--------------|--------|
-| `CLI_DEV` | `stagecraft dev` command | todo | `CORE_PLAN`, `PROVIDER_BACKEND_INTERFACE`, `PROVIDER_FRONTEND_INTERFACE` | `docs/stagecraft-spec.md` |
-| `DEV_MKCERT` | mkcert integration for local HTTPS | todo | `CLI_DEV` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `DEV_HOSTS` | `/etc/hosts` management | todo | `CLI_DEV` | `docs/stagecraft-spec.md` |
-| `DEV_TRAEFIK` | Traefik dev config generation | todo | `CLI_DEV`, `CORE_COMPOSE` | `docs/stagecraft-spec.md` |
-| `DEV_COMPOSE_INFRA` | Compose infra up/down for dev | todo | `CLI_DEV`, `CORE_COMPOSE` | `docs/stagecraft-spec.md` |
-| `PROVIDER_BACKEND_ENCORE` | Encore.ts BackendProvider implementation | todo | `PROVIDER_BACKEND_INTERFACE`, `CLI_DEV` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `PROVIDER_FRONTEND_GENERIC` | Generic dev command FrontendProvider | todo | `PROVIDER_FRONTEND_INTERFACE`, `CLI_DEV` | `docs/stagecraft-spec.md` |
-| `DEV_PROCESS_MGMT` | Process lifecycle management | todo | `CLI_DEV`, `CORE_EXECUTIL` | `docs/stagecraft-spec.md` |
+| `CLI_DEV_BASIC` | Basic `stagecraft dev` command | ✅ done | `PROVIDER_BACKEND_INTERFACE` | `docs/stagecraft-spec.md` |
+| `CLI_DEV` | Full `stagecraft dev` command | 🔄 todo | `CORE_PLAN`, `PROVIDER_BACKEND_INTERFACE`, `PROVIDER_FRONTEND_INTERFACE` | `docs/stagecraft-spec.md` |
+| `DEV_MKCERT` | mkcert integration for local HTTPS | 🔄 todo | `CLI_DEV` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `DEV_HOSTS` | `/etc/hosts` management | 🔄 todo | `CLI_DEV` | `docs/stagecraft-spec.md` |
+| `DEV_TRAEFIK` | Traefik dev config generation | 🔄 todo | `CLI_DEV`, `CORE_COMPOSE` | `docs/stagecraft-spec.md` |
+| `DEV_COMPOSE_INFRA` | Compose infra up/down for dev | 🔄 todo | `CLI_DEV`, `CORE_COMPOSE` | `docs/stagecraft-spec.md` |
+| `PROVIDER_BACKEND_ENCORE` | Encore.ts BackendProvider implementation | ✅ done | `PROVIDER_BACKEND_INTERFACE`, `CLI_DEV_BASIC` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `PROVIDER_FRONTEND_GENERIC` | Generic dev command FrontendProvider | 🔄 todo | `PROVIDER_FRONTEND_INTERFACE`, `CLI_DEV` | `docs/stagecraft-spec.md` |
+| `DEV_PROCESS_MGMT` | Process lifecycle management | 🔄 todo | `CLI_DEV`, `CORE_EXECUTIL` | `docs/stagecraft-spec.md` |
 
 **Deliverables**:
 - Working `stagecraft dev` command
@@ -310,15 +311,16 @@ Each category has **dependencies** that must be respected.
 
 ---
 
-### Phase 4: Provider Implementations (Core)
+### Phase 4: Provider Implementations (Core) - 2/3 Complete
 
 **Goal**: Implement core provider implementations
 
 | Feature ID | Title | Status | Dependencies | Source |
 |------------|-------|--------|--------------|--------|
-| `PROVIDER_NETWORK_TAILSCALE` | Tailscale NetworkProvider implementation | todo | `PROVIDER_NETWORK_INTERFACE`, `CORE_PLAN` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `PROVIDER_CLOUD_DO` | DigitalOcean CloudProvider implementation | todo | `PROVIDER_CLOUD_INTERFACE`, `CORE_PLAN` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
-| `DRIVER_DO` | DigitalOcean driver (legacy name, may merge) | todo | `PROVIDER_CLOUD_DO` | `05-development-strategy.md` |
+| `PROVIDER_BACKEND_GENERIC` | Generic command-based BackendProvider | ✅ done | `PROVIDER_BACKEND_INTERFACE` | `docs/stagecraft-spec.md` |
+| `PROVIDER_NETWORK_TAILSCALE` | Tailscale NetworkProvider implementation | 🔄 todo | `PROVIDER_NETWORK_INTERFACE`, `CORE_PLAN` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `PROVIDER_CLOUD_DO` | DigitalOcean CloudProvider implementation | 🔄 todo | `PROVIDER_CLOUD_INTERFACE`, `CORE_PLAN` | `01-why-not-kamal.md`, `docs/stagecraft-spec.md` |
+| `DRIVER_DO` | DigitalOcean driver (legacy name, may merge) | 🔄 todo | `PROVIDER_CLOUD_DO` | `05-development-strategy.md` |
 
 **Deliverables**:
 - Tailscale integration for mesh networking
@@ -360,20 +362,22 @@ Each category has **dependencies** that must be respected.
 
 ---
 
-### Phase 6: Migration System
+### Phase 6: Migration System - 2/8 Complete
 
 **Goal**: First-class migration handling
 
 | Feature ID | Title | Status | Dependencies | Source |
 |------------|-------|--------|--------------|--------|
-| `MIGRATION_CONFIG` | Migration config schema in stagecraft.yml | todo | `CORE_CONFIG` | `03-migration-strategies.md` |
-| `MIGRATION_INTERFACE` | Migrator interface | todo | `CORE_PLAN` | `03-migration-strategies.md` |
-| `MIGRATION_CONTAINER_RUNNER` | ContainerRunner interface | todo | `CORE_COMPOSE` | `03-migration-strategies.md` |
-| `MIGRATION_PRE_DEPLOY` | Pre-deploy migration execution | todo | `CLI_DEPLOY`, `MIGRATION_INTERFACE` | `03-migration-strategies.md` |
-| `MIGRATION_POST_DEPLOY` | Post-deploy migration execution | todo | `CLI_DEPLOY`, `MIGRATION_INTERFACE` | `03-migration-strategies.md` |
-| `CLI_MIGRATE_PLAN` | `stagecraft migrate plan` command | todo | `MIGRATION_INTERFACE` | `03-migration-strategies.md` |
-| `CLI_MIGRATE_RUN` | `stagecraft migrate run` command | todo | `MIGRATION_INTERFACE` | `03-migration-strategies.md` |
-| `CLI_RELEASES` | `stagecraft releases list/show` commands | todo | `CORE_STATE` | `03-migration-strategies.md` |
+| `MIGRATION_ENGINE_RAW` | Raw SQL migration engine | ✅ done | `CORE_COMPOSE` | `03-migration-strategies.md` |
+| `CLI_MIGRATE_BASIC` | Basic migrate command | ✅ done | `MIGRATION_ENGINE_RAW` | `03-migration-strategies.md` |
+| `MIGRATION_CONFIG` | Migration config schema in stagecraft.yml | 🔄 todo | `CORE_CONFIG` | `03-migration-strategies.md` |
+| `MIGRATION_INTERFACE` | Migrator interface | 🔄 todo | `CORE_PLAN` | `03-migration-strategies.md` |
+| `MIGRATION_CONTAINER_RUNNER` | ContainerRunner interface | 🔄 todo | `CORE_COMPOSE` | `03-migration-strategies.md` |
+| `MIGRATION_PRE_DEPLOY` | Pre-deploy migration execution | 🔄 todo | `CLI_DEPLOY`, `MIGRATION_INTERFACE` | `03-migration-strategies.md` |
+| `MIGRATION_POST_DEPLOY` | Post-deploy migration execution | 🔄 todo | `CLI_DEPLOY`, `MIGRATION_INTERFACE` | `03-migration-strategies.md` |
+| `CLI_MIGRATE_PLAN` | `stagecraft migrate plan` command | 🔄 todo | `MIGRATION_INTERFACE` | `03-migration-strategies.md` |
+| `CLI_MIGRATE_RUN` | `stagecraft migrate run` command | 🔄 todo | `MIGRATION_INTERFACE` | `03-migration-strategies.md` |
+| `CLI_RELEASES` | `stagecraft releases list/show` commands | 🔄 todo | `CORE_STATE` | `03-migration-strategies.md` |
 
 **Deliverables**:
 - Migration config in `stagecraft.yml`
@@ -537,28 +541,48 @@ For each feature, follow this workflow:
 
 ### Current Status Summary
 
-- **Total Features Identified**: ~70 features
-- **Phase 0 (Foundation)**: 0/5 complete
-- **Phase 1 (Provider Interfaces)**: 0/6 complete
-- **Phase 2 (Core Orchestration)**: 0/4 complete
-- **Phase 3 (Local Development)**: 0/8 complete
-- **Phase 4 (Provider Implementations)**: 0/3 complete
+- **Total Features Identified**: 70 features
+- **Phase 0 (Foundation)**: 5/5 complete ✅
+- **Phase 1 (Provider Interfaces)**: 2/6 complete (33%)
+- **Phase 2 (Core Orchestration)**: 2/4 complete (50%)
+- **Phase 3 (Local Development)**: 1/8 complete (12.5%)
+- **Phase 4 (Provider Implementations)**: 2/3 complete (67%)
 - **Phase 5 (Build and Deploy)**: 0/6 complete
-- **Phase 6 (Migration System)**: 0/8 complete
+- **Phase 6 (Migration System)**: 2/8 complete (25%)
 - **Phase 7 (Infrastructure)**: 0/5 complete
 - **Phase 8 (Operations)**: 0/6 complete
 - **Phase 9 (CI Integration)**: 0/3 complete
 - **Phase 10 (Project Scaffold)**: 0/5 complete
 
-**Overall Progress**: ~2% (2/70 features complete: ARCH_OVERVIEW, DOCS_ADR)
+**Overall Progress**: 19/70 features complete (~27%)
+
+**Completed Features**:
+- Phase 0: `CORE_CONFIG`, `CLI_INIT`, `CORE_LOGGING`, `CORE_EXECUTIL`, `CLI_GLOBAL_FLAGS`
+- Phase 1: `PROVIDER_BACKEND_INTERFACE`, `PROVIDER_FRONTEND_INTERFACE`
+- Phase 2: `CORE_PLAN`, `CORE_COMPOSE`
+- Phase 3: `CLI_DEV_BASIC`
+- Phase 4: `PROVIDER_BACKEND_ENCORE`, `PROVIDER_BACKEND_GENERIC`
+- Phase 6: `MIGRATION_ENGINE_RAW`, `CLI_MIGRATE_BASIC`
+- Additional: `CORE_BACKEND_REGISTRY`, `CORE_MIGRATION_REGISTRY`, `CORE_BACKEND_PROVIDER_CONFIG_SCHEMA`, `ARCH_OVERVIEW`, `DOCS_ADR`
 
 ### Next Immediate Steps
 
-1. **Complete `CORE_CONFIG`** - Finish config system with full schema
-2. **Complete `CLI_INIT`** - Make init command functional
-3. **Add `CORE_LOGGING`** - Implement logging helpers
-4. **Add `CORE_EXECUTIL`** - Implement exec utilities
-5. **Add `CLI_GLOBAL_FLAGS`** - Add global flag handling
+1. **Complete Phase 1 (Provider Interfaces)** - Implement remaining 4 interfaces:
+   - `PROVIDER_NETWORK_INTERFACE` - NetworkProvider interface
+   - `PROVIDER_CLOUD_INTERFACE` - CloudProvider interface
+   - `PROVIDER_CI_INTERFACE` - CIProvider interface
+   - `PROVIDER_SECRETS_INTERFACE` - SecretsProvider interface
+
+2. **Complete Phase 2 (Core Orchestration)** - Implement remaining 2 features:
+   - `CORE_ENV_RESOLUTION` - Environment resolution and context
+   - `CORE_STATE` - State management (release history)
+
+3. **Complete Phase 3 (Local Development)** - Implement full `CLI_DEV`:
+   - `DEV_COMPOSE_INFRA` - Compose infra up/down
+   - `DEV_TRAEFIK` - Traefik dev config generation
+   - `DEV_MKCERT` - mkcert integration
+   - `DEV_HOSTS` - /etc/hosts management
+   - `PROVIDER_FRONTEND_GENERIC` - Generic frontend provider
 
 ---
 
