@@ -1,7 +1,7 @@
 # State Management (Release History)
 
 - Feature ID: `CORE_STATE`
-- Status: todo
+- Status: done
 - Depends on: `CORE_CONFIG`, `CORE_ENV_RESOLUTION`
 
 ## Goal
@@ -50,8 +50,10 @@ const (
 )
 
 // Release represents a single deployment release.
+// Note: Release values returned from Manager methods should be treated as read-only snapshots.
+// Mutating these values will not affect the stored state. To update state, use UpdatePhase or other Manager methods.
 type Release struct {
-    // ID is a unique identifier for this release (e.g., "rel-20250101-120000")
+    // ID is a unique identifier for this release (e.g., "rel-20250101-120000" or "rel-20250101-120000123")
     ID string
 
     // Environment is the target environment
@@ -60,7 +62,8 @@ type Release struct {
     // Version is the deployed version (e.g., "v1.2.3" or git SHA)
     Version string
 
-    // CommitSHA is the git commit SHA
+    // CommitSHA is the git commit SHA.
+    // MAY be empty for non-git deployments.
     CommitSHA string
 
     // Timestamp is when the release was created
@@ -74,6 +77,8 @@ type Release struct {
 }
 
 // Manager manages release state.
+// Manager is safe for concurrent use within a single process.
+// Note: State is not safe for concurrent modification from multiple processes.
 type Manager struct {
     stateFile string
 }
@@ -82,6 +87,14 @@ type Manager struct {
 func NewManager(stateFile string) *Manager {
     return &Manager{stateFile: stateFile}
 }
+
+// NewDefaultManager creates a new state manager with the default state file path.
+func NewDefaultManager() *Manager {
+    return NewManager(DefaultStatePath)
+}
+
+// DefaultStatePath is the default path for the state file.
+const DefaultStatePath = ".stagecraft/releases.json"
 
 // CreateRelease creates a new release record.
 func (m *Manager) CreateRelease(ctx context.Context, env, version, commitSHA string) (*Release, error) {
@@ -93,19 +106,21 @@ func (m *Manager) CreateRelease(ctx context.Context, env, version, commitSHA str
 }
 
 // GetRelease retrieves a release by ID.
+// Returns a read-only snapshot of the release.
 func (m *Manager) GetRelease(ctx context.Context, id string) (*Release, error) {
     // Implementation:
     // 1. Load state file
     // 2. Find release by ID
-    // 3. Return release
+    // 3. Return cloned release (read-only snapshot)
 }
 
 // GetCurrentRelease retrieves the current release for an environment.
+// Returns a read-only snapshot of the release.
 func (m *Manager) GetCurrentRelease(ctx context.Context, env string) (*Release, error) {
     // Implementation:
     // 1. Load state file
     // 2. Find latest release for environment
-    // 3. Return release
+    // 3. Return cloned release (read-only snapshot)
 }
 
 // UpdatePhase updates the status of a deployment phase.
@@ -117,13 +132,14 @@ func (m *Manager) UpdatePhase(ctx context.Context, releaseID string, phase Relea
     // 4. Save to state file
 }
 
-// ListReleases lists all releases for an environment.
+// ListReleases lists all releases for an environment, sorted newest first.
+// Returns read-only snapshots of the releases.
 func (m *Manager) ListReleases(ctx context.Context, env string) ([]*Release, error) {
     // Implementation:
     // 1. Load state file
     // 2. Filter releases by environment
     // 3. Sort by timestamp (newest first)
-    // 4. Return list
+    // 4. Return list of cloned releases (read-only snapshots)
 }
 ```
 
@@ -158,10 +174,14 @@ State is stored in `.stagecraft/releases.json`:
 
 ### Release ID Generation
 
-Release IDs follow the pattern: `rel-YYYYMMDD-HHMMSS`
-- Format: `rel-{date}-{time}`
-- Example: `rel-20250101-120000`
+Release IDs follow the pattern: `rel-YYYYMMDD-HHMMSS[mmm]`
+- Format: `rel-{date}-{time}[{milliseconds}]`
+- Examples:
+  - `rel-20250101-120000` (without milliseconds)
+  - `rel-20250101-120000123` (with milliseconds)
+- The optional millisecond suffix (`mmm`) ensures uniqueness for high-frequency operations
 - Ensures lexicographic ordering matches chronological ordering
+- IDs may be 19 or 22 characters in length depending on whether milliseconds are included
 
 ### Phase Tracking
 
@@ -185,8 +205,9 @@ Phases are tracked in order:
 ```go
 import "stagecraft/internal/core/state"
 
-// Create manager
-mgr := state.NewManager(".stagecraft/releases.json")
+// Create manager (using default path)
+mgr := state.NewDefaultManager()
+// or explicitly: mgr := state.NewManager(state.DefaultStatePath)
 
 // Create release
 release, err := mgr.CreateRelease(ctx, "prod", "v1.2.3", "abc123")
