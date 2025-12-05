@@ -505,10 +505,23 @@ environments:
 
 	// Override phase execution to avoid actual deployment
 	err = executeRollbackWithPhases(PhaseFns{
-		Build:       func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
-		Push:        defaultPhaseFns.Push,
-		MigratePre:  defaultPhaseFns.MigratePre,
-		Rollout:     defaultPhaseFns.Rollout,
+		Build: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			// Mock build phase: set built_image in metadata so push phase can proceed
+			if plan.Metadata == nil {
+				plan.Metadata = map[string]interface{}{}
+			}
+			plan.Metadata["built_image"] = "test-app:unknown"
+			return nil
+		},
+		Push: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			// Mock push phase: no-op to avoid actual Docker push
+			return nil
+		},
+		MigratePre: defaultPhaseFns.MigratePre,
+		Rollout: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			// Mock rollout phase: no-op to avoid actual Docker compose
+			return nil
+		},
 		MigratePost: defaultPhaseFns.MigratePost,
 		Finalize:    defaultPhaseFns.Finalize,
 	}, "rollback", "--env", "staging", "--to-previous")
@@ -721,10 +734,20 @@ environments:
 	root := newTestRootCommand()
 	root.AddCommand(NewRollbackCommand())
 
-	// Override rollout phase to simulate a failure
+	// Override phases to simulate rollout failure (build/push must succeed first)
 	rollbackErr := executeRollbackWithPhases(PhaseFns{
-		Build:      defaultPhaseFns.Build,
-		Push:       defaultPhaseFns.Push,
+		Build: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			// Mock build phase: set built_image in metadata so push phase can proceed
+			if plan.Metadata == nil {
+				plan.Metadata = map[string]interface{}{}
+			}
+			plan.Metadata["built_image"] = "test-app:unknown"
+			return nil
+		},
+		Push: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			// Mock push phase: no-op so rollout can fail
+			return nil
+		},
 		MigratePre: defaultPhaseFns.MigratePre,
 		Rollout: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
 			return fmt.Errorf("forced rollout failure")
@@ -774,6 +797,13 @@ func TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted(t *testing.T) {
 
 	configContent := `project:
   name: test-app
+backend:
+  provider: generic
+  providers:
+    generic:
+      build:
+        dockerfile: "./Dockerfile"
+        context: "."
 environments:
   staging:
     driver: local
@@ -813,7 +843,28 @@ environments:
 	root.AddCommand(NewRollbackCommand())
 
 	// Run rollback (should succeed and complete all phases)
-	_, err = executeCommandForGolden(root, "rollback", "--env", "staging", "--to-previous")
+	// Mock all phases to avoid actual Docker operations
+	err = executeRollbackWithPhases(PhaseFns{
+		Build: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			// Mock build phase: set built_image in metadata
+			if plan.Metadata == nil {
+				plan.Metadata = map[string]interface{}{}
+			}
+			plan.Metadata["built_image"] = "test-app:unknown"
+			return nil
+		},
+		Push: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			// Mock push phase: no-op
+			return nil
+		},
+		MigratePre: defaultPhaseFns.MigratePre,
+		Rollout: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			// Mock rollout phase: no-op
+			return nil
+		},
+		MigratePost: defaultPhaseFns.MigratePost,
+		Finalize:    defaultPhaseFns.Finalize,
+	}, "rollback", "--env", "staging", "--to-previous")
 	if err != nil {
 		t.Fatalf("rollback should succeed, got: %v", err)
 	}
