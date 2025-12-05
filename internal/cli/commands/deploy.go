@@ -228,7 +228,7 @@ func getGitCommitSHA(ctx context.Context, logger logging.Logger) string {
 // Store under plan.Metadata["deploy_ctx"] as a single key.
 
 // getDeployContext extracts deployment context from plan metadata.
-func getDeployContext(plan *core.Plan) (configPath string, version string, workdir string, err error) {
+func getDeployContext(plan *core.Plan) (configPath, version, workdir string, err error) {
 	if plan.Metadata == nil {
 		return "", "", "", fmt.Errorf("plan metadata is missing")
 	}
