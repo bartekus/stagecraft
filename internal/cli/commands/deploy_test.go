@@ -349,7 +349,7 @@ func TestMarkAllPhasesFailed_SetsAllPhasesToFailed(t *testing.T) {
 	logger := logging.NewLogger(false)
 
 	// Call the helper under test.
-	markAllPhasesFailed(env.Ctx, env.Manager, release.ID, logger)
+	markAllPhasesFailedCommon(env.Ctx, env.Manager, release.ID, logger)
 
 	// Reload and verify.
 	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
@@ -363,7 +363,7 @@ func TestMarkAllPhasesFailed_SetsAllPhasesToFailed(t *testing.T) {
 
 	updated := releases[0]
 
-	for _, phase := range orderedPhases() {
+	for _, phase := range allPhasesCommon() {
 		status, ok := updated.Phases[phase]
 		if !ok {
 			t.Errorf("expected phase %q to be present", phase)

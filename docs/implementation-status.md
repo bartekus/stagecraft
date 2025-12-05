@@ -35,6 +35,9 @@ This document tracks the implementation status of Stagecraft features. It should
 | CORE_BACKEND_REGISTRY | Backend provider registry system | done | bart | [core/backend-registry.md](../spec/core/backend-registry.md) | [registry_test.go](../pkg/providers/backend/registry_test.go) |
 | CORE_MIGRATION_REGISTRY | Migration engine registry system | done | bart | [core/migration-registry.md](../spec/core/migration-registry.md) | [registry_test.go](../pkg/providers/migration/registry_test.go) |
 | CORE_BACKEND_PROVIDER_CONFIG_SCHEMA | Provider-scoped backend configuration schema | done | bart | [core/backend-provider-config.md](../spec/core/backend-provider-config.md) | [config_test.go](../pkg/config/config_test.go) |
+| CORE_STATE | State management (release history) | done | bart | [core/state.md](../spec/core/state.md) | [state_test.go](../internal/core/state/state_test.go) |
+| CORE_STATE_TEST_ISOLATION | State test isolation for CLI commands | done | bart | [core/state-test-isolation.md](../spec/core/state-test-isolation.md) | [test_helpers.go](../internal/cli/commands/test_helpers.go), [deploy_test.go](../internal/cli/commands/deploy_test.go), [rollback_test.go](../internal/cli/commands/rollback_test.go), [releases_test.go](../internal/cli/commands/releases_test.go) |
+| CORE_STATE_CONSISTENCY | State durability and read-after-write guarantees | todo | bart | [core/state-consistency.md](../spec/core/state-consistency.md) | [state_test.go](../internal/core/state/state_test.go) |
 
 ### CLI Commands
 
@@ -44,6 +47,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | CLI_DEV_BASIC | Basic stagecraft dev command that delegates to backend provider | done | bart | [commands/dev-basic.md](../spec/commands/dev-basic.md) | [dev_test.go](../internal/cli/commands/dev_test.go), [dev_smoke_test.go](../test/e2e/dev_smoke_test.go) |
 | CLI_MIGRATE_BASIC | Basic stagecraft migrate command using registered migration engines | done | bart | [commands/migrate-basic.md](../spec/commands/migrate-basic.md) | [migrate_test.go](../internal/cli/commands/migrate_test.go), [migrate_smoke_test.go](../test/e2e/migrate_smoke_test.go) |
 | CLI_PLAN | Plan command (dry-run) | todo | bart | [commands/plan.md](../spec/commands/plan.md) | [plan_test.go](../internal/cli/commands/plan_test.go) |
+| CLI_PHASE_EXECUTION_COMMON | Shared phase execution semantics for deploy and rollback | done | bart | [core/phase-execution-common.md](../spec/core/phase-execution-common.md) | [phases_common_test.go](../internal/cli/commands/phases_common_test.go), [deploy_test.go](../internal/cli/commands/deploy_test.go) |
 | CLI_DEPLOY | Deploy command | todo | bart | [commands/deploy.md](../spec/commands/deploy.md) | [deploy_test.go](../internal/cli/commands/deploy_test.go) |
 
 ### Providers
@@ -76,6 +80,8 @@ This document tracks the implementation status of Stagecraft features. It should
 - **CORE_BACKEND_REGISTRY**: Backend provider registry system with registration support
 - **CORE_MIGRATION_REGISTRY**: Migration engine registry system with registration support
 - **CORE_BACKEND_PROVIDER_CONFIG_SCHEMA**: Provider-scoped backend configuration schema
+- **CORE_STATE_TEST_ISOLATION**: Complete test isolation infrastructure for state-touching CLI tests
+- **CLI_PHASE_EXECUTION_COMMON**: Shared phase execution semantics for deploy and rollback commands
 - **PROVIDER_BACKEND_INTERFACE**: BackendProvider interface definition
 - **CLI_DEV_BASIC**: Basic dev command that delegates to backend provider
 - **PROVIDER_BACKEND_GENERIC**: Generic command-based BackendProvider implementation

@@ -877,3 +877,194 @@ func TestManager_SpecExampleJSONRoundTrip(t *testing.T) {
 		t.Errorf("expected 1 release, got %d", len(releases))
 	}
 }
+
+// Feature: CORE_STATE_CONSISTENCY
+// Spec: spec/core/state-consistency.md
+
+// TestManager_ReadAfterWrite_SingleManager verifies that after a successful write,
+// a subsequent read through the same manager observes the updated state.
+func TestManager_ReadAfterWrite_SingleManager(t *testing.T) {
+	tmpDir := t.TempDir()
+	stateFile := filepath.Join(tmpDir, "releases.json")
+
+	mgr := NewManager(stateFile)
+	ctx := context.Background()
+
+	// Create a release
+	release, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	if err != nil {
+		t.Fatalf("CreateRelease failed: %v", err)
+	}
+
+	// Update multiple phases sequentially
+	phases := []ReleasePhase{PhaseBuild, PhasePush, PhaseRollout}
+	for _, phase := range phases {
+		if err := mgr.UpdatePhase(ctx, release.ID, phase, StatusCompleted); err != nil {
+			t.Fatalf("UpdatePhase failed for %q: %v", phase, err)
+		}
+	}
+
+	// Immediately read back the state
+	readRelease, err := mgr.GetRelease(ctx, release.ID)
+	if err != nil {
+		t.Fatalf("GetRelease failed: %v", err)
+	}
+
+	// Verify all phases are completed
+	for _, phase := range phases {
+		if readRelease.Phases[phase] != StatusCompleted {
+			t.Errorf("expected phase %q to be %q, got %q", phase, StatusCompleted, readRelease.Phases[phase])
+		}
+	}
+}
+
+// TestManager_ReadAfterWrite_MultipleManagers verifies that after a successful write
+// through one manager, a subsequent read through a different manager instance
+// (pointing at the same file) observes the updated state.
+func TestManager_ReadAfterWrite_MultipleManagers(t *testing.T) {
+	tmpDir := t.TempDir()
+	stateFile := filepath.Join(tmpDir, "releases.json")
+
+	mgr1 := NewManager(stateFile)
+	ctx := context.Background()
+
+	// Create a release with mgr1
+	release, err := mgr1.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	if err != nil {
+		t.Fatalf("CreateRelease failed: %v", err)
+	}
+
+	// Update phases with mgr1
+	if err := mgr1.UpdatePhase(ctx, release.ID, PhaseBuild, StatusCompleted); err != nil {
+		t.Fatalf("UpdatePhase failed: %v", err)
+	}
+	if err := mgr1.UpdatePhase(ctx, release.ID, PhaseRollout, StatusCompleted); err != nil {
+		t.Fatalf("UpdatePhase failed: %v", err)
+	}
+
+	// Create a new manager pointing at the same file
+	mgr2 := NewManager(stateFile)
+
+	// Read through mgr2 - should see updates from mgr1
+	readRelease, err := mgr2.GetRelease(ctx, release.ID)
+	if err != nil {
+		t.Fatalf("GetRelease failed: %v", err)
+	}
+
+	// Verify phases are completed
+	if readRelease.Phases[PhaseBuild] != StatusCompleted {
+		t.Errorf("expected PhaseBuild to be %q, got %q", StatusCompleted, readRelease.Phases[PhaseBuild])
+	}
+	if readRelease.Phases[PhaseRollout] != StatusCompleted {
+		t.Errorf("expected PhaseRollout to be %q, got %q", StatusCompleted, readRelease.Phases[PhaseRollout])
+	}
+
+	// Update with mgr2
+	if err := mgr2.UpdatePhase(ctx, release.ID, PhaseFinalize, StatusCompleted); err != nil {
+		t.Fatalf("UpdatePhase failed: %v", err)
+	}
+
+	// Read back through mgr1 - should see update from mgr2
+	readRelease2, err := mgr1.GetRelease(ctx, release.ID)
+	if err != nil {
+		t.Fatalf("GetRelease failed: %v", err)
+	}
+
+	if readRelease2.Phases[PhaseFinalize] != StatusCompleted {
+		t.Errorf("expected PhaseFinalize to be %q, got %q", StatusCompleted, readRelease2.Phases[PhaseFinalize])
+	}
+}
+
+// TestManager_ReadAfterWrite_SequentialUpdates verifies that multiple sequential
+// updates are all visible in a single read operation.
+func TestManager_ReadAfterWrite_SequentialUpdates(t *testing.T) {
+	tmpDir := t.TempDir()
+	stateFile := filepath.Join(tmpDir, "releases.json")
+
+	mgr := NewManager(stateFile)
+	ctx := context.Background()
+
+	// Create a release
+	release, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	if err != nil {
+		t.Fatalf("CreateRelease failed: %v", err)
+	}
+
+	// Perform multiple sequential updates
+	updates := []struct {
+		phase  ReleasePhase
+		status PhaseStatus
+	}{
+		{PhaseBuild, StatusRunning},
+		{PhaseBuild, StatusCompleted},
+		{PhasePush, StatusRunning},
+		{PhasePush, StatusCompleted},
+		{PhaseRollout, StatusRunning},
+		{PhaseRollout, StatusCompleted},
+	}
+
+	for _, update := range updates {
+		if err := mgr.UpdatePhase(ctx, release.ID, update.phase, update.status); err != nil {
+			t.Fatalf("UpdatePhase failed for %q: %v", update.phase, err)
+		}
+	}
+
+	// Read back and verify final state
+	readRelease, err := mgr.GetRelease(ctx, release.ID)
+	if err != nil {
+		t.Fatalf("GetRelease failed: %v", err)
+	}
+
+	// Verify final state reflects all updates
+	if readRelease.Phases[PhaseBuild] != StatusCompleted {
+		t.Errorf("expected PhaseBuild to be %q, got %q", StatusCompleted, readRelease.Phases[PhaseBuild])
+	}
+	if readRelease.Phases[PhasePush] != StatusCompleted {
+		t.Errorf("expected PhasePush to be %q, got %q", StatusCompleted, readRelease.Phases[PhasePush])
+	}
+	if readRelease.Phases[PhaseRollout] != StatusCompleted {
+		t.Errorf("expected PhaseRollout to be %q, got %q", StatusCompleted, readRelease.Phases[PhaseRollout])
+	}
+}
+
+// TestManager_ReadAfterWrite_ListReleases verifies that ListReleases observes
+// updates made through UpdatePhase.
+func TestManager_ReadAfterWrite_ListReleases(t *testing.T) {
+	tmpDir := t.TempDir()
+	stateFile := filepath.Join(tmpDir, "releases.json")
+
+	mgr := NewManager(stateFile)
+	ctx := context.Background()
+
+	// Create a release
+	release, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	if err != nil {
+		t.Fatalf("CreateRelease failed: %v", err)
+	}
+
+	// Update phases
+	if err := mgr.UpdatePhase(ctx, release.ID, PhaseBuild, StatusCompleted); err != nil {
+		t.Fatalf("UpdatePhase failed: %v", err)
+	}
+	if err := mgr.UpdatePhase(ctx, release.ID, PhaseRollout, StatusCompleted); err != nil {
+		t.Fatalf("UpdatePhase failed: %v", err)
+	}
+
+	// List releases and verify state
+	releases, err := mgr.ListReleases(ctx, "staging")
+	if err != nil {
+		t.Fatalf("ListReleases failed: %v", err)
+	}
+
+	if len(releases) != 1 {
+		t.Fatalf("expected 1 release, got %d", len(releases))
+	}
+
+	readRelease := releases[0]
+	if readRelease.Phases[PhaseBuild] != StatusCompleted {
+		t.Errorf("expected PhaseBuild to be %q, got %q", StatusCompleted, readRelease.Phases[PhaseBuild])
+	}
+	if readRelease.Phases[PhaseRollout] != StatusCompleted {
+		t.Errorf("expected PhaseRollout to be %q, got %q", StatusCompleted, readRelease.Phases[PhaseRollout])
+	}
+}

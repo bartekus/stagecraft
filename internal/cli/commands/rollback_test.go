@@ -759,7 +759,8 @@ environments:
 
 	// Verify phase statuses
 	// Create a new manager to ensure we read fresh state from disk
-	verifyMgr := state.NewManager(env.StateFile)
+	// Use NewDefaultManager() to match the command's behavior (reads from STAGECRAFT_STATE_FILE)
+	verifyMgr := state.NewDefaultManager()
 	releases, err := verifyMgr.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
@@ -840,6 +841,7 @@ environments:
 	// Verify rollback release was created with all phases completed
 	// Create a fresh manager to ensure we read the latest state from disk
 	// The command uses NewDefaultManager() which reads from STAGECRAFT_STATE_FILE (set by setupIsolatedStateTestEnv)
+	// Use NewDefaultManager() to match the command's behavior
 	verifyMgr := state.NewDefaultManager()
 	releases, err := verifyMgr.ListReleases(env.Ctx, "staging")
 	if err != nil {

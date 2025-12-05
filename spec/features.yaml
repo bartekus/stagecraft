@@ -164,6 +164,25 @@ features:
     tests:
       - "internal/core/state/state_test.go"
 
+  - id: CORE_STATE_TEST_ISOLATION
+    title: "State test isolation for CLI commands"
+    status: done
+    spec: "core/state-test-isolation.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/test_helpers.go"
+      - "internal/cli/commands/deploy_test.go"
+      - "internal/cli/commands/rollback_test.go"
+      - "internal/cli/commands/releases_test.go"
+
+  - id: CORE_STATE_CONSISTENCY
+    title: "State durability and read-after-write guarantees"
+    status: todo
+    spec: "core/state-consistency.md"
+    owner: bart
+    tests:
+      - "internal/core/state/state_test.go"
+
   - id: CORE_COMPOSE
     title: "Docker Compose integration"
     status: done
@@ -174,7 +193,7 @@ features:
 
   - id: CLI_PHASE_EXECUTION_COMMON
     title: "Shared phase execution semantics for deploy and rollback"
-    status: todo
+    status: done
     spec: "core/phase-execution-common.md"
     owner: bart
     tests:

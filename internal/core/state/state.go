@@ -216,7 +216,9 @@ func (m *Manager) loadState(ctx context.Context) (*stateFile, error) {
 }
 
 // saveState saves the state file atomically (write to temp, then rename).
-// Temp file includes PID to reduce conflicts when multiple processes write concurrently.
+// Implements fsync + directory sync protocol for read-after-write consistency.
+// Feature: CORE_STATE_CONSISTENCY
+// Spec: spec/core/state-consistency.md
 func (m *Manager) saveState(ctx context.Context, state *stateFile) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -234,17 +236,66 @@ func (m *Manager) saveState(ctx context.Context, state *stateFile) error {
 		return fmt.Errorf("marshaling state: %w", err)
 	}
 
-	// Write to temporary file with PID suffix to reduce multi-process conflicts
-	tmpFile := fmt.Sprintf("%s.%d.tmp", m.stateFile, os.Getpid())
-	if err := os.WriteFile(tmpFile, data, 0o600); err != nil {
+	// Create temp file in the same directory as the target
+	// This ensures atomic rename works correctly
+	tmpFile, err := os.CreateTemp(dir, ".releases-*.tmp")
+	if err != nil {
+		return fmt.Errorf("creating temporary state file: %w", err)
+	}
+	tmpPath := tmpFile.Name()
+
+	// Track if we need to clean up the temp file
+	needsCleanup := true
+	defer func() {
+		if needsCleanup {
+			_ = os.Remove(tmpPath)
+		}
+	}()
+
+	// Write state to temp file
+	if _, err := tmpFile.Write(data); err != nil {
+		_ = tmpFile.Close()
 		return fmt.Errorf("writing temporary state file: %w", err)
 	}
 
+	// Sync file data to disk before closing
+	if err := tmpFile.Sync(); err != nil {
+		_ = tmpFile.Close()
+		return fmt.Errorf("syncing temporary state file: %w", err)
+	}
+
+	// Close the temp file
+	if err := tmpFile.Close(); err != nil {
+		return fmt.Errorf("closing temporary state file: %w", err)
+	}
+
 	// Atomically rename temp file to final location
-	if err := os.Rename(tmpFile, m.stateFile); err != nil {
-		// Clean up temp file on error
-		_ = os.Remove(tmpFile)
+	if err := os.Rename(tmpPath, m.stateFile); err != nil {
 		return fmt.Errorf("renaming state file: %w", err)
+	}
+
+	// Rename succeeded, so we don't need to clean up the temp file
+	needsCleanup = false
+
+	// Sync the directory to ensure the rename is durable
+	// This is best-effort; some filesystems may not support directory sync
+	//nolint:gosec // G304: dir is derived from filepath.Dir(m.stateFile) which is safe
+	dirFile, err := os.Open(dir)
+	if err != nil {
+		// Directory sync failure is not critical
+		// The rename has already succeeded, so we return nil
+		return nil
+	}
+	defer func() {
+		_ = dirFile.Close() // Best-effort cleanup
+	}()
+
+	// Attempt directory sync (best-effort)
+	if err := dirFile.Sync(); err != nil {
+		// Directory sync failed, but rename succeeded
+		// This is acceptable for best-effort consistency
+		// Return nil since the write itself succeeded
+		return nil
 	}
 
 	return nil
