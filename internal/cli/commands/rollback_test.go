@@ -838,8 +838,10 @@ environments:
 	}
 
 	// Verify rollback release was created with all phases completed
-	// Use env.Manager which is bound to the same isolated state file the command uses via STAGECRAFT_STATE_FILE
-	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
+	// Create a fresh manager to ensure we read the latest state from disk
+	// The command uses NewDefaultManager() which reads from STAGECRAFT_STATE_FILE (set by setupIsolatedStateTestEnv)
+	verifyMgr := state.NewDefaultManager()
+	releases, err := verifyMgr.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -848,14 +850,27 @@ environments:
 		t.Fatalf("expected at least 3 releases (previous, current, rollback), got %d", len(releases))
 	}
 
-	// Newest release should be the rollback
-	rollbackRelease := releases[0]
+	// Find the rollback release by matching version and commit SHA (more reliable than assuming it's first)
+	var rollbackRelease *state.Release
+	for _, r := range releases {
+		if r.Version == previous.Version && r.CommitSHA == previous.CommitSHA {
+			// Check if this is newer than the previous release (should be the rollback)
+			if r.Timestamp.After(previous.Timestamp) {
+				rollbackRelease = r
+				break
+			}
+		}
+	}
+
+	if rollbackRelease == nil {
+		t.Fatalf("could not find rollback release with version %q and commit %q", previous.Version, previous.CommitSHA)
+	}
 
 	// Verify all phases are completed
 	for _, phase := range allPhases {
 		status := rollbackRelease.Phases[phase]
 		if status != state.StatusCompleted {
-			t.Errorf("expected phase %q to be %q, got %q", phase, state.StatusCompleted, status)
+			t.Errorf("expected phase %q to be %q, got %q (release: %s)", phase, state.StatusCompleted, status, rollbackRelease.ID)
 		}
 	}
 
