@@ -228,23 +228,45 @@ func getGitCommitSHA(ctx context.Context, logger logging.Logger) string {
 // Store under plan.Metadata["deploy_ctx"] as a single key.
 
 // getDeployContext extracts deployment context from plan metadata.
+// This function is robust to plans that don't set metadata (e.g., older call sites like rollback).
+// It uses reasonable defaults when metadata is missing or incomplete.
 func getDeployContext(plan *core.Plan) (configPath, version, workdir string, err error) {
+	if plan == nil {
+		return "", "", "", fmt.Errorf("getting deployment context: nil plan")
+	}
+
+	// Ensure metadata is always non-nil so we can safely read/write keys.
 	if plan.Metadata == nil {
-		return "", "", "", fmt.Errorf("plan metadata is missing")
+		plan.Metadata = map[string]interface{}{}
 	}
 
-	configPath, _ = plan.Metadata["config_path"].(string)
-	version, _ = plan.Metadata["version"].(string)
-	workdir, _ = plan.Metadata["workdir"].(string)
+	// Version: prefer metadata, otherwise default to "unknown".
+	if v, ok := plan.Metadata["version"].(string); ok && v != "" {
+		version = v
+	} else {
+		version = "unknown"
+	}
 
-	if configPath == "" {
-		return "", "", "", fmt.Errorf("config_path not found in plan metadata")
+	// Config path: prefer metadata, otherwise default to ./stagecraft.yml.
+	if cp, ok := plan.Metadata["config_path"].(string); ok && cp != "" {
+		configPath = cp
+	} else {
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", "", "", fmt.Errorf("getting deployment context: %w", err)
+		}
+		configPath = filepath.Join(wd, "stagecraft.yml")
 	}
-	if version == "" {
-		return "", "", "", fmt.Errorf("version not found in plan metadata")
-	}
-	if workdir == "" {
-		workdir, _ = os.Getwd()
+
+	// Workdir: prefer metadata, otherwise use current working directory.
+	if wd, ok := plan.Metadata["workdir"].(string); ok && wd != "" {
+		workdir = wd
+	} else {
+		wd, err := os.Getwd()
+		if err != nil {
+			return "", "", "", fmt.Errorf("getting deployment context: %w", err)
+		}
+		workdir = wd
 	}
 
 	return configPath, version, workdir, nil

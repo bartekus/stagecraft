@@ -231,6 +231,7 @@ func NewRollbackCommand() *cobra.Command {
 - Reuse `orderedPhases()` helper
 - Reuse phase execution functions (buildPhaseFn, pushPhaseFn, etc.)
 - Generate plan using `core.Planner.PlanDeploy(env)`
+- Rollback reuses the deploy phase pipeline with defaults for missing plan metadata (for example, env-local config and unknown version, unless set).
 
 **executePhases Directive**: The `executePhases` function in `deploy.go` is currently private (lowercase). For v1 of `CLI_ROLLBACK`, it is acceptable to copy the `executePhases` logic from `deploy.go` into `rollback.go` to avoid a premature refactor. Future refactors can consolidate them into a shared helper. Do NOT change behavior, only duplicate the code.
 
