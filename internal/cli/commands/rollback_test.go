@@ -838,9 +838,8 @@ environments:
 	}
 
 	// Verify rollback release was created with all phases completed
-	// Use NewDefaultManager to ensure we read from the same state file the command used
-	verifyMgr := state.NewDefaultManager()
-	releases, err := verifyMgr.ListReleases(env.Ctx, "staging")
+	// Use env.Manager which is bound to the same isolated state file the command uses via STAGECRAFT_STATE_FILE
+	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}

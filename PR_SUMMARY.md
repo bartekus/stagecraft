@@ -64,9 +64,14 @@ All tests now satisfy the following invariants:
 ## Testing
 
 - All tests compile successfully
-- All tests pass individually
+- All tests pass consistently (verified with multiple runs)
+- `TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted` now passes reliably
 - Test isolation infrastructure verified
 - No linting errors
+
+## Fixes Applied
+
+- Fixed test verification in `TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted` to use `env.Manager` directly instead of creating a new manager, ensuring we read from the same state file the command wrote to
 
 ## Related
 
