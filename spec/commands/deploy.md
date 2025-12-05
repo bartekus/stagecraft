@@ -43,21 +43,21 @@ with full phase tracking and release history.
    - If `--version` is not provided and git is not available:
      - `version` is set to `"unknown"` to satisfy CORE_STATE's requirement that versions are non-empty
      - `commitSHA` is left empty
-5. Create release record using `state.Manager.CreateRelease()`
+4. Create release record using `state.Manager.CreateRelease()`
    - All phases initialized as `StatusPending`
-6. Generate deployment plan using `core.Planner.PlanDeploy()`
-7. Execute deployment phases in order:
+5. Generate deployment plan using `core.Planner.PlanDeploy()`
+6. Execute deployment phases in order:
    - **Build**: Update phase to `StatusRunning`, execute build, update to `StatusCompleted` or `StatusFailed`
    - **Push**: Update phase to `StatusRunning`, execute push, update to `StatusCompleted` or `StatusFailed`
    - **MigratePre**: Update phase to `StatusRunning`, execute pre-deployment migrations, update to `StatusCompleted` or `StatusFailed`
    - **Rollout**: Update phase to `StatusRunning`, execute rollout, update to `StatusCompleted` or `StatusFailed`
    - **MigratePost**: Update phase to `StatusRunning`, execute post-deployment migrations, update to `StatusCompleted` or `StatusFailed`
    - **Finalize**: Update phase to `StatusRunning`, execute finalization, update to `StatusCompleted` or `StatusFailed`
-8. On any phase failure:
+7. On any phase failure:
    - Mark current phase as `StatusFailed`
    - Mark all downstream phases as `StatusSkipped`
    - Stop deployment (do not continue to next phase)
-9. Return error if any phase failed
+8. Return error if any phase failed
 
 ### Output
 
