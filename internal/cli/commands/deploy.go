@@ -49,8 +49,18 @@ func NewDeployCommand() *cobra.Command {
 	return cmd
 }
 
+// runDeploy is the public entry point that uses default phase functions.
 func runDeploy(cmd *cobra.Command, args []string) error {
+	return runDeployWithPhases(cmd, args, defaultPhaseFns)
+}
+
+// runDeployWithPhases is the internal implementation that accepts PhaseFns for dependency injection.
+// This allows tests to inject custom phase functions without using global state.
+func runDeployWithPhases(cmd *cobra.Command, _ []string, fns PhaseFns) error {
 	ctx := cmd.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
 	// Resolve global flags
 	flags, err := ResolveFlags(cmd, nil)
@@ -126,7 +136,7 @@ func runDeploy(cmd *cobra.Command, args []string) error {
 	plan, err := planner.PlanDeploy(flags.Env)
 	if err != nil {
 		// Mark all phases as failed if plan generation fails
-		markAllPhasesFailed(ctx, stateMgr, release.ID, logger)
+		markAllPhasesFailedCommon(ctx, stateMgr, release.ID, logger)
 		return fmt.Errorf("generating deployment plan: %w", err)
 	}
 
@@ -134,8 +144,8 @@ func runDeploy(cmd *cobra.Command, args []string) error {
 		logging.NewField("operations", len(plan.Operations)),
 	)
 
-	// Execute deployment phases
-	err = executePhases(ctx, stateMgr, release.ID, plan, logger)
+	// Execute deployment phases using shared helper
+	err = executePhasesCommon(ctx, stateMgr, release.ID, plan, logger, fns)
 	if err != nil {
 		return fmt.Errorf("deployment failed: %w", err)
 	}
@@ -201,107 +211,6 @@ func createReleaseOnly(ctx context.Context, env, version, commitSHA string, logg
 	)
 
 	return nil
-}
-
-// orderedPhases returns all deployment phases in execution order.
-func orderedPhases() []state.ReleasePhase {
-	return []state.ReleasePhase{
-		state.PhaseBuild,
-		state.PhasePush,
-		state.PhaseMigratePre,
-		state.PhaseRollout,
-		state.PhaseMigratePost,
-		state.PhaseFinalize,
-	}
-}
-
-// executePhases executes all deployment phases in order.
-func executePhases(ctx context.Context, stateMgr *state.Manager, releaseID string, plan *core.Plan, logger logging.Logger) error {
-	phases := []struct {
-		phase     state.ReleasePhase
-		name      string
-		executeFn func(context.Context, *core.Plan, logging.Logger) error
-	}{
-		{state.PhaseBuild, "build", buildPhaseFn},
-		{state.PhasePush, "push", pushPhaseFn},
-		{state.PhaseMigratePre, "migrate_pre", migratePrePhaseFn},
-		{state.PhaseRollout, "rollout", rolloutPhaseFn},
-		{state.PhaseMigratePost, "migrate_post", migratePostPhaseFn},
-		{state.PhaseFinalize, "finalize", finalizePhaseFn},
-	}
-
-	for _, p := range phases {
-		// Update phase to running
-		logger.Info("Starting phase", logging.NewField("phase", p.name))
-		if err := stateMgr.UpdatePhase(ctx, releaseID, p.phase, state.StatusRunning); err != nil {
-			return fmt.Errorf("updating phase %q to running: %w", p.name, err)
-		}
-
-		// Execute phase
-		err := p.executeFn(ctx, plan, logger)
-		if err != nil {
-			// Mark current phase as failed
-			if updateErr := stateMgr.UpdatePhase(ctx, releaseID, p.phase, state.StatusFailed); updateErr != nil {
-				logger.Debug("Failed to update phase status", logging.NewField("error", updateErr.Error()))
-			}
-
-			// Mark all downstream phases as skipped
-			markDownstreamPhasesSkipped(ctx, stateMgr, releaseID, p.phase, logger)
-
-			return fmt.Errorf("phase %q failed: %w", p.name, err)
-		}
-
-		// Mark phase as completed
-		if err := stateMgr.UpdatePhase(ctx, releaseID, p.phase, state.StatusCompleted); err != nil {
-			return fmt.Errorf("updating phase %q to completed: %w", p.name, err)
-		}
-
-		logger.Info("Phase completed", logging.NewField("phase", p.name))
-	}
-
-	return nil
-}
-
-// markDownstreamPhasesSkipped marks all phases after the failed phase as skipped.
-func markDownstreamPhasesSkipped(ctx context.Context, stateMgr *state.Manager, releaseID string, failedPhase state.ReleasePhase, logger logging.Logger) {
-	allPhases := orderedPhases()
-
-	// Find the index of the failed phase
-	failedIndex := -1
-	for i, phase := range allPhases {
-		if phase == failedPhase {
-			failedIndex = i
-			break
-		}
-	}
-
-	if failedIndex == -1 {
-		logger.Debug("Failed phase not found in phase list", logging.NewField("phase", failedPhase))
-		return
-	}
-
-	// Mark all downstream phases as skipped
-	for i := failedIndex + 1; i < len(allPhases); i++ {
-		phase := allPhases[i]
-		if err := stateMgr.UpdatePhase(ctx, releaseID, phase, state.StatusSkipped); err != nil {
-			logger.Debug("Failed to mark phase as skipped",
-				logging.NewField("phase", phase),
-				logging.NewField("error", err.Error()),
-			)
-		}
-	}
-}
-
-// markAllPhasesFailed marks all phases as failed (used when plan generation fails).
-func markAllPhasesFailed(ctx context.Context, stateMgr *state.Manager, releaseID string, logger logging.Logger) {
-	for _, phase := range orderedPhases() {
-		if err := stateMgr.UpdatePhase(ctx, releaseID, phase, state.StatusFailed); err != nil {
-			logger.Debug("Failed to mark phase as failed",
-				logging.NewField("phase", phase),
-				logging.NewField("error", err.Error()),
-			)
-		}
-	}
 }
 
 // Phase execution functions (stubs for now - will be implemented in future iterations)

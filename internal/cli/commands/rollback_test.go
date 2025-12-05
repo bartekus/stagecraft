@@ -1037,8 +1037,18 @@ environments:
 		t.Fatalf("expected at least 3 releases (previous, current, rollback), got %d", len(releases))
 	}
 
-	// Newest release should be the rollback
-	rollbackRelease := releases[0]
+	// Find the rollback release by matching version and commit SHA (more robust than assuming releases[0])
+	var rollbackRelease *state.Release
+	for _, r := range releases {
+		if r.Version == previous.Version && r.CommitSHA == previous.CommitSHA && r.ID != previous.ID {
+			rollbackRelease = r
+			break
+		}
+	}
+
+	if rollbackRelease == nil {
+		t.Fatalf("rollback release not found (expected version %q, commit %q)", previous.Version, previous.CommitSHA)
+	}
 
 	// Verify all phases are completed
 	for _, phase := range allPhases {
