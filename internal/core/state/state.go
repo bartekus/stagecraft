@@ -456,3 +456,44 @@ func (m *Manager) ListReleases(ctx context.Context, env string) ([]*Release, err
 
 	return clones, nil
 }
+
+// ListAllReleases lists all releases across all environments, sorted by environment (ascending),
+// then by timestamp (newest first), then by ID (ascending) for determinism.
+// Returns read-only snapshots of the releases.
+func (m *Manager) ListAllReleases(ctx context.Context) ([]*Release, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	state, err := m.loadState(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Copy all releases
+	releases := make([]*Release, len(state.Releases))
+	copy(releases, state.Releases)
+
+	// Sort by environment (ascending), then timestamp (newest first), then ID (ascending)
+	sort.Slice(releases, func(i, j int) bool {
+		ri, rj := releases[i], releases[j]
+		if ri.Environment != rj.Environment {
+			return ri.Environment < rj.Environment
+		}
+		if !ri.Timestamp.Equal(rj.Timestamp) {
+			return ri.Timestamp.After(rj.Timestamp)
+		}
+		return ri.ID < rj.ID
+	})
+
+	// Return clones to prevent mutation
+	clones := make([]*Release, len(releases))
+	for i, r := range releases {
+		clones[i] = cloneRelease(r)
+	}
+
+	return clones, nil
+}
