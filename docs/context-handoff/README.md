@@ -56,7 +56,7 @@ Each handoff document follows this structure:
 
 When completing a feature, create a handoff document using this template:
 
-1. **Copy the template structure** from `CORE_STATE-to-CLI_DEPLOY.md`
+1. **Copy the template structure** from `TEMPLATE.md` (or use `CORE_STATE-to-CLI_DEPLOY.md` as a reference example)
 
 2. **Update Layer 1** with:
    - Completed feature details
@@ -93,13 +93,19 @@ These documents follow Stagecraft's Agent.md principles:
 ## Example Usage
 
 ```bash
-# After completing CORE_STATE feature
-# Create handoff document
+# After completing a feature
+# Option 1: Use the generic template
+cp docs/context-handoff/TEMPLATE.md \
+   docs/context-handoff/CURRENT_FEATURE-to-NEXT_FEATURE.md
+
+# Option 2: Use the example as a reference
 cp docs/context-handoff/CORE_STATE-to-CLI_DEPLOY.md \
    docs/context-handoff/CLI_DEPLOY-to-CLI_ROLLBACK.md
 
-# Edit the new document with CLI_DEPLOY completion details
-# and CLI_ROLLBACK as the next task
+# Then edit the new document, replacing all placeholders with actual values:
+# - <CURRENT_FEATURE_ID> → actual feature ID
+# - <NEXT_FEATURE_ID> → next feature ID
+# - <PR_NUMBER>, <COMMIT_HASH>, etc.
 ```
 
 ## Notes
