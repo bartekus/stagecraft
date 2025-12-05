@@ -543,50 +543,9 @@ environments:
 }
 
 func TestRollbackCommand_TargetValidation_TargetMustBeFullyDeployed(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	configContent := `project:
-  name: test-app
-environments:
-  staging:
-    driver: local
-`
-	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
-		t.Fatalf("failed to write config file: %v", err)
-	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Ensure .stagecraft directory exists
-	if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
-		t.Fatalf("failed to create .stagecraft directory: %v", err)
-	}
-
-	// Set environment variable to ensure state.NewDefaultManager() uses our test state file
-	// This prevents test isolation issues when running with the full test suite
-	// Use absolute path to avoid issues with working directory changes
-	absStateFile, err := filepath.Abs(stateFile)
-	if err != nil {
-		t.Fatalf("failed to get absolute path for state file: %v", err)
-	}
-	t.Setenv("STAGECRAFT_STATE_FILE", absStateFile)
-	// Explicitly unset at end of test to prevent interference with other tests
-	defer func() {
-		_ = os.Unsetenv("STAGECRAFT_STATE_FILE")
-	}()
-
-	// Create test releases (use absolute path for consistency)
-	mgr := state.NewManager(absStateFile)
-	ctx := context.Background()
+	env := setupIsolatedStateTestEnv(t)
+	mgr := env.Manager
+	ctx := env.Ctx
 
 	// Create previous release (incomplete deployment)
 	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
@@ -876,50 +835,9 @@ environments:
 }
 
 func TestRollbackCommand_PhaseFailureHandling(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	configContent := `project:
-  name: test-app
-environments:
-  staging:
-    driver: local
-`
-	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
-		t.Fatalf("failed to write config file: %v", err)
-	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Ensure .stagecraft directory exists
-	if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
-		t.Fatalf("failed to create .stagecraft directory: %v", err)
-	}
-
-	// Set environment variable to ensure state.NewDefaultManager() uses our test state file
-	// This prevents test isolation issues when running with the full test suite
-	// Use absolute path to avoid issues with working directory changes
-	absStateFile, err := filepath.Abs(stateFile)
-	if err != nil {
-		t.Fatalf("failed to get absolute path for state file: %v", err)
-	}
-	t.Setenv("STAGECRAFT_STATE_FILE", absStateFile)
-	// Explicitly unset at end of test to prevent interference with other tests
-	defer func() {
-		_ = os.Unsetenv("STAGECRAFT_STATE_FILE")
-	}()
-
-	// Create test releases (use absolute path for consistency)
-	mgr := state.NewManager(absStateFile)
-	ctx := context.Background()
+	env := setupIsolatedStateTestEnv(t)
+	mgr := env.Manager
+	ctx := env.Ctx
 
 	// Create previous release (fully deployed)
 	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
@@ -970,7 +888,7 @@ environments:
 	// Verify phase statuses
 	// Create a new manager to ensure we read fresh state from disk
 	// Use absolute path to match what the command used
-	verifyMgr := state.NewManager(absStateFile)
+	verifyMgr := state.NewManager(env.StateFile)
 	releases, err := verifyMgr.ListReleases(ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
@@ -999,50 +917,9 @@ environments:
 }
 
 func TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	configContent := `project:
-  name: test-app
-environments:
-  staging:
-    driver: local
-`
-	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
-		t.Fatalf("failed to write config file: %v", err)
-	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Ensure .stagecraft directory exists
-	if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
-		t.Fatalf("failed to create .stagecraft directory: %v", err)
-	}
-
-	// Set environment variable to ensure state.NewDefaultManager() uses our test state file
-	// This prevents test isolation issues when running with the full test suite
-	// Use absolute path to avoid issues with working directory changes
-	absStateFile, err := filepath.Abs(stateFile)
-	if err != nil {
-		t.Fatalf("failed to get absolute path for state file: %v", err)
-	}
-	t.Setenv("STAGECRAFT_STATE_FILE", absStateFile)
-	// Explicitly unset at end of test to prevent interference with other tests
-	defer func() {
-		_ = os.Unsetenv("STAGECRAFT_STATE_FILE")
-	}()
-
-	// Create test releases (use absolute path for consistency)
-	mgr := state.NewManager(absStateFile)
-	ctx := context.Background()
+	env := setupIsolatedStateTestEnv(t)
+	mgr := env.Manager
+	ctx := env.Ctx
 
 	// Create previous release (fully deployed)
 	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
@@ -1083,7 +960,7 @@ environments:
 	// Verify rollback release was created with all phases completed
 	// Create a new manager to ensure we read fresh state from disk
 	// Use absolute path to match what the command used
-	verifyMgr := state.NewManager(absStateFile)
+	verifyMgr := state.NewManager(env.StateFile)
 	releases, err := verifyMgr.ListReleases(ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
