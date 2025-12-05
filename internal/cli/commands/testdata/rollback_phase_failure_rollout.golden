@@ -1,0 +1,15 @@
+Error: rollback deployment failed: phase "rollout" failed: rollout phase failed: cannot connect to service
+Usage:
+  stagecraft rollback [flags]
+
+Flags:
+  -h, --help                help for rollback
+      --to-previous         Rollback to immediately previous release
+      --to-release string   Rollback to specific release ID
+      --to-version string   Rollback to most recent release with matching version
+
+Global Flags:
+  -c, --config string   path to stagecraft.yml
+      --dry-run         show actions without executing
+  -e, --env string      target environment
+  -v, --verbose         enable verbose output

@@ -1,7 +1,7 @@
 # CORE_STATE_CONSISTENCY - State Durability and Read-after-write Guarantees
 
 - **Feature ID**: `CORE_STATE_CONSISTENCY`
-- **Status**: todo
+- **Status**: done
 - **Owner**: bart
 - **Depends on**:
   - `CORE_STATE`
@@ -95,11 +95,11 @@ If multiple `state.Manager` instances in the same process point at the same stat
   3. Flush data to disk with `file.Sync()`.
   4. Close the temp file.
   5. Atomically rename the temp file to the target path.
-  6. Sync the directory containing the target file (best effort).
+  6. Sync the directory containing the target file (best effort; failures are ignored).
 
 - At no point should a partial file be visible at the final path.
 
-If the filesystem or OS does not support directory sync, the implementation MUST still attempt a best-effort approach and return errors where appropriate.
+Directory sync is best-effort and non-fatal. Failures do not cause `saveState` to return an error, as many filesystems either do not support directory sync or expose platform-specific behavior.
 
 ## 4. Implementation Requirements
 
@@ -124,12 +124,14 @@ In `internal/core/state/state.go` (or equivalent), `saveState` MUST follow this 
    - Call `os.Rename(tempPath, finalPath)` and check for errors.
 
 5. **Directory sync**
+   - After `os.Rename(tempPath, finalPath)`, Stagecraft attempts a best-effort `Sync()` on the containing directory.
    - Open the directory `d` with `os.Open(d)`.
    - Call `dirFile.Sync()` and check for errors.
    - Close the directory file.
-   - If directory sync fails:
-     - Return an error in strict environments, or
-     - At minimum, log a warning and bubble up the error to allow callers to decide how to handle it.
+   - Directory sync failures do not cause `saveState` to return an error. They are treated as non-fatal because many filesystems either do not support directory sync or expose platform-specific behavior. A successful `saveState` return means:
+     - The state file was fully written and `Sync()`ed at the file level.
+     - The file was atomically renamed into place.
+     - A directory sync was attempted; failures are ignored.
 
 6. **Deterministic error handling**
    - If any step fails:

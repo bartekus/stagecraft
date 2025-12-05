@@ -880,6 +880,10 @@ func TestManager_SpecExampleJSONRoundTrip(t *testing.T) {
 
 // Feature: CORE_STATE_CONSISTENCY
 // Spec: spec/core/state-consistency.md
+//
+// These tests cover both CORE_STATE and CORE_STATE_CONSISTENCY by verifying
+// the read-after-write guarantees using the saveState protocol described in
+// spec/core/state-consistency.md.
 
 // TestManager_ReadAfterWrite_SingleManager verifies that after a successful write,
 // a subsequent read through the same manager observes the updated state.

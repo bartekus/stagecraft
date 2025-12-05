@@ -277,8 +277,10 @@ func (m *Manager) saveState(ctx context.Context, state *stateFile) error {
 	// Rename succeeded, so we don't need to clean up the temp file
 	needsCleanup = false
 
-	// Sync the directory to ensure the rename is durable
-	// This is best-effort; some filesystems may not support directory sync
+	// Best effort: attempt to fsync the directory that contains the state file.
+	// Many filesystems either do not support directory sync or expose platform-specific
+	// behavior, so failures here are ignored. The successful guarantees come from
+	// file level Sync + atomic rename, per CORE_STATE_CONSISTENCY.
 	//nolint:gosec // G304: dir is derived from filepath.Dir(m.stateFile) which is safe
 	dirFile, err := os.Open(dir)
 	if err != nil {

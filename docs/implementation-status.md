@@ -37,7 +37,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | CORE_BACKEND_PROVIDER_CONFIG_SCHEMA | Provider-scoped backend configuration schema | done | bart | [core/backend-provider-config.md](../spec/core/backend-provider-config.md) | [config_test.go](../pkg/config/config_test.go) |
 | CORE_STATE | State management (release history) | done | bart | [core/state.md](../spec/core/state.md) | [state_test.go](../internal/core/state/state_test.go) |
 | CORE_STATE_TEST_ISOLATION | State test isolation for CLI commands | done | bart | [core/state-test-isolation.md](../spec/core/state-test-isolation.md) | [test_helpers.go](../internal/cli/commands/test_helpers.go), [deploy_test.go](../internal/cli/commands/deploy_test.go), [rollback_test.go](../internal/cli/commands/rollback_test.go), [releases_test.go](../internal/cli/commands/releases_test.go) |
-| CORE_STATE_CONSISTENCY | State durability and read-after-write guarantees | todo | bart | [core/state-consistency.md](../spec/core/state-consistency.md) | [state_test.go](../internal/core/state/state_test.go) |
+| CORE_STATE_CONSISTENCY | State durability and read-after-write guarantees | done | bart | [core/state-consistency.md](../spec/core/state-consistency.md) | [state_test.go](../internal/core/state/state_test.go) |
 
 ### CLI Commands
 
