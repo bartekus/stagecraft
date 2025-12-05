@@ -2,7 +2,7 @@
 
 - **Feature ID**: `CLI_DEPLOY`
 - **Domain**: `commands`
-- **Status**: `todo` (implementation partial)
+- **Status**: `done`
 - **Related features**:
   - `CORE_PLAN`
   - `CORE_STATE`
@@ -26,6 +26,12 @@
 - A file-based release history managed by `CORE_STATE`
 
 It is the core entry point for moving from built images to a running environment.
+
+The command executes a **phase pipeline** consisting of six sequential phases: `build`, `push`, `migrate_pre`, `rollout`, `migrate_post`, and `finalize`. Each phase updates the release state, and failures cause downstream phases to be skipped. See [Section 5: Phase Model](#5-phase-model) for details.
+
+**Version resolution**: If `--version` is not provided, the command resolves the version using the strategy defined in `CORE_PLAN` (typically the current Git SHA). See [Section 3.2: Flags](#32-flags) for flag details.
+
+**Dry-run mode**: When `--dry-run` is set, the command shows what would be deployed without creating releases or executing any side effects. See [Section 7: Dry-Run Semantics](#7-dry-run-semantics) for complete behavior.
 
 ---
 
