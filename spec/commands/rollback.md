@@ -1,7 +1,7 @@
 # `stagecraft rollback` – Rollback Command
 
 - Feature ID: `CLI_ROLLBACK`
-- Status: todo
+- Status: implemented
 - Depends on: `CORE_STATE`, `CLI_DEPLOY`, `CLI_RELEASES`
 
 ## Goal
