@@ -1,257 +1,303 @@
-# `stagecraft deploy` – Deploy Command
+# CLI_DEPLOY - Deploy command
 
-- Feature ID: `CLI_DEPLOY`
-- Status: implemented
-- Depends on: `CORE_STATE`, `CORE_PLAN`, `CORE_COMPOSE`
+- **Feature ID**: `CLI_DEPLOY`
+- **Domain**: `commands`
+- **Status**: `todo` (implementation partial)
+- **Related features**:
+  - `CORE_PLAN`
+  - `CORE_STATE`
+  - `CORE_COMPOSE`
+  - `CORE_STATE_CONSISTENCY`
+  - `CLI_PHASE_EXECUTION_COMMON`
+  - `DEPLOY_COMPOSE_GEN` (planned)
+  - `DEPLOY_ROLLOUT` (planned)
+  - `MIGRATION_PRE_DEPLOY` (planned)
+  - `MIGRATION_POST_DEPLOY` (planned)
 
-## Goal
+---
 
-Provide a functional `stagecraft deploy` command that:
-- Creates a release record at deployment start
-- Tracks deployment phases (build, push, migrate_pre, rollout, migrate_post, finalize)
-- Updates phase statuses during deployment (Pending → Running → Completed/Failed)
-- Handles failures by marking failed phase and skipping downstream phases
-- Integrates with CORE_PLAN for deployment planning
-- Integrates with CORE_COMPOSE for Docker Compose operations
+## 1. Purpose
 
-## User Story
+`stagecraft deploy` deploys a given application version to a named environment using:
 
-As a developer,
-I want to run `stagecraft deploy --env=prod` in my project,
-so that my application is deployed to the target environment
-with full phase tracking and release history.
+- The project configuration (`stagecraft.yml`)
+- The canonical `docker-compose.yml`
+- Provider implementations (primarily backend)
+- A file-based release history managed by `CORE_STATE`
 
-## Behaviour
+It is the core entry point for moving from built images to a running environment.
 
-### Input
+---
 
-- Reads `stagecraft.yml` from current working directory (default)
-- Environment name (required via `--env` flag)
-- Version (optional via `--version` flag, defaults to git SHA)
-- Commit SHA (auto-detected from git, or empty for non-git deployments)
+## 2. Scope
 
-### Steps
+In v1, `CLI_DEPLOY` supports:
 
-1. Load config from `stagecraft.yml`
-2. Validate environment exists in config
-3. Resolve version and commit SHA:
-   - If `--version` is provided:
-     - `version` is set to the flag value
-     - `commitSHA` is set from `git rev-parse HEAD` if available, otherwise left empty
-   - If `--version` is not provided and git is available:
-     - `version` and `commitSHA` are set to the current git SHA
-   - If `--version` is not provided and git is not available:
-     - `version` is set to `"unknown"` to satisfy CORE_STATE's requirement that versions are non-empty
-     - `commitSHA` is left empty
-4. Create release record using `state.Manager.CreateRelease()`
-   - All phases initialized as `StatusPending`
-5. Generate deployment plan using `core.Planner.PlanDeploy()`
-6. Execute deployment phases in order:
-   - **Build**: Update phase to `StatusRunning`, execute build, update to `StatusCompleted` or `StatusFailed`
-   - **Push**: Update phase to `StatusRunning`, execute push, update to `StatusCompleted` or `StatusFailed`
-   - **MigratePre**: Update phase to `StatusRunning`, execute pre-deployment migrations, update to `StatusCompleted` or `StatusFailed`
-   - **Rollout**: Update phase to `StatusRunning`, execute rollout, update to `StatusCompleted` or `StatusFailed`
-   - **MigratePost**: Update phase to `StatusRunning`, execute post-deployment migrations, update to `StatusCompleted` or `StatusFailed`
-   - **Finalize**: Update phase to `StatusRunning`, execute finalization, update to `StatusCompleted` or `StatusFailed`
-7. On any phase failure:
-   - Mark current phase as `StatusFailed`
-   - Mark all downstream phases as `StatusSkipped`
-   - Stop deployment (do not continue to next phase)
-8. Return error if any phase failed
+- Deploying to a single logical environment (`staging` or `prod`)
+- Building backend images using the configured `BackendProvider`
+- Pushing images to the configured registry
+- Generating deployment phases and persisting them in state
+- Executing a rollout for the target environment (minimum viable implementation may be `docker compose up` on the target host(s))
+- Marking release status and phase outcomes in `.stagecraft/releases.json`
+- A `--dry-run` mode that shows the plan and phase sequence without executing side effects
 
-### Output
+**Out of scope for this feature** (covered by other specs):
 
-- Release ID created at start
-- Phase progress messages
-- Non-zero exit code if deployment fails
-- Useful log lines (when `--verbose` is set):
-  - Release ID
-  - Environment
-  - Version/Commit SHA
-  - Phase status updates
+- Full per-host Compose generation (`DEPLOY_COMPOSE_GEN`)
+- docker-rollout based zero downtime deployments (`DEPLOY_ROLLOUT`)
+- Pre/post deploy migration execution (`MIGRATION_PRE_DEPLOY`, `MIGRATION_POST_DEPLOY`)
+- Infrastructure provisioning (`CLI_INFRA_*`)
+- CI workflow integration (`CLI_CI_*`)
 
-### Error Handling
+---
 
-- Config file not found: Clear error message
-- Invalid environment: Error with available environments
-- Release creation failure: Error from state manager
-- Phase execution failure: Mark phase as failed, skip downstream, return error
-- Plan generation failure: Error from planner (see Plan Generation Failure section)
+## 3. CLI Interface
 
-## CLI Usage
+### 3.1 Usage
 
-```bash
-# Deploy to staging environment
-stagecraft deploy --env=staging
-
-# Deploy with specific version
-stagecraft deploy --env=prod --version=v1.2.3
-
-# Dry-run mode
-stagecraft deploy --env=staging --dry-run
+```text
+stagecraft deploy [flags]
 ```
 
-### Flags
+### 3.2 Flags
 
-- `--env <name>`: Target environment (required)
-- `--version <version>`: Version to deploy (defaults to git SHA)
-- `--verbose` / `-v`: Enable verbose output
-- `--dry-run`: Show actions without executing
-- `--config <path>`: Specify config file path
+- `--env, -e <env>`
+  - Required.
+  - The target environment name (for example `staging`, `prod`).
+  - Must exist under `environments` in `stagecraft.yml`.
 
-## Phase Semantics
+- `--version, -v <version>`
+  - Optional.
+  - Deploy a specific version (for example Git SHA or tag).
+  - If omitted, the implementation must use the version resolution strategy defined in `CORE_PLAN` (for example environment variable, current Git SHA, or CI supplied value). The concrete mechanism is defined in `core/plan.md`.
 
-### Phase Order
+- `--dry-run`
+  - Optional.
+  - When set, the command:
+    - Resolves the plan and phases
+    - Creates an in-memory representation of the release and phase list
+    - Logs or prints:
+      - Target env
+      - Version
+      - Planned phases
+    - Does not:
+      - Create or modify the state file.
+      - Call any external commands (docker, docker-rollout, migrations).
+      - Connect to remote hosts.
 
-Phases must execute in this exact order:
-1. `PhaseBuild` - Build Docker images
-2. `PhasePush` - Push images to registry
-3. `PhaseMigratePre` - Pre-deployment database migrations
-4. `PhaseRollout` - Deploy containers (Docker Compose up)
-5. `PhaseMigratePost` - Post-deployment database migrations
-6. `PhaseFinalize` - Finalization and cleanup
+- `--config <path>`
+  - Optional.
+  - Override config file, consistent with `CLI_GLOBAL_FLAGS`.
 
-### Phase Status Transitions
+- `--verbose`
+  - Optional.
+  - Increase logging verbosity, consistent with `CORE_LOGGING` semantics.
 
-- All phases start as `StatusPending` when release is created
-- When phase starts: `StatusPending` → `StatusRunning`
-- On success: `StatusRunning` → `StatusCompleted`
-- On failure: `StatusRunning` → `StatusFailed`
-- On upstream failure: `StatusPending` → `StatusSkipped`
+Additional flags (for example `--host`, `--role`, `--plan-only`) may be added in later specs. This spec defines the minimal v1.
 
-### Failure Semantics
+---
 
-- Only one phase may be `StatusRunning` at a time
-- If a phase fails:
-  - Mark that phase as `StatusFailed`
-  - Mark all downstream phases as `StatusSkipped`
-  - Stop deployment (do not continue)
-- Deployment is considered failed if any phase is `StatusFailed`
+## 4. Inputs and Outputs
 
-### Dry-run Semantics
+### 4.1 Inputs
+
+- `stagecraft.yml` at repo root:
+  - `project.registry`
+  - `backend.provider` and backend configuration
+  - `environments.<env>` configuration
+  - `hosts` and `services` mappings (for future per-host deploy)
+
+- Canonical `docker-compose.yml` at repo root
+  - Optional override files (implementation detail of `CORE_COMPOSE`)
+
+- Environment variables:
+  - Used by `CORE_CONFIG` and providers as specified in their own specs
+
+- State file:
+  - `.stagecraft/releases.json`
+  - Location can be overridden via `STAGECRAFT_STATE_FILE` (see `CORE_STATE` spec)
+
+### 4.2 Outputs
+
+- **Side effects**:
+  - A new release entry persisted in `.stagecraft/releases.json`
+  - Phase statuses updated according to execution results
+  - Built and pushed Docker images (if not `--dry-run`)
+  - Deployments executed on the target environment (if not `--dry-run`)
+
+- **CLI output**:
+  - Human readable summary of:
+    - Target env and version
+    - Planned phases and their status
+    - Errors, if any
+  - Output must be deterministic given the same inputs (no random ordering, no timestamps).
+
+---
+
+## 5. Phase Model
+
+`CLI_DEPLOY` uses the shared phase execution semantics from `CLI_PHASE_EXECUTION_COMMON`. The deploy pipeline is modeled as a fixed sequence of phases:
+
+1. `build`
+2. `push`
+3. `migrate_pre` (future)
+4. `rollout`
+5. `migrate_post` (future)
+6. `finalize`
+
+### 5.1 Phase order and behavior
+
+The default v1 sequence:
+
+1. **Build phase (`build`)**
+   - Uses `BackendProvider.BuildDocker` (or equivalent) to build the backend image(s).
+   - Must produce deterministic image tags.
+   - On success:
+     - Persist build phase as success.
+   - On failure:
+     - Persist build phase as failed.
+     - All downstream phases become skipped.
+     - Command exits with non-zero code.
+
+2. **Push phase (`push`)**
+   - Pushes the built images to `project.registry`.
+   - Implementation for v1:
+     - May use `executil` to call `docker push`.
+   - On success:
+     - Persist push phase as success.
+   - On failure:
+     - Persist push as failed, downstream phases as skipped, and exit non-zero.
+
+3. **Pre-migration phase (`migrate_pre`)** - placeholder in v1
+   - For v1:
+     - No-op in implementation, but the phase is still created in the release.
+   - Future:
+     - Runs pre-deploy migrations using the migration interface.
+   - Status:
+     - In v1, implementation may leave this phase as `pending` or mark as `skipped` with a reason. The spec for `MIGRATION_PRE_DEPLOY` will define final semantics.
+
+4. **Rollout phase (`rollout`)**
+   - Deploys the application to the target environment.
+   - v1 minimum behavior:
+     - Use `CORE_PLAN` to determine which services and hosts are involved.
+     - Generate or select appropriate Compose configuration (minimal version can reuse canonical `docker-compose.yml` for a single host).
+     - Perform deployment using either:
+       - `docker compose up -d` on the target host, or
+       - A stubbed equivalent that can be replaced by `DEPLOY_ROLLOUT` later.
+   - On success:
+     - Persist rollout phase as success.
+   - On failure:
+     - Persist rollout as failed, downstream phases as skipped, and exit non-zero.
+
+5. **Post-migration phase (`migrate_post`)** - placeholder in v1
+   - Same rules as `migrate_pre`, but intended for post-deploy migrations.
+   - Actual semantics defined in `MIGRATION_POST_DEPLOY` spec.
+
+6. **Finalize phase (`finalize`)**
+   - Performs final bookkeeping:
+     - Mark release as complete.
+     - Optionally mark it as current for the environment.
+   - Must be called after all previous phases succeed.
+   - On success:
+     - Persist finalize as success.
+   - On failure:
+     - Persist finalize as failed and exit non-zero.
+
+### 5.2 Phase semantics
+
+- Phases are executed in order.
+- On the first phase failure:
+  - That phase is marked failed.
+  - All remaining phases are marked skipped with a deterministic reason.
+  - The deploy command returns an error.
+- Phase names are stable identifiers and must not be changed without migration tooling.
+
+---
+
+## 6. State Interaction
+
+`CLI_DEPLOY` writes to the state store using `CORE_STATE`:
+
+- Creates a new release entry:
+  - Environment
+  - Version
+  - Phase list with initial status (for example `pending`)
+- Updates phases as they complete or fail.
+- The state manager must guarantee read-after-write consistency (`CORE_STATE_CONSISTENCY`).
+
+### 6.1 Release selection rules
+
+- Deploy must always create a new release entry for each invocation.
+- Release IDs come from `CORE_STATE`.
+- Rollback and releases inspection rely on this structure, so `CLI_DEPLOY` must not:
+  - Reuse existing release IDs.
+  - Modify phases of prior releases.
+
+---
+
+## 7. Dry-Run Semantics
 
 When `--dry-run` is set:
 
-- The command still:
-  - Loads config
-  - Validates the environment
-  - Resolves version and commit SHA
-  - Creates a release record so that a "would be deployed" release is visible in history, with all phases initialized as `StatusPending`
+- `CLI_DEPLOY`:
+  - Resolves config and environment.
+  - Resolves target version.
+  - Builds an in-memory representation of the intended release and phase list.
+  - Logs or prints:
+    - Target env
+    - Version
+    - Planned phases
+- Does not:
+  - Create or modify the state file.
+  - Call any external commands (docker, docker-rollout, migrations).
+  - Connect to remote hosts.
 
-- The command does not:
-  - Generate a deployment plan
-  - Execute any deployment phases
-  - Update any phase statuses beyond `StatusPending`
+The dry-run path must share as much logic as possible with the real path, excluding side effects.
 
-This makes dry-run safe while still recording the intent to deploy.
+---
 
-### Plan Generation Failure
+## 8. Error Handling
 
-If deployment plan generation fails (for example, due to invalid configuration):
+- All errors must be wrapped with context (per `CORE_LOGGING` and Go error wrapping conventions).
+- CLI exit codes:
+  - `0` - success
+  - Non-zero - any failure, including:
+    - Config or plan resolution errors
+    - State read/write errors
+    - Phase execution failures
+- Common error classes:
+  - Misconfigured environment (`--env` not defined in config)
+  - Missing registry or provider configuration
+  - Backend build errors
+  - Docker CLI errors
+  - State persistence failures
 
-- The release is still created
-- All phases are marked `StatusFailed`
-- The command returns a non-zero exit code with an error of the form:
-  `generating deployment plan: <underlying error>`
+Errors must not leak sensitive data (for example registry credentials).
 
-## Implementation
+---
 
-### Command Structure
+## 9. Determinism Requirements
 
-```go
-func NewDeployCommand() *cobra.Command {
-    cmd := &cobra.Command{
-        Use:   "deploy",
-        Short: "Deploy application to environment",
-        RunE:  runDeploy,
-    }
-    cmd.Flags().String("version", "", "Version to deploy (defaults to git SHA)")
-    return cmd
-}
+`CLI_DEPLOY` must obey global determinism rules:
 
-func runDeploy(cmd *cobra.Command, args []string) error {
-    // 1. Load config
-    // 2. Resolve version/commit SHA
-    // 3. Create release
-    // 4. Generate plan
-    // 5. Execute phases
-    // 6. Update phase statuses
-}
-```
+- No direct use of timestamps, random UUIDs, or environment-dependent ordering in CLI behavior.
+- Any list of phases, hosts, or services must be rendered in deterministic order:
+  - Lexicographical ordering where applicable.
+- State writes must be deterministic given the same inputs and external state.
 
-### State Integration
+---
 
-- Use `state.NewDefaultManager()` to create state manager
-- Call `CreateRelease()` at deployment start
-- Call `UpdatePhase()` for each phase transition
-- Use phase constants: `state.PhaseBuild`, `state.PhasePush`, etc.
-- Use status constants: `state.StatusPending`, `state.StatusRunning`, etc.
+## 10. Dependencies
 
-### Plan Integration
+`CLI_DEPLOY` depends on:
 
-- Use `core.NewPlanner(cfg)` to create planner
-- Call `PlanDeploy(envName)` to generate plan
-- Plan operations map to deployment phases
+- `CORE_CONFIG` - loading `stagecraft.yml`
+- `CORE_PLAN` - building deployment plans
+- `CORE_COMPOSE` - Compose file handling
+- `CORE_STATE` + `CORE_STATE_CONSISTENCY` - release history
+- `CLI_PHASE_EXECUTION_COMMON` - shared phase execution semantics
+- Backend provider (for example `PROVIDER_BACKEND_ENCORE`) with a build method
 
-### Compose Integration
+For v1, `CLI_DEPLOY` must not introduce new third-party dependencies beyond those approved in `Agent.md`.
 
-- Use `compose.NewLoader()` to load compose files
-- Generate environment-specific overrides
-- Use for rollout phase
-
-### Version Resolution
-
-1. If `--version` is provided:
-   - `version` is set to the flag value
-   - `commitSHA` is set from `git rev-parse HEAD` if available, otherwise left empty
-
-2. If `--version` is not provided and git is available:
-   - `version` and `commitSHA` are set to the current git SHA
-
-3. If `--version` is not provided and git is not available:
-   - `version` is set to `"unknown"` to satisfy CORE_STATE's requirement that versions are non-empty
-   - `commitSHA` is left empty
-
-## Validation
-
-### Required Config
-
-- `environments[env]` must exist
-- Environment must be valid
-
-### Error Messages
-
-- Config not found: `"stagecraft config not found at stagecraft.yml"`
-- Invalid environment: `"invalid environment 'foo'; available environments: [dev, staging, prod]"`
-- Release creation failed: Error from state manager
-- Phase execution failed: `"deployment failed at phase 'build': <error>"`
-
-## Testing
-
-Tests should cover:
-- Release creation at deploy start
-- Phase sequencing (Pending → Running → Completed)
-- Failure semantics (mark failed, skip downstream)
-- Integration with state manager
-- Integration with planner
-- Error handling for invalid environments/versions
-- Dry-run mode
-
-See `spec/features.yaml` entry for `CLI_DEPLOY`:
-- `internal/cli/commands/deploy_test.go` – unit/CLI behaviour tests
-
-## Non-Goals (v1)
-
-- Multi-host deployment (v2)
-- Network provider integration (v2)
-- Full Docker Compose orchestration (v2)
-- Health checks (v2)
-- Rollback (separate feature: `CLI_ROLLBACK`)
-
-## Related Features
-
-- `CORE_STATE` – State management for release tracking
-- `CORE_PLAN` – Deployment planning
-- `CORE_COMPOSE` – Docker Compose integration
-- `CLI_ROLLBACK` – Rollback command (future)
-
+---
