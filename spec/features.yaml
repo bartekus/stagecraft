@@ -406,7 +406,7 @@ features:
 
   - id: CLI_RELEASES
     title: "stagecraft releases list/show commands"
-    status: todo
+    status: done
     spec: "commands/releases.md"
     owner: bart
     tests:
