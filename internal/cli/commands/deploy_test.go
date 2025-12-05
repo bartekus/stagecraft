@@ -123,6 +123,13 @@ func TestDeployCommand_CreatesRelease(t *testing.T) {
 
 	configContent := `project:
   name: test-app
+backend:
+  provider: generic
+  providers:
+    generic:
+      build:
+        dockerfile: "./Dockerfile"
+        context: "."
 environments:
   staging:
     driver: local
@@ -136,14 +143,21 @@ environments:
 		t.Fatalf("state file should not exist before deploy")
 	}
 
-	root := newTestRootCommand()
-	root.AddCommand(NewDeployCommand())
+	// Use stubbed phase functions that succeed
+	fns := PhaseFns{
+		Build:       func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
+		Push:        func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
+		MigratePre:  func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
+		Rollout:     func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
+		MigratePost: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
+		Finalize:    func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
+	}
 
-	// Run deploy in dry-run mode (should create release without error)
-	_, err := executeCommandForGolden(root, "deploy", "--env", "staging", "--dry-run")
+	// Run deploy with stubbed phases
+	err := executeDeployWithPhases(fns, "deploy", "--env", "staging")
 	if err != nil {
 		t.Logf("deploy command returned error (may be expected): %v", err)
-		// Even if there's an error, the release should still be created in dry-run
+		// Even if there's an error, the release should still be created
 	}
 
 	// Verify state file was created
@@ -166,7 +180,7 @@ environments:
 		t.Errorf("expected environment 'staging', got %q", release.Environment)
 	}
 
-	// Verify all phases are initialized as pending
+	// Verify all phases are present and completed (since we used stubbed functions)
 	expectedPhases := []state.ReleasePhase{
 		state.PhaseBuild,
 		state.PhasePush,
@@ -182,8 +196,9 @@ environments:
 			t.Errorf("expected phase %q to be present", phase)
 			continue
 		}
-		if status != state.StatusPending {
-			t.Errorf("expected phase %q to be %q, got %q", phase, state.StatusPending, status)
+		// With stubbed functions, phases should be completed
+		if status != state.StatusCompleted {
+			t.Errorf("expected phase %q to be %q (with stubbed functions), got %q", phase, state.StatusCompleted, status)
 		}
 	}
 }
@@ -205,8 +220,9 @@ environments:
 	root := newTestRootCommand()
 	root.AddCommand(NewDeployCommand())
 
-	// Run deploy in dry-run mode; this should succeed and initialize phases.
-	_, _ = executeCommandForGolden(root, "deploy", "--env", "staging", "--dry-run")
+	// Run deploy without dry-run; this should succeed and initialize phases.
+	// Note: actual phase execution will fail without proper setup, but release should be created
+	_, _ = executeCommandForGolden(root, "deploy", "--env", "staging")
 
 	// Verify phase transitions occurred
 	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
@@ -257,9 +273,9 @@ environments:
 	root := newTestRootCommand()
 	root.AddCommand(NewDeployCommand())
 
-	// Run deploy with version flag
-	_, _ = executeCommandForGolden(root, "deploy", "--env", "staging", "--version", "v1.2.3", "--dry-run")
-	// Error is expected
+	// Run deploy with version flag (without dry-run to create release)
+	_, _ = executeCommandForGolden(root, "deploy", "--env", "staging", "--version", "v1.2.3")
+	// Error is expected due to missing backend/docker setup, but release should be created
 
 	// Verify release was created with correct version
 	releases, err := env.Manager.ListReleases(env.Ctx, "staging")

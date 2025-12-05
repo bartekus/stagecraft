@@ -27,6 +27,7 @@ import (
 type Plan struct {
 	Environment string
 	Operations  []Operation
+	Metadata    map[string]interface{} // Deployment context (version, config path, etc.)
 }
 
 // Operation represents a single step in a deployment plan.
