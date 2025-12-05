@@ -644,17 +644,20 @@ environments:
 	root.AddCommand(NewRollbackCommand())
 
 	// Override phase execution to avoid actual deployment
-	origBuild := buildPhaseFn
-	buildPhaseFn = func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
-		return nil
-	}
-	defer func() { buildPhaseFn = origBuild }()
-
-	// Run rollback (not dry-run)
-	_, err = executeCommandForGolden(root, "rollback", "--env", "staging", "--to-previous")
-	if err != nil {
-		t.Fatalf("rollback should succeed, got: %v", err)
-	}
+	withPhaseFnsForTest(PhaseFns{
+		Build:       func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
+		Push:        defaultPhaseFns.Push,
+		MigratePre:  defaultPhaseFns.MigratePre,
+		Rollout:     defaultPhaseFns.Rollout,
+		MigratePost: defaultPhaseFns.MigratePost,
+		Finalize:    defaultPhaseFns.Finalize,
+	}, func() {
+		// Run rollback (not dry-run)
+		_, err = executeCommandForGolden(root, "rollback", "--env", "staging", "--to-previous")
+		if err != nil {
+			t.Fatalf("rollback should succeed, got: %v", err)
+		}
+	})
 
 	// Verify new release was created with target's version
 	releases, err := mgr.ListReleases(ctx, "staging")
@@ -890,22 +893,35 @@ environments:
 	root.AddCommand(NewRollbackCommand())
 
 	// Override rollout phase to simulate a failure
-	origRollout := rolloutPhaseFn
-	rolloutPhaseFn = func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
-		return fmt.Errorf("forced rollout failure")
-	}
-	defer func() { rolloutPhaseFn = origRollout }()
+	var rollbackErr error
+	withPhaseFnsForTest(PhaseFns{
+		Build:      defaultPhaseFns.Build,
+		Push:       defaultPhaseFns.Push,
+		MigratePre: defaultPhaseFns.MigratePre,
+		Rollout: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			return fmt.Errorf("forced rollout failure")
+		},
+		MigratePost: defaultPhaseFns.MigratePost,
+		Finalize:    defaultPhaseFns.Finalize,
+	}, func() {
+		// Run rollback (should fail at rollout phase)
+		_, rollbackErr = executeCommandForGolden(root, "rollback", "--env", "staging", "--to-previous")
+	})
 
-	// Run rollback (should fail at rollout phase)
-	_, err = executeCommandForGolden(root, "rollback", "--env", "staging", "--to-previous")
-	if err == nil {
+	if rollbackErr == nil {
 		t.Fatalf("expected rollback to fail due to forced rollout failure")
 	}
 
 	// Verify phase statuses
-	releases, err := mgr.ListReleases(ctx, "staging")
+	// Create a new manager to ensure we read fresh state from disk
+	verifyMgr := state.NewManager(stateFile)
+	releases, err := verifyMgr.ListReleases(ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
+	}
+
+	if len(releases) == 0 {
+		t.Fatalf("expected at least one release")
 	}
 
 	// Find the rollback release (newest)
@@ -913,7 +929,8 @@ environments:
 
 	// Verify rollout phase is failed
 	if rollbackRelease.Phases[state.PhaseRollout] != state.StatusFailed {
-		t.Errorf("expected rollout phase to be failed, got %q", rollbackRelease.Phases[state.PhaseRollout])
+		t.Errorf("expected rollout phase to be failed, got %q (release: %s, all phases: %v)",
+			rollbackRelease.Phases[state.PhaseRollout], rollbackRelease.ID, rollbackRelease.Phases)
 	}
 
 	// Verify downstream phases are skipped
@@ -990,7 +1007,9 @@ environments:
 	}
 
 	// Verify rollback release was created with all phases completed
-	releases, err := mgr.ListReleases(ctx, "staging")
+	// Create a new manager to ensure we read fresh state from disk
+	verifyMgr := state.NewManager(stateFile)
+	releases, err := verifyMgr.ListReleases(ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}

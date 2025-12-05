@@ -29,6 +29,39 @@ import (
 // Feature: CLI_ROLLBACK
 // Spec: spec/commands/rollback.md
 
+// PhaseFns holds the phase execution functions for dependency injection.
+// This allows tests to override phase behavior without mutating global state.
+type PhaseFns struct {
+	Build       func(context.Context, *core.Plan, logging.Logger) error
+	Push        func(context.Context, *core.Plan, logging.Logger) error
+	MigratePre  func(context.Context, *core.Plan, logging.Logger) error
+	Rollout     func(context.Context, *core.Plan, logging.Logger) error
+	MigratePost func(context.Context, *core.Plan, logging.Logger) error
+	Finalize    func(context.Context, *core.Plan, logging.Logger) error
+}
+
+// defaultPhaseFns provides the default phase execution functions.
+var defaultPhaseFns = PhaseFns{
+	Build:       buildPhaseFn,
+	Push:        pushPhaseFn,
+	MigratePre:  migratePrePhaseFn,
+	Rollout:     rolloutPhaseFn,
+	MigratePost: migratePostPhaseFn,
+	Finalize:    finalizePhaseFn,
+}
+
+// testPhaseFnsOverride is a test-only hook for injecting custom phase functions.
+// Only used in tests; no race if tests in package are not parallel.
+var testPhaseFnsOverride *PhaseFns
+
+// withPhaseFnsForTest temporarily overrides phase functions for testing.
+// This allows tests to inject custom phase behavior without mutating global state.
+func withPhaseFnsForTest(fns PhaseFns, fn func()) {
+	testPhaseFnsOverride = &fns
+	defer func() { testPhaseFnsOverride = nil }()
+	fn()
+}
+
 // NewRollbackCommand returns the `stagecraft rollback` command.
 func NewRollbackCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -295,7 +328,12 @@ func runRollback(cmd *cobra.Command, args []string) error {
 	}
 
 	// Execute deployment phases (reuse from deploy.go - copied logic)
-	err = executePhasesRollback(ctx, stateMgr, release.ID, plan, logger)
+	// Use test override if set, otherwise use default
+	phaseFns := defaultPhaseFns
+	if testPhaseFnsOverride != nil {
+		phaseFns = *testPhaseFnsOverride
+	}
+	err = executePhasesRollback(ctx, stateMgr, release.ID, plan, logger, phaseFns)
 	if err != nil {
 		return fmt.Errorf("rollback deployment failed: %w", err)
 	}
@@ -316,18 +354,19 @@ func orderedPhasesRollback() []state.ReleasePhase {
 
 // executePhasesRollback executes all deployment phases in order.
 // Copied from deploy.go to avoid premature refactor.
-func executePhasesRollback(ctx context.Context, stateMgr *state.Manager, releaseID string, plan *core.Plan, logger logging.Logger) error {
+// Takes PhaseFns as a parameter to allow dependency injection for testing.
+func executePhasesRollback(ctx context.Context, stateMgr *state.Manager, releaseID string, plan *core.Plan, logger logging.Logger, fns PhaseFns) error {
 	phases := []struct {
 		phase     state.ReleasePhase
 		name      string
 		executeFn func(context.Context, *core.Plan, logging.Logger) error
 	}{
-		{state.PhaseBuild, "build", buildPhaseFn},
-		{state.PhasePush, "push", pushPhaseFn},
-		{state.PhaseMigratePre, "migrate_pre", migratePrePhaseFn},
-		{state.PhaseRollout, "rollout", rolloutPhaseFn},
-		{state.PhaseMigratePost, "migrate_post", migratePostPhaseFn},
-		{state.PhaseFinalize, "finalize", finalizePhaseFn},
+		{state.PhaseBuild, "build", fns.Build},
+		{state.PhasePush, "push", fns.Push},
+		{state.PhaseMigratePre, "migrate_pre", fns.MigratePre},
+		{state.PhaseRollout, "rollout", fns.Rollout},
+		{state.PhaseMigratePost, "migrate_post", fns.MigratePost},
+		{state.PhaseFinalize, "finalize", fns.Finalize},
 	}
 
 	for _, p := range phases {
