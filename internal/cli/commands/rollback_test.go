@@ -881,6 +881,10 @@ environments:
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
+	// Set environment variable to ensure state.NewDefaultManager() uses our test state file
+	// This prevents test isolation issues when running with the full test suite
+	t.Setenv("STAGECRAFT_STATE_FILE", stateFile)
+
 	// Create test releases
 	mgr := state.NewManager(stateFile)
 	ctx := context.Background()
@@ -984,6 +988,10 @@ environments:
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("failed to change directory: %v", err)
 	}
+
+	// Set environment variable to ensure state.NewDefaultManager() uses our test state file
+	// This prevents test isolation issues when running with the full test suite
+	t.Setenv("STAGECRAFT_STATE_FILE", stateFile)
 
 	// Create test releases
 	mgr := state.NewManager(stateFile)
