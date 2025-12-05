@@ -39,27 +39,16 @@
 **APIs Available**:
 
 ```go
-
 // Create new release (all phases start as StatusPending)
-
 CreateRelease(ctx, env, version, commitSHA) (*Release, error)
 
-
-
 // Retrieve releases
-
 GetRelease(ctx, id) (*Release, error)
-
 GetCurrentRelease(ctx, env) (*Release, error)
-
 ListReleases(ctx, env) ([]*Release, error)
 
-
-
 // Update deployment phase
-
 UpdatePhase(ctx, releaseID, phase, status) error
-
 ```
 
 **Files Created**:
@@ -141,35 +130,22 @@ UpdatePhase(ctx, releaseID, phase, status) error
 **1. Create Release at Deploy Start**:
 
 ```go
-
 import "stagecraft/internal/core/state"
 
-
-
 mgr := state.NewDefaultManager()
-
 release, err := mgr.CreateRelease(ctx, env, version, commitSHA)
-
 // All phases initialized as StatusPending
-
 ```
 
 **2. Update Phases During Deployment**:
 
 ```go
-
 // Each phase transitions: Pending → Running → Completed (or Failed)
-
 mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusRunning)
-
 // ... build happens ...
-
 mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
 
-
-
 // Continue for all phases in order (see CONSTRAINTS section for phase list)
-
 ```
 
 **3. Failure Semantics** (implement now):
@@ -301,45 +277,25 @@ Design can consider:
 **Integration Pattern Example** (for reference, not required to copy exactly):
 
 ```go
-
 // Example: How CLI_DEPLOY should integrate with CORE_STATE
-
 // This is illustrative - adapt to your implementation needs
-
 mgr := state.NewDefaultManager()
-
 release, _ := mgr.CreateRelease(ctx, env, version, commitSHA)
 
-
-
 // During deployment
-
 mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusRunning)
-
 // ... build happens ...
-
 mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
 
-
-
 // On failure (example pattern - adapt as needed)
-
 mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusFailed)
-
 // Mark downstream as skipped
-
 for _, phase := range []state.ReleasePhase{
-
-    state.PhasePush, state.PhaseMigratePre, 
-
+    state.PhasePush, state.PhaseMigratePre,
     state.PhaseRollout, state.PhaseMigratePost, state.PhaseFinalize,
-
 } {
-
     mgr.UpdatePhase(ctx, release.ID, phase, state.StatusSkipped)
-
 }
-
 ```
 
 ---
@@ -353,53 +309,29 @@ for _, phase := range []state.ReleasePhase{
 2. **Commit Message** (follow this format):
 
 ```
-
 feat(CLI_DEPLOY): implement deploy command with release tracking
 
-
-
 Summary:
-
 - Added deploy.go with phase tracking integration
-
 - Implemented phase update semantics (Pending → Running → Completed/Failed)
-
 - Integrated CORE_PLAN and CORE_COMPOSE
-
 - Added failure semantics (mark failed, skip downstream)
-
 - Created deploy_test.go with comprehensive tests
-
 - Created/updated spec/commands/deploy.md
 
-
-
 Files:
-
 - internal/cli/commands/deploy.go
-
 - internal/cli/commands/deploy_test.go
-
 - spec/commands/deploy.md
-
 - internal/deploy/ (if created)
 
-
-
 Test Results:
-
 - All tests pass
-
 - Coverage meets targets
-
 - No linting errors
 
-
-
 Feature: CLI_DEPLOY
-
 Spec: spec/commands/deploy.md
-
 ```
 
 3. **Verification**:
