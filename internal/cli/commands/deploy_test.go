@@ -35,6 +35,28 @@ var _ = cobra.Command{}
 // Feature: CLI_DEPLOY
 // Spec: spec/commands/deploy.md
 
+// executeDeployWithPhases is a test helper that executes deploy with custom PhaseFns.
+// This allows tests to inject phase behavior without using global state.
+func executeDeployWithPhases(fns PhaseFns, args ...string) error {
+	// Create a fresh root command for this test
+	root := newTestRootCommand()
+
+	// Create deploy command with custom PhaseFns
+	cmd := &cobra.Command{
+		Use:   "deploy",
+		Short: "Deploy application to environment",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runDeployWithPhases(cmd, args, fns)
+		},
+	}
+	cmd.Flags().String("version", "", "Version to deploy (defaults to git SHA)")
+
+	root.AddCommand(cmd)
+	root.SetArgs(args)
+
+	return root.Execute()
+}
+
 func TestNewDeployCommand_HasExpectedMetadata(t *testing.T) {
 	cmd := NewDeployCommand()
 
@@ -327,18 +349,14 @@ environments:
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	// Override rollout phase to simulate a failure.
-	origRollout := rolloutPhaseFn
-	rolloutPhaseFn = func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+	// Create PhaseFns where Rollout fails (using DI instead of global override)
+	fns := defaultPhaseFns
+	fns.Rollout = func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
 		return fmt.Errorf("forced rollout failure")
 	}
-	defer func() { rolloutPhaseFn = origRollout }()
-
-	root := newTestRootCommand()
-	root.AddCommand(NewDeployCommand())
 
 	// Run without --dry-run so executePhases actually runs.
-	_, err := executeCommandForGolden(root, "deploy", "--env", "staging")
+	err := executeDeployWithPhases(fns, "deploy", "--env", "staging")
 	if err == nil {
 		t.Fatalf("expected deploy to fail due to forced rollout failure")
 	}
@@ -397,7 +415,7 @@ func TestMarkAllPhasesFailed_SetsAllPhasesToFailed(t *testing.T) {
 	logger := logging.NewLogger(false)
 
 	// Call the helper under test.
-	markAllPhasesFailed(ctx, mgr, release.ID, logger)
+	markAllPhasesFailedCommon(ctx, mgr, release.ID, logger)
 
 	// Reload and verify.
 	releases, err := mgr.ListReleases(ctx, "staging")
@@ -411,7 +429,7 @@ func TestMarkAllPhasesFailed_SetsAllPhasesToFailed(t *testing.T) {
 
 	updated := releases[0]
 
-	for _, phase := range orderedPhases() {
+	for _, phase := range allPhasesCommon() {
 		status, ok := updated.Phases[phase]
 		if !ok {
 			t.Errorf("expected phase %q to be present", phase)
