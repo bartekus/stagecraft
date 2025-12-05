@@ -308,7 +308,7 @@ features:
 
   - id: CLI_ROLLBACK
     title: "stagecraft rollback command"
-    status: todo
+    status: done
     spec: "commands/rollback.md"
     owner: bart
     tests:
