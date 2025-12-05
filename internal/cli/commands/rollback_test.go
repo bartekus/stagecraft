@@ -22,8 +22,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/spf13/cobra"
-
 	"stagecraft/internal/core"
 	"stagecraft/internal/core/state"
 	"stagecraft/pkg/logging"
@@ -35,25 +33,7 @@ import (
 // executeRollbackWithPhases is a test helper that executes rollback with custom PhaseFns.
 // This allows tests to inject phase behavior without using global state.
 func executeRollbackWithPhases(fns PhaseFns, args ...string) error {
-	// Create a fresh root command for this test
-	root := newTestRootCommand()
-
-	// Create rollback command with custom PhaseFns
-	cmd := &cobra.Command{
-		Use:   "rollback",
-		Short: "Rollback environment to a previous release",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runRollbackWithPhases(cmd, args, fns)
-		},
-	}
-	cmd.Flags().Bool("to-previous", false, "Rollback to immediately previous release")
-	cmd.Flags().String("to-release", "", "Rollback to specific release ID")
-	cmd.Flags().String("to-version", "", "Rollback to most recent release with matching version")
-
-	root.AddCommand(cmd)
-	root.SetArgs(args)
-
-	return root.Execute()
+	return executeWithPhasesCustom(setupRollbackCommand, fns, args...)
 }
 
 func TestNewRollbackCommand_HasExpectedMetadata(t *testing.T) {

@@ -35,6 +35,13 @@ var _ = cobra.Command{}
 // Feature: CLI_DEPLOY
 // Spec: spec/commands/deploy.md
 
+// executeDeployWithPhases is a test helper that executes deploy with custom PhaseFns.
+// This allows tests to inject phase behavior without using global state.
+// Feature: CLI_PHASE_EXECUTION_COMMON
+func executeDeployWithPhases(fns PhaseFns, args ...string) error {
+	return executeWithPhasesCustom(setupDeployCommand, fns, args...)
+}
+
 func TestNewDeployCommand_HasExpectedMetadata(t *testing.T) {
 	cmd := NewDeployCommand()
 
@@ -284,22 +291,40 @@ environments:
 		t.Fatalf("failed to write config file: %v", err)
 	}
 
-	// Override rollout phase to simulate a failure.
-	origRollout := rolloutPhaseFn
-	rolloutPhaseFn = func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
-		return fmt.Errorf("forced rollout failure")
+	// Prepare PhaseFns where rollout fails deterministically
+	fns := PhaseFns{
+		Build: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			return nil
+		},
+		Push: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			return nil
+		},
+		MigratePre: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			return nil
+		},
+		Rollout: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			return fmt.Errorf("forced rollout failure")
+		},
+		MigratePost: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			t.Errorf("MigratePost should not run after rollout failure")
+			return nil
+		},
+		Finalize: func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+			t.Errorf("Finalize should not run after rollout failure")
+			return nil
+		},
 	}
-	defer func() { rolloutPhaseFn = origRollout }()
 
-	root := newTestRootCommand()
-	root.AddCommand(NewDeployCommand())
-
-	// Run without --dry-run so executePhases actually runs.
-	_, err := executeCommandForGolden(root, "deploy", "--env", "staging")
+	// Act: execute deploy with DI-based phases
+	err := executeDeployWithPhases(fns, "deploy", "--env", "staging")
 	if err == nil {
 		t.Fatalf("expected deploy to fail due to forced rollout failure")
 	}
+	if !strings.Contains(err.Error(), "forced rollout failure") {
+		t.Fatalf("expected error to contain 'forced rollout failure', got: %v", err)
+	}
 
+	// Assert: reload state using the manager bound to the same state file
 	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)

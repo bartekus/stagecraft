@@ -177,7 +177,7 @@ features:
 
   - id: CORE_STATE_CONSISTENCY
     title: "State durability and read-after-write guarantees"
-    status: todo
+    status: done
     spec: "core/state-consistency.md"
     owner: bart
     tests:

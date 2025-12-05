@@ -1,0 +1,13 @@
+Error: deployment failed: phase "rollout" failed: rollout phase failed: service unavailable
+Usage:
+  stagecraft deploy [flags]
+
+Flags:
+  -h, --help             help for deploy
+      --version string   Version to deploy (defaults to git SHA)
+
+Global Flags:
+  -c, --config string   path to stagecraft.yml
+      --dry-run         show actions without executing
+  -e, --env string      target environment
+  -v, --verbose         enable verbose output
