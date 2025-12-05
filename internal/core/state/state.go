@@ -133,10 +133,9 @@ func NewManager(stateFile string) *Manager {
 }
 
 // NewDefaultManager creates a new state manager with the default state file path.
-// The state file path can be overridden via the STAGECRAFT_STATE_FILE environment variable
-// for testing purposes.
+// If STAGECRAFT_STATE_FILE environment variable is set, it uses that path instead.
+// The environment variable is read fresh on each call (no caching).
 func NewDefaultManager() *Manager {
-	// Allow tests to override state file path via environment variable
 	if envPath := os.Getenv("STAGECRAFT_STATE_FILE"); envPath != "" {
 		return NewManager(envPath)
 	}

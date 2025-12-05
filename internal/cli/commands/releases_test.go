@@ -15,9 +15,7 @@ See https://www.gnu.org/licenses/ for license details.
 package commands
 
 import (
-	"context"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -87,30 +85,15 @@ func TestReleasesList_EmptyState(t *testing.T) {
 }
 
 func TestReleasesList_FiltersByEnvironment(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test releases
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
+	env := setupIsolatedStateTestEnv(t)
 
 	// Create releases for different environments
-	_, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	_, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
 
-	_, err = mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit2")
+	_, err = env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -147,25 +130,10 @@ func TestReleasesList_FiltersByEnvironment(t *testing.T) {
 }
 
 func TestReleasesList_ShowsReleasesInCorrectOrder(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test releases with different timestamps
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
+	env := setupIsolatedStateTestEnv(t)
 
 	// Create first release
-	release1, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	release1, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -174,7 +142,7 @@ func TestReleasesList_ShowsReleasesInCorrectOrder(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 
 	// Create second release (should be newer)
-	release2, err := mgr.CreateRelease(ctx, "prod", "v1.1.0", "commit2")
+	release2, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -201,31 +169,16 @@ func TestReleasesList_ShowsReleasesInCorrectOrder(t *testing.T) {
 }
 
 func TestReleasesShow_DisplaysFullReleaseDetails(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
 
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test release
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	release, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit123")
+	release, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit123")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
 
 	// Update some phases to test status display
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhasePush, state.StatusCompleted)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhasePush, state.StatusCompleted)
 
 	root := newTestRootCommand()
 	root.AddCommand(NewReleasesCommand())
@@ -295,32 +248,17 @@ func TestReleasesShow_InvalidReleaseID(t *testing.T) {
 }
 
 func TestReleasesList_ShowsPhaseStatus(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
 
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test release with different phase statuses
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	release, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	release, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
 
 	// Mark some phases as completed, one as failed
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhasePush, state.StatusCompleted)
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhaseMigratePre, state.StatusFailed)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhasePush, state.StatusCompleted)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhaseMigratePre, state.StatusFailed)
 
 	root := newTestRootCommand()
 	root.AddCommand(NewReleasesCommand())
@@ -337,32 +275,17 @@ func TestReleasesList_ShowsPhaseStatus(t *testing.T) {
 }
 
 func TestReleasesShow_ShowsPhaseStatuses(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
 
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test release
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	release, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	release, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
 
 	// Update phases to different statuses
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhasePush, state.StatusRunning)
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhaseMigratePre, state.StatusPending)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhasePush, state.StatusRunning)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhaseMigratePre, state.StatusPending)
 
 	root := newTestRootCommand()
 	root.AddCommand(NewReleasesCommand())
@@ -420,35 +343,20 @@ func TestReleasesCommand_Help(t *testing.T) {
 }
 
 func TestReleasesList_AllEnvironmentsWhenEnvNotSet(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test releases in multiple environments
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
+	env := setupIsolatedStateTestEnv(t)
 
 	// Create releases for different environments
-	_, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	_, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
 
-	_, err = mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit2")
+	_, err = env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
 
-	_, err = mgr.CreateRelease(ctx, "dev", "v1.0.0", "commit3")
+	_, err = env.Manager.CreateRelease(env.Ctx, "dev", "v1.0.0", "commit3")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -516,24 +424,10 @@ func TestReleasesList_AllEnvironmentsWhenEnvNotSet(t *testing.T) {
 }
 
 func TestReleasesList_OverallStatus_Pending(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
+	env := setupIsolatedStateTestEnv(t)
 
 	// Create a release without updating any phases (all should be pending)
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	release, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	release, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -558,30 +452,15 @@ func TestReleasesList_OverallStatus_Pending(t *testing.T) {
 }
 
 func TestReleasesList_OverallStatus_PartialCompletion(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
 
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create a release and mark only build as completed
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	release, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	release, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
 
 	// Mark only build as completed
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
 
 	root := newTestRootCommand()
 	root.AddCommand(NewReleasesCommand())
@@ -601,31 +480,16 @@ func TestReleasesList_OverallStatus_PartialCompletion(t *testing.T) {
 }
 
 func TestReleasesList_OverallStatus_Running(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
 
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create a release with one phase running
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	release, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	release, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
 
 	// Mark build as completed, push as running
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
-	_ = mgr.UpdatePhase(ctx, release.ID, state.PhasePush, state.StatusRunning)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhaseBuild, state.StatusCompleted)
+	_ = env.Manager.UpdatePhase(env.Ctx, release.ID, state.PhasePush, state.StatusRunning)
 
 	root := newTestRootCommand()
 	root.AddCommand(NewReleasesCommand())
@@ -642,24 +506,9 @@ func TestReleasesList_OverallStatus_Running(t *testing.T) {
 }
 
 func TestReleasesList_OverallStatus_AllCompleted(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
 
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create a release and mark all phases as completed
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	release, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	release, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -674,7 +523,7 @@ func TestReleasesList_OverallStatus_AllCompleted(t *testing.T) {
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		_ = mgr.UpdatePhase(ctx, release.ID, phase, state.StatusCompleted)
+		_ = env.Manager.UpdatePhase(env.Ctx, release.ID, phase, state.StatusCompleted)
 	}
 
 	root := newTestRootCommand()
