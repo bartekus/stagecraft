@@ -29,27 +29,6 @@ import (
 // Feature: CLI_ROLLBACK
 // Spec: spec/commands/rollback.md
 
-// PhaseFns holds the phase execution functions for dependency injection.
-// This allows tests to override phase behavior without mutating global state.
-type PhaseFns struct {
-	Build       func(context.Context, *core.Plan, logging.Logger) error
-	Push        func(context.Context, *core.Plan, logging.Logger) error
-	MigratePre  func(context.Context, *core.Plan, logging.Logger) error
-	Rollout     func(context.Context, *core.Plan, logging.Logger) error
-	MigratePost func(context.Context, *core.Plan, logging.Logger) error
-	Finalize    func(context.Context, *core.Plan, logging.Logger) error
-}
-
-// defaultPhaseFns provides the default phase execution functions.
-var defaultPhaseFns = PhaseFns{
-	Build:       buildPhaseFn,
-	Push:        pushPhaseFn,
-	MigratePre:  migratePrePhaseFn,
-	Rollout:     rolloutPhaseFn,
-	MigratePost: migratePostPhaseFn,
-	Finalize:    finalizePhaseFn,
-}
-
 // NewRollbackCommand returns the `stagecraft rollback` command.
 func NewRollbackCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -155,19 +134,6 @@ func resolveRollbackTarget(ctx context.Context, stateMgr *state.Manager, env str
 	return nil, fmt.Errorf("rollback target required; use --to-previous, --to-release, or --to-version")
 }
 
-// allPhasesRollback returns all deployment phases in execution order.
-// Shared by validateRollbackTarget and orderedPhasesRollback to avoid duplication.
-func allPhasesRollback() []state.ReleasePhase {
-	return []state.ReleasePhase{
-		state.PhaseBuild,
-		state.PhasePush,
-		state.PhaseMigratePre,
-		state.PhaseRollout,
-		state.PhaseMigratePost,
-		state.PhaseFinalize,
-	}
-}
-
 // validateRollbackTarget validates that the target release is eligible for rollback.
 // current may be nil if no current release exists.
 func validateRollbackTarget(current, target *state.Release) error {
@@ -177,7 +143,7 @@ func validateRollbackTarget(current, target *state.Release) error {
 	}
 
 	// Must be fully deployed
-	requiredPhases := allPhasesRollback()
+	requiredPhases := allPhasesCommon()
 
 	incompletePhases := []string{}
 	for _, phase := range requiredPhases {
@@ -195,7 +161,7 @@ func validateRollbackTarget(current, target *state.Release) error {
 
 // runRollbackWithPhases is the internal implementation that accepts PhaseFns for dependency injection.
 // This allows tests to inject custom phase functions without using global state.
-func runRollbackWithPhases(cmd *cobra.Command, args []string, fns PhaseFns) error {
+func runRollbackWithPhases(cmd *cobra.Command, _ []string, fns PhaseFns) error {
 	ctx := cmd.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -313,12 +279,12 @@ func runRollbackWithPhases(cmd *cobra.Command, args []string, fns PhaseFns) erro
 	planner := core.NewPlanner(cfg)
 	plan, err := planner.PlanDeploy(flags.Env)
 	if err != nil {
-		markAllPhasesFailedRollback(ctx, stateMgr, release.ID, logger)
+		markAllPhasesFailedCommon(ctx, stateMgr, release.ID, logger)
 		return fmt.Errorf("generating deployment plan: %w", err)
 	}
 
-	// Execute deployment phases using injected PhaseFns
-	err = executePhasesRollback(ctx, stateMgr, release.ID, plan, logger, fns)
+	// Execute deployment phases using shared helper
+	err = executePhasesCommon(ctx, stateMgr, release.ID, plan, logger, fns)
 	if err != nil {
 		return fmt.Errorf("rollback deployment failed: %w", err)
 	}
@@ -333,104 +299,4 @@ func runRollbackWithPhases(cmd *cobra.Command, args []string, fns PhaseFns) erro
 // runRollback is the public entry point that uses default phase functions.
 func runRollback(cmd *cobra.Command, args []string) error {
 	return runRollbackWithPhases(cmd, args, defaultPhaseFns)
-}
-
-// orderedPhasesRollback returns all deployment phases in execution order.
-// Copied from deploy.go to avoid premature refactor.
-// Uses allPhasesRollback() to share the phase list with validateRollbackTarget.
-func orderedPhasesRollback() []state.ReleasePhase {
-	return allPhasesRollback()
-}
-
-// executePhasesRollback executes all deployment phases in order.
-// Copied from deploy.go to avoid premature refactor.
-// Takes PhaseFns as a parameter to allow dependency injection for testing.
-func executePhasesRollback(ctx context.Context, stateMgr *state.Manager, releaseID string, plan *core.Plan, logger logging.Logger, fns PhaseFns) error {
-	phases := []struct {
-		phase     state.ReleasePhase
-		name      string
-		executeFn func(context.Context, *core.Plan, logging.Logger) error
-	}{
-		{state.PhaseBuild, "build", fns.Build},
-		{state.PhasePush, "push", fns.Push},
-		{state.PhaseMigratePre, "migrate_pre", fns.MigratePre},
-		{state.PhaseRollout, "rollout", fns.Rollout},
-		{state.PhaseMigratePost, "migrate_post", fns.MigratePost},
-		{state.PhaseFinalize, "finalize", fns.Finalize},
-	}
-
-	for _, p := range phases {
-		// Update phase to running
-		logger.Info("Starting phase", logging.NewField("phase", p.name))
-		if err := stateMgr.UpdatePhase(ctx, releaseID, p.phase, state.StatusRunning); err != nil {
-			return fmt.Errorf("updating phase %q to running: %w", p.name, err)
-		}
-
-		// Execute phase
-		err := p.executeFn(ctx, plan, logger)
-		if err != nil {
-			// Mark current phase as failed
-			if updateErr := stateMgr.UpdatePhase(ctx, releaseID, p.phase, state.StatusFailed); updateErr != nil {
-				logger.Debug("Failed to update phase status", logging.NewField("error", updateErr.Error()))
-			}
-
-			// Mark all downstream phases as skipped
-			markDownstreamPhasesSkippedRollback(ctx, stateMgr, releaseID, p.phase, logger)
-
-			return fmt.Errorf("phase %q failed: %w", p.name, err)
-		}
-
-		// Mark phase as completed
-		if err := stateMgr.UpdatePhase(ctx, releaseID, p.phase, state.StatusCompleted); err != nil {
-			return fmt.Errorf("updating phase %q to completed: %w", p.name, err)
-		}
-
-		logger.Info("Phase completed", logging.NewField("phase", p.name))
-	}
-
-	return nil
-}
-
-// markDownstreamPhasesSkippedRollback marks all phases after the failed phase as skipped.
-// Copied from deploy.go to avoid premature refactor.
-func markDownstreamPhasesSkippedRollback(ctx context.Context, stateMgr *state.Manager, releaseID string, failedPhase state.ReleasePhase, logger logging.Logger) {
-	allPhases := orderedPhasesRollback()
-
-	// Find the index of the failed phase
-	failedIndex := -1
-	for i, phase := range allPhases {
-		if phase == failedPhase {
-			failedIndex = i
-			break
-		}
-	}
-
-	if failedIndex == -1 {
-		logger.Debug("Failed phase not found in phase list", logging.NewField("phase", failedPhase))
-		return
-	}
-
-	// Mark all downstream phases as skipped
-	for i := failedIndex + 1; i < len(allPhases); i++ {
-		phase := allPhases[i]
-		if err := stateMgr.UpdatePhase(ctx, releaseID, phase, state.StatusSkipped); err != nil {
-			logger.Debug("Failed to mark phase as skipped",
-				logging.NewField("phase", phase),
-				logging.NewField("error", err.Error()),
-			)
-		}
-	}
-}
-
-// markAllPhasesFailedRollback marks all phases as failed (used when plan generation fails).
-// Copied from deploy.go to avoid premature refactor.
-func markAllPhasesFailedRollback(ctx context.Context, stateMgr *state.Manager, releaseID string, logger logging.Logger) {
-	for _, phase := range orderedPhasesRollback() {
-		if err := stateMgr.UpdatePhase(ctx, releaseID, phase, state.StatusFailed); err != nil {
-			logger.Debug("Failed to mark phase as failed",
-				logging.NewField("phase", phase),
-				logging.NewField("error", err.Error()),
-			)
-		}
-	}
 }
