@@ -217,6 +217,16 @@ func getGitCommitSHA(ctx context.Context, logger logging.Logger) string {
 
 // Phase execution functions
 
+// TODO: Future improvement - consider using a typed DeployContext struct instead of map[string]interface{}
+// This would reduce type assertions and make refactors safer. Example:
+//   type DeployContext struct {
+//       ReleaseID  string
+//       Version    string
+//       ConfigPath string
+//       WorkDir    string
+//   }
+// Store under plan.Metadata["deploy_ctx"] as a single key.
+
 // getDeployContext extracts deployment context from plan metadata.
 func getDeployContext(plan *core.Plan) (configPath string, version string, workdir string, err error) {
 	if plan.Metadata == nil {
@@ -247,6 +257,9 @@ func executeBuildPhase(ctx context.Context, plan *core.Plan, logger logging.Logg
 		return fmt.Errorf("getting deployment context: %w", err)
 	}
 
+	// TODO: Future optimization - pass config through plan metadata to avoid reloading
+	// Config is already loaded in runDeployWithPhases, but reloading here keeps phases independent.
+	// Consider storing *config.Config in plan.Metadata["config"] when adding more context.
 	// Load config
 	cfg, err := config.Load(configPath)
 	if err != nil {
@@ -395,6 +408,9 @@ func executeRolloutPhase(ctx context.Context, plan *core.Plan, logger logging.Lo
 	cmd.Env = map[string]string{
 		"IMAGE_TAG": builtImage,
 	}
+	// TODO: Future test - add test that verifies IMAGE_TAG env var propagation
+	// This ensures the environment variable is correctly passed to docker compose.
+	// Can wait until DEPLOY_COMPOSE_GEN lands for full integration test.
 	result, err := runner.Run(ctx, cmd)
 	if err != nil {
 		return fmt.Errorf("running docker compose up: %w", err)
