@@ -888,3 +888,97 @@ environments:
 		t.Errorf("expected finalize phase to be skipped, got %q", rollbackRelease.Phases[state.PhaseFinalize])
 	}
 }
+
+func TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+
+	configContent := `project:
+  name: test-app
+environments:
+  staging:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+	originalDir, _ := os.Getwd()
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
+
+	// Create test releases
+	mgr := state.NewManager(stateFile)
+	ctx := context.Background()
+
+	// Create previous release (fully deployed)
+	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	if err != nil {
+		t.Fatalf("failed to create previous release: %v", err)
+	}
+
+	// Mark all phases as completed
+	allPhases := []state.ReleasePhase{
+		state.PhaseBuild,
+		state.PhasePush,
+		state.PhaseMigratePre,
+		state.PhaseRollout,
+		state.PhaseMigratePost,
+		state.PhaseFinalize,
+	}
+	for _, phase := range allPhases {
+		if err := mgr.UpdatePhase(ctx, previous.ID, phase, state.StatusCompleted); err != nil {
+			t.Fatalf("failed to update phase: %v", err)
+		}
+	}
+
+	// Create current release
+	_, err = mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	if err != nil {
+		t.Fatalf("failed to create current release: %v", err)
+	}
+
+	root := newTestRootCommand()
+	root.AddCommand(NewRollbackCommand())
+
+	// Run rollback (should succeed and complete all phases)
+	_, err = executeCommandForGolden(root, "rollback", "--env", "staging", "--to-previous")
+	if err != nil {
+		t.Fatalf("rollback should succeed, got: %v", err)
+	}
+
+	// Verify rollback release was created with all phases completed
+	releases, err := mgr.ListReleases(ctx, "staging")
+	if err != nil {
+		t.Fatalf("failed to list releases: %v", err)
+	}
+
+	if len(releases) < 3 {
+		t.Fatalf("expected at least 3 releases (previous, current, rollback), got %d", len(releases))
+	}
+
+	// Newest release should be the rollback
+	rollbackRelease := releases[0]
+
+	// Verify all phases are completed
+	for _, phase := range allPhases {
+		status := rollbackRelease.Phases[phase]
+		if status != state.StatusCompleted {
+			t.Errorf("expected phase %q to be %q, got %q", phase, state.StatusCompleted, status)
+		}
+	}
+
+	// Verify version and commit SHA match target
+	if rollbackRelease.Version != previous.Version {
+		t.Errorf("expected rollback release version to be %q, got %q", previous.Version, rollbackRelease.Version)
+	}
+	if rollbackRelease.CommitSHA != previous.CommitSHA {
+		t.Errorf("expected rollback release commit SHA to be %q, got %q", previous.CommitSHA, rollbackRelease.CommitSHA)
+	}
+}

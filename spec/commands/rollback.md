@@ -34,15 +34,17 @@ so that I can quickly revert to the previous working release when a deployment f
 
 1. Load config from `stagecraft.yml`
 2. Validate environment exists in config
-3. Get current release for environment using `state.Manager.GetCurrentRelease()`
-4. Parse rollback target flags (validate exactly one is provided)
+3. Parse rollback target flags (validate exactly one is provided)
+4. Get current release if needed:
+   - For `--to-previous`: Current release is required (used to find previous release)
+   - For `--to-release` and `--to-version`: Current release is optional (used only for validation that target is not current)
 5. Resolve rollback target using one of the three methods:
-   - **Previous**: Use `current.PreviousID` to get target release via `GetRelease()`
-   - **By ID**: Use `state.Manager.GetRelease(id)` to get target release
-   - **By Version**: Use `state.Manager.ListReleases(env)` and find most recent matching version
+   - **Previous**: Use `current.PreviousID` to get target release via `GetRelease()` (requires current release)
+   - **By ID**: Use `state.Manager.GetRelease(id)` to get target release (current release optional)
+   - **By Version**: Use `state.Manager.ListReleases(env)` and find most recent matching version (current release optional)
 6. Validate target release:
    - Target must exist
-   - Target must not be the current release (cannot rollback to current)
+   - Target must not be the current release (cannot rollback to current; only checked if current release exists)
    - Target must have all phases completed (`StatusCompleted` for all 6 phases)
    - If `--to-previous` is used, current release must have a `PreviousID` (cannot rollback if only one release exists)
 7. If `--dry-run`:

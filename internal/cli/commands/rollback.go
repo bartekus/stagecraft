@@ -134,6 +134,19 @@ func resolveRollbackTarget(ctx context.Context, stateMgr *state.Manager, env str
 	return nil, fmt.Errorf("rollback target required; use --to-previous, --to-release, or --to-version")
 }
 
+// allPhasesRollback returns all deployment phases in execution order.
+// Shared by validateRollbackTarget and orderedPhasesRollback to avoid duplication.
+func allPhasesRollback() []state.ReleasePhase {
+	return []state.ReleasePhase{
+		state.PhaseBuild,
+		state.PhasePush,
+		state.PhaseMigratePre,
+		state.PhaseRollout,
+		state.PhaseMigratePost,
+		state.PhaseFinalize,
+	}
+}
+
 // validateRollbackTarget validates that the target release is eligible for rollback.
 // current may be nil if no current release exists.
 func validateRollbackTarget(current, target *state.Release) error {
@@ -143,14 +156,7 @@ func validateRollbackTarget(current, target *state.Release) error {
 	}
 
 	// Must be fully deployed
-	requiredPhases := []state.ReleasePhase{
-		state.PhaseBuild,
-		state.PhasePush,
-		state.PhaseMigratePre,
-		state.PhaseRollout,
-		state.PhaseMigratePost,
-		state.PhaseFinalize,
-	}
+	requiredPhases := allPhasesRollback()
 
 	incompletePhases := []string{}
 	for _, phase := range requiredPhases {
@@ -301,15 +307,9 @@ func runRollback(cmd *cobra.Command, args []string) error {
 
 // orderedPhasesRollback returns all deployment phases in execution order.
 // Copied from deploy.go to avoid premature refactor.
+// Uses allPhasesRollback() to share the phase list with validateRollbackTarget.
 func orderedPhasesRollback() []state.ReleasePhase {
-	return []state.ReleasePhase{
-		state.PhaseBuild,
-		state.PhasePush,
-		state.PhaseMigratePre,
-		state.PhaseRollout,
-		state.PhaseMigratePost,
-		state.PhaseFinalize,
-	}
+	return allPhasesRollback()
 }
 
 // executePhasesRollback executes all deployment phases in order.
