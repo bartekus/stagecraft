@@ -230,6 +230,8 @@ func runRollback(cmd *cobra.Command, args []string) error {
 	}
 
 	// Get current release for validation if we don't have it yet
+	// Note: --to-release/--to-version can succeed without a current release.
+	// In that case we skip the "cannot rollback to current" check.
 	if current == nil {
 		var err error
 		current, err = stateMgr.GetCurrentRelease(ctx, flags.Env)

@@ -30,6 +30,66 @@ import (
 // Feature: CLI_ROLLBACK
 // Spec: spec/commands/rollback.md
 
+// rollbackTestEnv holds common test environment setup for rollback tests.
+type rollbackTestEnv struct {
+	t         *testing.T
+	ctx       context.Context
+	mgr       *state.Manager
+	allPhases []state.ReleasePhase
+	tmpDir    string
+	stateFile string
+}
+
+// newRollbackTestEnv sets up a test environment with config file, state manager, and phase list.
+// It changes to the temp directory and restores the original directory on cleanup.
+func newRollbackTestEnv(t *testing.T) *rollbackTestEnv {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+
+	configContent := `project:
+  name: test-app
+environments:
+  staging:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+
+	originalDir, _ := os.Getwd()
+	t.Cleanup(func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	})
+
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
+
+	mgr := state.NewManager(stateFile)
+	ctx := context.Background()
+
+	allPhases := []state.ReleasePhase{
+		state.PhaseBuild,
+		state.PhasePush,
+		state.PhaseMigratePre,
+		state.PhaseRollout,
+		state.PhaseMigratePost,
+		state.PhaseFinalize,
+	}
+
+	return &rollbackTestEnv{
+		t:         t,
+		ctx:       ctx,
+		mgr:       mgr,
+		allPhases: allPhases,
+		tmpDir:    tmpDir,
+		stateFile: stateFile,
+	}
+}
+
 func TestNewRollbackCommand_HasExpectedMetadata(t *testing.T) {
 	cmd := NewRollbackCommand()
 
@@ -124,34 +184,10 @@ environments:
 }
 
 func TestRollbackCommand_ToPrevious_NoPreviousRelease(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	configContent := `project:
-  name: test-app
-environments:
-  staging:
-    driver: local
-`
-	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
-		t.Fatalf("failed to write config file: %v", err)
-	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
+	env := newRollbackTestEnv(t)
 
 	// Create only one release (no previous)
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	_, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	_, err := env.mgr.CreateRelease(env.ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
