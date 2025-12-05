@@ -50,18 +50,6 @@ var defaultPhaseFns = PhaseFns{
 	Finalize:    finalizePhaseFn,
 }
 
-// testPhaseFnsOverride is a test-only hook for injecting custom phase functions.
-// Only used in tests; no race if tests in package are not parallel.
-var testPhaseFnsOverride *PhaseFns
-
-// withPhaseFnsForTest temporarily overrides phase functions for testing.
-// This allows tests to inject custom phase behavior without mutating global state.
-func withPhaseFnsForTest(fns PhaseFns, fn func()) {
-	testPhaseFnsOverride = &fns
-	defer func() { testPhaseFnsOverride = nil }()
-	fn()
-}
-
 // NewRollbackCommand returns the `stagecraft rollback` command.
 func NewRollbackCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -205,7 +193,9 @@ func validateRollbackTarget(current, target *state.Release) error {
 	return nil
 }
 
-func runRollback(cmd *cobra.Command, args []string) error {
+// runRollbackWithPhases is the internal implementation that accepts PhaseFns for dependency injection.
+// This allows tests to inject custom phase functions without using global state.
+func runRollbackWithPhases(cmd *cobra.Command, args []string, fns PhaseFns) error {
 	ctx := cmd.Context()
 	if ctx == nil {
 		ctx = context.Background()
@@ -327,13 +317,8 @@ func runRollback(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("generating deployment plan: %w", err)
 	}
 
-	// Execute deployment phases (reuse from deploy.go - copied logic)
-	// Use test override if set, otherwise use default
-	phaseFns := defaultPhaseFns
-	if testPhaseFnsOverride != nil {
-		phaseFns = *testPhaseFnsOverride
-	}
-	err = executePhasesRollback(ctx, stateMgr, release.ID, plan, logger, phaseFns)
+	// Execute deployment phases using injected PhaseFns
+	err = executePhasesRollback(ctx, stateMgr, release.ID, plan, logger, fns)
 	if err != nil {
 		return fmt.Errorf("rollback deployment failed: %w", err)
 	}
@@ -343,6 +328,11 @@ func runRollback(cmd *cobra.Command, args []string) error {
 	)
 
 	return nil
+}
+
+// runRollback is the public entry point that uses default phase functions.
+func runRollback(cmd *cobra.Command, args []string) error {
+	return runRollbackWithPhases(cmd, args, defaultPhaseFns)
 }
 
 // orderedPhasesRollback returns all deployment phases in execution order.

@@ -22,6 +22,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/spf13/cobra"
+
 	"stagecraft/internal/core"
 	"stagecraft/internal/core/state"
 	"stagecraft/pkg/logging"
@@ -38,6 +40,30 @@ type rollbackTestEnv struct {
 	allPhases []state.ReleasePhase
 	tmpDir    string
 	stateFile string
+}
+
+// executeRollbackWithPhases is a test helper that executes rollback with custom PhaseFns.
+// This allows tests to inject phase behavior without using global state.
+func executeRollbackWithPhases(fns PhaseFns, args ...string) error {
+	// Create a fresh root command for this test
+	root := newTestRootCommand()
+
+	// Create rollback command with custom PhaseFns
+	cmd := &cobra.Command{
+		Use:   "rollback",
+		Short: "Rollback environment to a previous release",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runRollbackWithPhases(cmd, args, fns)
+		},
+	}
+	cmd.Flags().Bool("to-previous", false, "Rollback to immediately previous release")
+	cmd.Flags().String("to-release", "", "Rollback to specific release ID")
+	cmd.Flags().String("to-version", "", "Rollback to most recent release with matching version")
+
+	root.AddCommand(cmd)
+	root.SetArgs(args)
+
+	return root.Execute()
 }
 
 // newRollbackTestEnv sets up a test environment with config file, state manager, and phase list.
@@ -644,20 +670,17 @@ environments:
 	root.AddCommand(NewRollbackCommand())
 
 	// Override phase execution to avoid actual deployment
-	withPhaseFnsForTest(PhaseFns{
+	err = executeRollbackWithPhases(PhaseFns{
 		Build:       func(ctx context.Context, plan *core.Plan, logger logging.Logger) error { return nil },
 		Push:        defaultPhaseFns.Push,
 		MigratePre:  defaultPhaseFns.MigratePre,
 		Rollout:     defaultPhaseFns.Rollout,
 		MigratePost: defaultPhaseFns.MigratePost,
 		Finalize:    defaultPhaseFns.Finalize,
-	}, func() {
-		// Run rollback (not dry-run)
-		_, err = executeCommandForGolden(root, "rollback", "--env", "staging", "--to-previous")
-		if err != nil {
-			t.Fatalf("rollback should succeed, got: %v", err)
-		}
-	})
+	}, "rollback", "--env", "staging", "--to-previous")
+	if err != nil {
+		t.Fatalf("rollback should succeed, got: %v", err)
+	}
 
 	// Verify new release was created with target's version
 	releases, err := mgr.ListReleases(ctx, "staging")
@@ -893,8 +916,7 @@ environments:
 	root.AddCommand(NewRollbackCommand())
 
 	// Override rollout phase to simulate a failure
-	var rollbackErr error
-	withPhaseFnsForTest(PhaseFns{
+	rollbackErr := executeRollbackWithPhases(PhaseFns{
 		Build:      defaultPhaseFns.Build,
 		Push:       defaultPhaseFns.Push,
 		MigratePre: defaultPhaseFns.MigratePre,
@@ -903,10 +925,7 @@ environments:
 		},
 		MigratePost: defaultPhaseFns.MigratePost,
 		Finalize:    defaultPhaseFns.Finalize,
-	}, func() {
-		// Run rollback (should fail at rollout phase)
-		_, rollbackErr = executeCommandForGolden(root, "rollback", "--env", "staging", "--to-previous")
-	})
+	}, "rollback", "--env", "staging", "--to-previous")
 
 	if rollbackErr == nil {
 		t.Fatalf("expected rollback to fail due to forced rollout failure")
