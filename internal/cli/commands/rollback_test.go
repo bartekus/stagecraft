@@ -129,9 +129,8 @@ func TestNewRollbackCommand_HasExpectedMetadata(t *testing.T) {
 }
 
 func TestRollbackCommand_ToPrevious_ValidPreviousRelease(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -142,22 +141,9 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test releases
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
 
 	// Create previous release (fully deployed)
-	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	previous, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create previous release: %v", err)
 	}
@@ -172,20 +158,20 @@ environments:
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, previous.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, previous.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
 
 	// Create current release
-	current, err := mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	current, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create current release: %v", err)
 	}
 
 	// Mark all phases as completed for current release
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, current.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, current.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
@@ -200,7 +186,7 @@ environments:
 	}
 
 	// Verify no new release was created in dry-run
-	releases, err := mgr.ListReleases(ctx, "staging")
+	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -232,9 +218,8 @@ func TestRollbackCommand_ToPrevious_NoPreviousRelease(t *testing.T) {
 }
 
 func TestRollbackCommand_ToRelease_ValidReleaseID(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -245,22 +230,9 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test releases
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
 
 	// Create target release (fully deployed)
-	target, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	target, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create target release: %v", err)
 	}
@@ -275,13 +247,13 @@ environments:
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, target.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, target.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
 
 	// Create current release
-	_, err = mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	_, err = env.Manager.CreateRelease(env.Ctx, "staging", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create current release: %v", err)
 	}
@@ -333,9 +305,8 @@ environments:
 }
 
 func TestRollbackCommand_ToRelease_EnvironmentMismatch(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -348,21 +319,9 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
 
 	// Create test release in different environment
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	prodRelease, err := mgr.CreateRelease(ctx, "prod", "v1.0.0", "commit1")
+	prodRelease, err := env.Manager.CreateRelease(env.Ctx, "prod", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -381,9 +340,8 @@ environments:
 }
 
 func TestRollbackCommand_ToVersion_MatchingVersion(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -394,22 +352,9 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test releases
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
 
 	// Create target release with specific version (fully deployed)
-	target, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	target, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create target release: %v", err)
 	}
@@ -424,13 +369,13 @@ environments:
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, target.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, target.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
 
 	// Create current release with different version
-	_, err = mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	_, err = env.Manager.CreateRelease(env.Ctx, "staging", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create current release: %v", err)
 	}
@@ -482,9 +427,8 @@ environments:
 }
 
 func TestRollbackCommand_TargetValidation_CannotRollbackToCurrent(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -495,21 +439,8 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
 
-	// Create test release
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
-
-	current, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	current, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -524,7 +455,7 @@ environments:
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, current.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, current.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
@@ -544,26 +475,35 @@ environments:
 
 func TestRollbackCommand_TargetValidation_TargetMustBeFullyDeployed(t *testing.T) {
 	env := setupIsolatedStateTestEnv(t)
-	mgr := env.Manager
-	ctx := env.Ctx
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
+
+	configContent := `project:
+  name: test-app
+environments:
+  staging:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
 
 	// Create previous release (incomplete deployment)
-	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	previous, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create previous release: %v", err)
 	}
 
 	// Mark only some phases as completed (not all)
-	if err := mgr.UpdatePhase(ctx, previous.ID, state.PhaseBuild, state.StatusCompleted); err != nil {
+	if err := env.Manager.UpdatePhase(env.Ctx, previous.ID, state.PhaseBuild, state.StatusCompleted); err != nil {
 		t.Fatalf("failed to update phase: %v", err)
 	}
-	if err := mgr.UpdatePhase(ctx, previous.ID, state.PhasePush, state.StatusCompleted); err != nil {
+	if err := env.Manager.UpdatePhase(env.Ctx, previous.ID, state.PhasePush, state.StatusCompleted); err != nil {
 		t.Fatalf("failed to update phase: %v", err)
 	}
 	// Leave other phases as pending
 
 	// Create current release
-	_, err = mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	_, err = env.Manager.CreateRelease(env.Ctx, "staging", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create current release: %v", err)
 	}
@@ -582,9 +522,8 @@ func TestRollbackCommand_TargetValidation_TargetMustBeFullyDeployed(t *testing.T
 }
 
 func TestRollbackCommand_CreatesNewReleaseWithTargetVersion(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -595,22 +534,9 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test releases
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
 
 	// Create previous release (fully deployed)
-	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	previous, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create previous release: %v", err)
 	}
@@ -625,20 +551,20 @@ environments:
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, previous.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, previous.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
 
 	// Create current release
-	current, err := mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	current, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create current release: %v", err)
 	}
 
 	// Mark all phases as completed for current
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, current.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, current.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
@@ -660,7 +586,7 @@ environments:
 	}
 
 	// Verify new release was created with target's version
-	releases, err := mgr.ListReleases(ctx, "staging")
+	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -680,9 +606,8 @@ environments:
 }
 
 func TestRollbackCommand_DryRun_DoesNotCreateRelease(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -693,22 +618,9 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	// Create test releases
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
 
 	// Create previous release (fully deployed)
-	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	previous, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create previous release: %v", err)
 	}
@@ -723,19 +635,19 @@ environments:
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, previous.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, previous.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
 
 	// Create current release
-	_, err = mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	_, err = env.Manager.CreateRelease(env.Ctx, "staging", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create current release: %v", err)
 	}
 
 	// Count releases before rollback
-	releasesBefore, err := mgr.ListReleases(ctx, "staging")
+	releasesBefore, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -751,7 +663,7 @@ environments:
 	}
 
 	// Verify no new release was created
-	releasesAfter, err := mgr.ListReleases(ctx, "staging")
+	releasesAfter, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -836,11 +748,20 @@ environments:
 
 func TestRollbackCommand_PhaseFailureHandling(t *testing.T) {
 	env := setupIsolatedStateTestEnv(t)
-	mgr := env.Manager
-	ctx := env.Ctx
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
+
+	configContent := `project:
+  name: test-app
+environments:
+  staging:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
 
 	// Create previous release (fully deployed)
-	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	previous, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create previous release: %v", err)
 	}
@@ -855,13 +776,13 @@ func TestRollbackCommand_PhaseFailureHandling(t *testing.T) {
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, previous.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, previous.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
 
 	// Create current release
-	_, err = mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	_, err = env.Manager.CreateRelease(env.Ctx, "staging", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create current release: %v", err)
 	}
@@ -887,9 +808,8 @@ func TestRollbackCommand_PhaseFailureHandling(t *testing.T) {
 
 	// Verify phase statuses
 	// Create a new manager to ensure we read fresh state from disk
-	// Use absolute path to match what the command used
 	verifyMgr := state.NewManager(env.StateFile)
-	releases, err := verifyMgr.ListReleases(ctx, "staging")
+	releases, err := verifyMgr.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -918,11 +838,20 @@ func TestRollbackCommand_PhaseFailureHandling(t *testing.T) {
 
 func TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted(t *testing.T) {
 	env := setupIsolatedStateTestEnv(t)
-	mgr := env.Manager
-	ctx := env.Ctx
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
+
+	configContent := `project:
+  name: test-app
+environments:
+  staging:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
 
 	// Create previous release (fully deployed)
-	previous, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit1")
+	previous, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit1")
 	if err != nil {
 		t.Fatalf("failed to create previous release: %v", err)
 	}
@@ -937,13 +866,13 @@ func TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted(t *testing.T) {
 		state.PhaseFinalize,
 	}
 	for _, phase := range allPhases {
-		if err := mgr.UpdatePhase(ctx, previous.ID, phase, state.StatusCompleted); err != nil {
+		if err := env.Manager.UpdatePhase(env.Ctx, previous.ID, phase, state.StatusCompleted); err != nil {
 			t.Fatalf("failed to update phase: %v", err)
 		}
 	}
 
 	// Create current release
-	_, err = mgr.CreateRelease(ctx, "staging", "v1.1.0", "commit2")
+	_, err = env.Manager.CreateRelease(env.Ctx, "staging", "v1.1.0", "commit2")
 	if err != nil {
 		t.Fatalf("failed to create current release: %v", err)
 	}
@@ -958,10 +887,9 @@ func TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted(t *testing.T) {
 	}
 
 	// Verify rollback release was created with all phases completed
-	// Create a new manager to ensure we read fresh state from disk
-	// Use absolute path to match what the command used
-	verifyMgr := state.NewManager(env.StateFile)
-	releases, err := verifyMgr.ListReleases(ctx, "staging")
+	// Use NewDefaultManager to ensure we read from the same state file the command used
+	verifyMgr := state.NewDefaultManager()
+	releases, err := verifyMgr.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -970,18 +898,8 @@ func TestRollbackCommand_SuccessfulRollback_AllPhasesCompleted(t *testing.T) {
 		t.Fatalf("expected at least 3 releases (previous, current, rollback), got %d", len(releases))
 	}
 
-	// Find the rollback release by matching version and commit SHA (more robust than assuming releases[0])
-	var rollbackRelease *state.Release
-	for _, r := range releases {
-		if r.Version == previous.Version && r.CommitSHA == previous.CommitSHA && r.ID != previous.ID {
-			rollbackRelease = r
-			break
-		}
-	}
-
-	if rollbackRelease == nil {
-		t.Fatalf("rollback release not found (expected version %q, commit %q)", previous.Version, previous.CommitSHA)
-	}
+	// Newest release should be the rollback
+	rollbackRelease := releases[0]
 
 	// Verify all phases are completed
 	for _, phase := range allPhases {

@@ -35,28 +35,6 @@ var _ = cobra.Command{}
 // Feature: CLI_DEPLOY
 // Spec: spec/commands/deploy.md
 
-// executeDeployWithPhases is a test helper that executes deploy with custom PhaseFns.
-// This allows tests to inject phase behavior without using global state.
-func executeDeployWithPhases(fns PhaseFns, args ...string) error {
-	// Create a fresh root command for this test
-	root := newTestRootCommand()
-
-	// Create deploy command with custom PhaseFns
-	cmd := &cobra.Command{
-		Use:   "deploy",
-		Short: "Deploy application to environment",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runDeployWithPhases(cmd, args, fns)
-		},
-	}
-	cmd.Flags().String("version", "", "Version to deploy (defaults to git SHA)")
-
-	root.AddCommand(cmd)
-	root.SetArgs(args)
-
-	return root.Execute()
-}
-
 func TestNewDeployCommand_HasExpectedMetadata(t *testing.T) {
 	cmd := NewDeployCommand()
 
@@ -133,9 +111,8 @@ environments:
 }
 
 func TestDeployCommand_CreatesRelease(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -146,18 +123,9 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
 
 	// Verify state file doesn't exist yet
-	if _, err := os.Stat(stateFile); err == nil {
+	if _, err := os.Stat(env.StateFile); err == nil {
 		t.Fatalf("state file should not exist before deploy")
 	}
 
@@ -172,13 +140,12 @@ environments:
 	}
 
 	// Verify state file was created
-	if _, err := os.Stat(stateFile); err != nil {
+	if _, err := os.Stat(env.StateFile); err != nil {
 		t.Fatalf("state file should be created after deploy: %v", err)
 	}
 
 	// Verify release was created
-	mgr := state.NewManager(stateFile)
-	releases, err := mgr.ListReleases(context.Background(), "staging")
+	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -215,9 +182,8 @@ environments:
 }
 
 func TestDeployCommand_PhaseTransitions(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -228,15 +194,6 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
 
 	root := newTestRootCommand()
 	root.AddCommand(NewDeployCommand())
@@ -245,8 +202,7 @@ environments:
 	_, _ = executeCommandForGolden(root, "deploy", "--env", "staging", "--dry-run")
 
 	// Verify phase transitions occurred
-	mgr := state.NewManager(stateFile)
-	releases, err := mgr.ListReleases(context.Background(), "staging")
+	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -278,9 +234,8 @@ func TestDeployCommand_Help(t *testing.T) {
 }
 
 func TestDeployCommand_VersionFlag(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -291,15 +246,6 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
 
 	root := newTestRootCommand()
 	root.AddCommand(NewDeployCommand())
@@ -309,8 +255,7 @@ environments:
 	// Error is expected
 
 	// Verify release was created with correct version
-	mgr := state.NewManager(stateFile)
-	releases, err := mgr.ListReleases(context.Background(), "staging")
+	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -326,9 +271,8 @@ environments:
 }
 
 func TestDeployCommand_PhaseFailureMarksDownstreamSkipped(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
+	env := setupIsolatedStateTestEnv(t)
+	configPath := filepath.Join(env.TempDir, "stagecraft.yml")
 
 	configContent := `project:
   name: test-app
@@ -339,30 +283,24 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
 
-	// Create PhaseFns where Rollout fails (using DI instead of global override)
-	fns := defaultPhaseFns
-	fns.Rollout = func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
+	// Override rollout phase to simulate a failure.
+	origRollout := rolloutPhaseFn
+	rolloutPhaseFn = func(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
 		return fmt.Errorf("forced rollout failure")
 	}
+	defer func() { rolloutPhaseFn = origRollout }()
+
+	root := newTestRootCommand()
+	root.AddCommand(NewDeployCommand())
 
 	// Run without --dry-run so executePhases actually runs.
-	err := executeDeployWithPhases(fns, "deploy", "--env", "staging")
+	_, err := executeCommandForGolden(root, "deploy", "--env", "staging")
 	if err == nil {
 		t.Fatalf("expected deploy to fail due to forced rollout failure")
 	}
 
-	mgr := state.NewManager(stateFile)
-	releases, err := mgr.ListReleases(context.Background(), "staging")
+	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -400,14 +338,10 @@ environments:
 }
 
 func TestMarkAllPhasesFailed_SetsAllPhasesToFailed(t *testing.T) {
-	tmpDir := t.TempDir()
-	stateFile := filepath.Join(tmpDir, ".stagecraft", "releases.json")
-
-	mgr := state.NewManager(stateFile)
-	ctx := context.Background()
+	env := setupIsolatedStateTestEnv(t)
 
 	// Create a release normally.
-	release, err := mgr.CreateRelease(ctx, "staging", "v1.0.0", "commit-sha")
+	release, err := env.Manager.CreateRelease(env.Ctx, "staging", "v1.0.0", "commit-sha")
 	if err != nil {
 		t.Fatalf("failed to create release: %v", err)
 	}
@@ -415,10 +349,10 @@ func TestMarkAllPhasesFailed_SetsAllPhasesToFailed(t *testing.T) {
 	logger := logging.NewLogger(false)
 
 	// Call the helper under test.
-	markAllPhasesFailedCommon(ctx, mgr, release.ID, logger)
+	markAllPhasesFailed(env.Ctx, env.Manager, release.ID, logger)
 
 	// Reload and verify.
-	releases, err := mgr.ListReleases(ctx, "staging")
+	releases, err := env.Manager.ListReleases(env.Ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
 	}
@@ -429,7 +363,7 @@ func TestMarkAllPhasesFailed_SetsAllPhasesToFailed(t *testing.T) {
 
 	updated := releases[0]
 
-	for _, phase := range allPhasesCommon() {
+	for _, phase := range orderedPhases() {
 		status, ok := updated.Phases[phase]
 		if !ok {
 			t.Errorf("expected phase %q to be present", phase)

@@ -89,7 +89,13 @@ func NewManager(stateFile string) *Manager {
 }
 
 // NewDefaultManager creates a new state manager with the default state file path.
+// If STAGECRAFT_STATE_FILE environment variable is set, it uses that path instead.
+// The environment variable is read fresh on each call (no caching).
 func NewDefaultManager() *Manager {
+    // If STAGECRAFT_STATE_FILE is set, use it; otherwise use DefaultStatePath
+    if envPath := os.Getenv("STAGECRAFT_STATE_FILE"); envPath != "" {
+        return NewManager(envPath)
+    }
     return NewManager(DefaultStatePath)
 }
 
@@ -200,6 +206,23 @@ Phases are tracked in order:
 - State file is JSON-formatted for readability
 - State file is git-ignored by default (contains deployment history)
 
+## State File Path Resolution
+
+The state file path is determined by the following precedence order:
+
+1. **Explicit path**: `NewManager(path)` always uses the provided path
+2. **Environment variable**: `STAGECRAFT_STATE_FILE` - if set, `NewDefaultManager()` uses this path
+3. **Default path**: `.stagecraft/releases.json` in the current working directory
+
+### Environment Variable Support
+
+The `STAGECRAFT_STATE_FILE` environment variable allows overriding the default state file path:
+
+- If set, `NewDefaultManager()` reads the environment variable fresh on each call (no caching)
+- Useful for testing isolation (each test can use its own isolated state file)
+- The path should be absolute to avoid issues with working directory changes
+- Example: `STAGECRAFT_STATE_FILE=/tmp/test-state.json stagecraft deploy`
+
 ## Usage Example
 
 ```go
@@ -208,6 +231,7 @@ import "stagecraft/internal/core/state"
 // Create manager (using default path)
 mgr := state.NewDefaultManager()
 // or explicitly: mgr := state.NewManager(state.DefaultStatePath)
+// or with env var: STAGECRAFT_STATE_FILE=/path/to/state.json stagecraft ...
 
 // Create release
 release, err := mgr.CreateRelease(ctx, "prod", "v1.2.3", "abc123")
