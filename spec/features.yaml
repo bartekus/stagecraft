@@ -327,7 +327,7 @@ features:
 
   - id: CLI_DEPLOY
     title: "Deploy command"
-    status: todo
+    status: done
     spec: "commands/deploy.md"
     owner: bart
     tests:
