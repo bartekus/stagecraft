@@ -566,8 +566,26 @@ environments:
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
-	// Create test releases
-	mgr := state.NewManager(stateFile)
+	// Ensure .stagecraft directory exists
+	if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
+		t.Fatalf("failed to create .stagecraft directory: %v", err)
+	}
+
+	// Set environment variable to ensure state.NewDefaultManager() uses our test state file
+	// This prevents test isolation issues when running with the full test suite
+	// Use absolute path to avoid issues with working directory changes
+	absStateFile, err := filepath.Abs(stateFile)
+	if err != nil {
+		t.Fatalf("failed to get absolute path for state file: %v", err)
+	}
+	t.Setenv("STAGECRAFT_STATE_FILE", absStateFile)
+	// Explicitly unset at end of test to prevent interference with other tests
+	defer func() {
+		_ = os.Unsetenv("STAGECRAFT_STATE_FILE")
+	}()
+
+	// Create test releases (use absolute path for consistency)
+	mgr := state.NewManager(absStateFile)
 	ctx := context.Background()
 
 	// Create previous release (incomplete deployment)
@@ -881,12 +899,26 @@ environments:
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
+	// Ensure .stagecraft directory exists
+	if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
+		t.Fatalf("failed to create .stagecraft directory: %v", err)
+	}
+
 	// Set environment variable to ensure state.NewDefaultManager() uses our test state file
 	// This prevents test isolation issues when running with the full test suite
-	t.Setenv("STAGECRAFT_STATE_FILE", stateFile)
+	// Use absolute path to avoid issues with working directory changes
+	absStateFile, err := filepath.Abs(stateFile)
+	if err != nil {
+		t.Fatalf("failed to get absolute path for state file: %v", err)
+	}
+	t.Setenv("STAGECRAFT_STATE_FILE", absStateFile)
+	// Explicitly unset at end of test to prevent interference with other tests
+	defer func() {
+		_ = os.Unsetenv("STAGECRAFT_STATE_FILE")
+	}()
 
-	// Create test releases
-	mgr := state.NewManager(stateFile)
+	// Create test releases (use absolute path for consistency)
+	mgr := state.NewManager(absStateFile)
 	ctx := context.Background()
 
 	// Create previous release (fully deployed)
@@ -937,7 +969,8 @@ environments:
 
 	// Verify phase statuses
 	// Create a new manager to ensure we read fresh state from disk
-	verifyMgr := state.NewManager(stateFile)
+	// Use absolute path to match what the command used
+	verifyMgr := state.NewManager(absStateFile)
 	releases, err := verifyMgr.ListReleases(ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
@@ -989,12 +1022,26 @@ environments:
 		t.Fatalf("failed to change directory: %v", err)
 	}
 
+	// Ensure .stagecraft directory exists
+	if err := os.MkdirAll(filepath.Dir(stateFile), 0o700); err != nil {
+		t.Fatalf("failed to create .stagecraft directory: %v", err)
+	}
+
 	// Set environment variable to ensure state.NewDefaultManager() uses our test state file
 	// This prevents test isolation issues when running with the full test suite
-	t.Setenv("STAGECRAFT_STATE_FILE", stateFile)
+	// Use absolute path to avoid issues with working directory changes
+	absStateFile, err := filepath.Abs(stateFile)
+	if err != nil {
+		t.Fatalf("failed to get absolute path for state file: %v", err)
+	}
+	t.Setenv("STAGECRAFT_STATE_FILE", absStateFile)
+	// Explicitly unset at end of test to prevent interference with other tests
+	defer func() {
+		_ = os.Unsetenv("STAGECRAFT_STATE_FILE")
+	}()
 
-	// Create test releases
-	mgr := state.NewManager(stateFile)
+	// Create test releases (use absolute path for consistency)
+	mgr := state.NewManager(absStateFile)
 	ctx := context.Background()
 
 	// Create previous release (fully deployed)
@@ -1035,7 +1082,8 @@ environments:
 
 	// Verify rollback release was created with all phases completed
 	// Create a new manager to ensure we read fresh state from disk
-	verifyMgr := state.NewManager(stateFile)
+	// Use absolute path to match what the command used
+	verifyMgr := state.NewManager(absStateFile)
 	releases, err := verifyMgr.ListReleases(ctx, "staging")
 	if err != nil {
 		t.Fatalf("failed to list releases: %v", err)
