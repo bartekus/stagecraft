@@ -486,14 +486,15 @@ func renderPlanJSON(out io.Writer, plan *core.Plan, env, version string, opts Pl
 	if plan.Metadata != nil {
 		if providerPlansRaw, ok := plan.Metadata["provider_plans"]; ok {
 			if providerPlans, ok := providerPlansRaw.(map[string]backendproviders.ProviderPlan); ok && len(providerPlans) > 0 {
-				jsonPlan.ProviderPlans = make(map[string]jsonProviderPlan)
-
 				// Sort provider IDs for deterministic output
 				providerIDs := make([]string, 0, len(providerPlans))
 				for id := range providerPlans {
 					providerIDs = append(providerIDs, id)
 				}
 				sort.Strings(providerIDs)
+
+				// Use slice instead of map for true JSON determinism
+				jsonPlan.ProviderPlans = make([]jsonProviderPlan, 0, len(providerPlans))
 
 				for _, providerID := range providerIDs {
 					providerPlan := providerPlans[providerID]
@@ -509,7 +510,7 @@ func renderPlanJSON(out io.Writer, plan *core.Plan, env, version string, opts Pl
 						}
 					}
 
-					jsonPlan.ProviderPlans[providerID] = jsonProviderPlan
+					jsonPlan.ProviderPlans = append(jsonPlan.ProviderPlans, jsonProviderPlan)
 				}
 			}
 		}
@@ -523,10 +524,10 @@ func renderPlanJSON(out io.Writer, plan *core.Plan, env, version string, opts Pl
 
 // jsonPlan is the JSON representation of a plan.
 type jsonPlan struct {
-	Env           string                      `json:"env"`
-	Version       string                      `json:"version"`
-	Phases        []jsonPhase                 `json:"phases"`
-	ProviderPlans map[string]jsonProviderPlan `json:"provider_plans,omitempty"`
+	Env           string             `json:"env"`
+	Version       string             `json:"version"`
+	Phases        []jsonPhase        `json:"phases"`
+	ProviderPlans []jsonProviderPlan `json:"provider_plans,omitempty"`
 }
 
 // jsonPhase is the JSON representation of a phase.

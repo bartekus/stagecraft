@@ -2,7 +2,7 @@
 
 - **Feature ID**: `CLI_PLAN`
 - **Domain**: `commands`
-- **Status**: `todo`
+- **Status**: `done`
 - **Related features**:
   - `CORE_PLAN` (done)
   - `CORE_CONFIG` (done)
@@ -40,10 +40,16 @@ The command:
 In v1, `CLI_PLAN` supports:
 
 - Generating deployment plans for a single logical environment (`staging` or `prod`)
-- Filtering by services, roles, hosts, phases
-- Outputting plans in text or JSON format
-- Version resolution (mirroring deploy command semantics)
+- Filtering by services (`--services` flag)
+- Outputting plans in text or JSON format (`--format` flag)
+- Version resolution (mirroring deploy command semantics, `--version` flag)
 - Deterministic, stable output suitable for golden file testing
+
+**Future Extensions (not yet implemented in v1):**
+- Filtering by roles (`--roles` flag)
+- Filtering by hosts (`--hosts` flag)
+- Filtering by phases (`--phases` flag)
+- Enhanced verbose output (`--verbose` flag)
 
 **Out of scope for this feature** (covered by other specs):
 
@@ -70,7 +76,7 @@ stagecraft plan [flags]
   - Required
   - The target environment name (for example `staging`, `prod`)
   - Must exist under `environments` in `stagecraft.yml`
-  - If omitted, the command MUST exit with code 2 and a deterministic error message
+  - If omitted, the command MUST exit with code 1 and a deterministic error message (exit code 2 planned for future)
 
 #### Optional Flags
 
@@ -85,22 +91,7 @@ stagecraft plan [flags]
   - Optional
   - Comma-separated list of services to include
   - Filtering semantics: a phase is kept if it touches at least one of the specified services
-  - If a service is specified that doesn't exist in the plan, the command MUST exit with code 2
-
-- `--roles <role1,role2,...>`
-  - Optional (v1 minimal; can be marked as future extension)
-  - Comma-separated list of host roles to filter by
-  - Filtering semantics: deploy phases are filtered by target role, but upstream dependencies (build, migrate) are kept if necessary
-
-- `--hosts <host1,host2,...>`
-  - Optional (v1 minimal; can be marked as future extension)
-  - Comma-separated list of hostnames to filter by
-  - Filtering semantics: similar to `--roles`, but filters by explicit hostname
-
-- `--phases <phase1,phase2,...>`
-  - Optional (v1 minimal; can be marked as future extension)
-  - Filter by phase IDs or prefixes (e.g. `BUILD_`, `DEPLOY_`, `MIGRATE_`)
-  - Filtering semantics: only show phases matching the specified IDs or prefixes
+  - If a service is specified that doesn't exist in the plan, the command MUST exit with code 1 (exit code 2 planned for future)
 
 - `--format <format>`
   - Optional
@@ -109,16 +100,31 @@ stagecraft plan [flags]
   - `json`: Machine-readable JSON encoding suitable for tooling
 
 - `--verbose, -V`
-  - Optional
-  - Show more detail (per-phase, per-host, per-service)
-  - In text mode, adds additional detail lines
-  - In JSON mode, includes additional metadata fields
+  - Optional (reserved for future use)
+  - Currently a no-op; reserved for future verbose output enhancements
+  - Future: Show more detail (per-phase, per-host, per-service)
+  - Future: In text mode, adds additional detail lines
+  - Future: In JSON mode, includes additional metadata fields
 
 - `--config <path>`
   - Optional
   - Override config file, consistent with `CLI_GLOBAL_FLAGS`
 
-**Note**: For v1, we can keep the implementation minimal with `--env`, `--version`, `--services`, and `--format`. The remaining flags (`--roles`, `--hosts`, `--phases`, `--verbose`) can be marked as "future extension" in the spec if preferred.
+#### Future Extensions (Not Implemented in v1)
+
+The following flags are planned for future versions but are not yet implemented:
+
+- `--roles <role1,role2,...>`
+  - Comma-separated list of host roles to filter by
+  - Filtering semantics: deploy phases are filtered by target role, but upstream dependencies (build, migrate) are kept if necessary
+
+- `--hosts <host1,host2,...>`
+  - Comma-separated list of hostnames to filter by
+  - Filtering semantics: similar to `--roles`, but filters by explicit hostname
+
+- `--phases <phase1,phase2,...>`
+  - Filter by phase IDs or prefixes (e.g. `BUILD_`, `DEPLOY_`, `MIGRATE_`)
+  - Filtering semantics: only show phases matching the specified IDs or prefixes
 
 ---
 
@@ -181,8 +187,8 @@ stagecraft plan [flags]
 
 5. **Apply filters**
    - Services: restrict to the subset requested (`--services`)
-   - Phases: restrict by IDs/prefixes (`--phases`)
-   - Roles/hosts: restrict as requested (`--roles`, `--hosts`)
+   - Future: Phases: restrict by IDs/prefixes (`--phases`) - not yet implemented
+   - Future: Roles/hosts: restrict as requested (`--roles`, `--hosts`) - not yet implemented
 
 6. **Render output**
    - `--format=text`:
@@ -193,9 +199,11 @@ stagecraft plan [flags]
 
 7. **Exit codes**
    - `0` – plan successfully generated and rendered
-   - `2` – user error (missing/invalid flags, unknown env, invalid filter)
-   - `3` – planning failed (invalid config, provider misconfig, `CORE_PLAN` error)
-   - `1` – unexpected internal error
+   - `1` – error occurred (invalid config, provider failure, planning error, or unexpected internal error)
+   
+   **Note**: In v1, all errors exit with code 1. Future versions may implement more granular exit codes:
+   - `2` – user error (missing/invalid flags, unknown env, invalid filter) - planned
+   - `3` – planning failed (invalid config, provider misconfig, `CORE_PLAN` error) - planned
 
 ### 5.2 Filter Semantics
 
@@ -207,7 +215,9 @@ stagecraft plan [flags]
   - Migration phases that affect the selected services are included
 - If a service is specified that doesn't exist in the config, the command MUST exit with code 2
 
-#### Phase Filtering (`--phases`)
+#### Phase Filtering (`--phases`) - Future Extension
+
+**Not yet implemented in v1.** Planned behavior:
 
 - Filter by phase IDs or prefixes
 - Examples:
@@ -215,7 +225,9 @@ stagecraft plan [flags]
   - `--phases=BUILD_BACKEND,DEPLOY_APP` matches specific phases
 - Dependencies are preserved: if a phase is included, its dependencies are also included
 
-#### Role/Host Filtering (`--roles`, `--hosts`)
+#### Role/Host Filtering (`--roles`, `--hosts`) - Future Extension
+
+**Not yet implemented in v1.** Planned behavior:
 
 - Filter deploy phases by target role or hostname
 - Upstream dependencies (build, migrate) are kept if necessary
@@ -296,11 +308,13 @@ The JSON format provides a machine-readable encoding:
 ## 7. Error Handling
 
 - All errors MUST be wrapped with context (per `CORE_LOGGING` and Go error wrapping conventions)
-- CLI exit codes:
+- CLI exit codes (v1 implementation):
   - `0` – success
+  - `1` – error occurred (covers all error cases: invalid config, provider failure, planning error, missing flags, etc.)
+  
+  **Future Enhancement**: More granular exit codes are planned:
   - `2` – user error (missing/invalid flags, unknown env, invalid filter)
   - `3` – planning failed (invalid config, provider misconfig, `CORE_PLAN` error)
-  - `1` – unexpected internal error
 - Common error classes:
   - Missing `--env` flag
   - Unknown environment (`--env` not defined in config)
@@ -451,7 +465,7 @@ Tests MUST verify:
 
 1. **Missing env**
    - Input: `stagecraft plan` with no `--env`
-   - Expect: exit code 2, help or deterministic error
+   - Expect: exit code 1, help or deterministic error (exit code 2 planned for future)
 
 2. **Unknown env**
    - Input: `stagecraft plan --env=foo`
@@ -479,7 +493,7 @@ Tests MUST verify:
 
 7. **Error propagation**
    - Arrange `CORE_PLAN` to fail (e.g., invalid config, missing hosts)
-   - Ensure error message propagates and exit code is 3 (planning error)
+   - Ensure error message propagates and exit code is 1 (exit code 3 planned for future)
 
 ### 11.1 Golden Test Layout
 

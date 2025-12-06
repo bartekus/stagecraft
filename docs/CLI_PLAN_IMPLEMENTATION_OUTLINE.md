@@ -37,11 +37,11 @@ This feature parallels tools like Terraform’s plan or Ansible’s check mode, 
 	•	Command: stagecraft plan
 	•	Phase graph construction (same as deploy, but without executing phases)
 	•	Provider-driven planning hooks
-(e.g., backend provider may expose PlanSteps() describing expected actions)
+(e.g., backend provider Plan() returns ProviderPlan describing expected actions)
 	•	Core plan struct generation
 	•	Rendering:
 	•	Human-readable ANSI output
-	•	Machine-readable JSON (--json)
+	•	Machine-readable JSON (--format=json)
 	•	Release metadata synthesis without writing actual state
 	•	Validation:
 	•	config/compose/env correctness
@@ -66,7 +66,8 @@ This feature parallels tools like Terraform’s plan or Ansible’s check mode, 
 The implementation reuses the existing `core.Plan` structure and extends it with provider plans stored in metadata:
 
 - `core.Plan` is used as-is (no new ExecutionPlan type)
-- Provider plans are stored in `plan.Metadata["provider_plans"]` as `map[string]backend.ProviderPlan`
+- Provider plans are stored in `plan.Metadata["provider_plans"]` as `map[string]backend.ProviderPlan` (internal representation)
+- For JSON output, provider plans are converted to a sorted slice `[]jsonProviderPlan` for deterministic serialization
 - Provider types are defined in `pkg/providers/backend/backend.go`:
 
 type ProviderPlan struct {
@@ -125,9 +126,14 @@ Note: Exit code 2 for "plan contains critical errors" is not yet implemented; al
 
 Each backend provider must implement:
 
-Plan(ctx context.Context, cfg *Config) (ProviderPlan, error)
+Plan(ctx context.Context, opts PlanOptions) (ProviderPlan, error)
 
-The provider must return deterministic, theoretical steps.
+Where `PlanOptions` contains:
+- `Config`: provider-specific configuration
+- `ImageTag`: expected image tag that would be built
+- `WorkDir`: working directory for the build
+
+The provider must return deterministic, theoretical steps without performing any actual operations.
 
 Example (Docker Compose Provider):
 
@@ -164,17 +170,25 @@ No actions executed.
 
 7.2 JSON Output
 
---json returns:
+--format=json returns:
 
 {
-  "releaseID": "rel-20250101-120000000",
+  "env": "staging",
+  "version": "v1.0.0",
   "phases": [...],
-  "providers": {
-    "docker-compose": {
-      "steps": [...]
+  "provider_plans": [
+    {
+      "provider": "generic",
+      "steps": [
+        { "name": "ResolveDockerfile", "description": "Would use Dockerfile: ./Dockerfile" },
+        { "name": "ResolveBuildContext", "description": "Would use build context: ." },
+        { "name": "BuildImage", "description": "Would build Docker image: myapp:v1.0.0" }
+      ]
     }
-  }
+  ]
 }
+
+Note: Provider plans are exposed as a sorted slice (not a map) for deterministic JSON output. The slice is ordered by provider ID (lexicographically), ensuring consistent serialization across runs. Text and JSON formats share the same ordering semantics.
 
 
 ⸻
@@ -195,7 +209,7 @@ A plan is Invalid if:
 	•	Compose/env/provider files fail parsing
 	•	Required fields are missing
 
-Exit code 2 should be used when the plan is structurally valid but contains errors (similar to Terraform “plan failed”).
+**Note**: Exit code 2 for "plan contains critical errors" is not yet implemented in v1. All errors currently exit with code 1. This is a planned enhancement for future versions.
 
 ⸻
 
@@ -223,8 +237,8 @@ Golden files MUST be timestamp-free.
 10. Implementation Roadmap
 
 Phase 1 — Core API
-	•	Add ExecutionPlan types
-	•	Create new plan package
+	•	Reuse existing core.Plan structure
+	•	Store provider plans in plan.Metadata["provider_plans"]
 	•	Add helpers for phase introspection
 
 Phase 2 — CLI Command
