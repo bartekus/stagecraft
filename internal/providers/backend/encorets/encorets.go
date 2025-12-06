@@ -397,15 +397,6 @@ func (p *EncoreTsProvider) Plan(ctx context.Context, opts backend.PlanOptions) (
 		return backend.ProviderPlan{}, fmt.Errorf("parsing encore-ts provider config: %w", err)
 	}
 
-	// Resolve workdir
-	workDir := cfg.Build.WorkDir
-	if workDir == "" {
-		workDir = opts.WorkDir
-	}
-	if workDir == "" {
-		workDir = "."
-	}
-
 	// Resolve image reference (same logic as BuildDocker)
 	imageRef := opts.ImageTag
 	if !strings.Contains(opts.ImageTag, "/") {
