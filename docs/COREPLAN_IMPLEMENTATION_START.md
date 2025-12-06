@@ -1,34 +1,3 @@
-⸻
-
-1. Sanity check: are we really ready?
-
-From the log + docs you pasted:
-• spec/commands/plan.md – ✅ fully written, with:
-• Purpose, scope
-• Flags
-• Behaviour (workflow, filters, ordering)
-• Output formats (text/json)
-• Exit codes & determinism requirements
-• spec/features.yaml – ✅ CLI_PLAN has:
-• status: todo
-• depends_on: [CORE_PLAN, CORE_CONFIG, CLI_DEPLOY, CLI_BUILD]
-• docs/CLI_PLAN_ANALYSIS.md – ✅:
-• Confirms CORE_PLAN and version resolution exist and are used by deploy/build
-• Confirms patterns and helpers you’ll reuse
-• docs/CLI_PLAN_IMPLEMENTATION_OUTLINE.md – ✅:
-• Has concrete skeletons for:
-• NewPlanCommand
-• runPlan
-• applyFilters
-• renderPlan*
-• Has test strategy and golden-file layout
-
-So from a Stagecraft / Agent.md perspective:
-• Spec: ✅ done
-• Analysis: ✅ done
-• Implementation outline: ✅ done
-
-The next step per your own workflow is tests → implementation → docs touch-ups → mark feature done.
 
 ⸻
 
