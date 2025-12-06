@@ -37,7 +37,7 @@ This feature parallels tools like Terraform’s plan or Ansible’s check mode, 
 	•	Command: stagecraft plan
 	•	Phase graph construction (same as deploy, but without executing phases)
 	•	Provider-driven planning hooks
-(e.g., backend provider may expose PlanSteps() describing expected actions)
+(e.g., backend provider Plan() returns ProviderPlan describing expected actions)
 	•	Core plan struct generation
 	•	Rendering:
 	•	Human-readable ANSI output
