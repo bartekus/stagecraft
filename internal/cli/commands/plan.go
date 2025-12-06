@@ -15,9 +15,11 @@ See https://www.gnu.org/licenses/ for license details.
 package commands
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"sort"
 	"strings"
 
@@ -26,6 +28,7 @@ import (
 	"stagecraft/internal/core"
 	"stagecraft/pkg/config"
 	"stagecraft/pkg/logging"
+	backendproviders "stagecraft/pkg/providers/backend"
 )
 
 // Feature: CLI_PLAN
@@ -115,13 +118,70 @@ func runPlan(cmd *cobra.Command, args []string) error {
 	}
 	plan.Metadata["version"] = version
 
-	// 11. Apply filters
+	// 11. Get provider plans if backend is configured
+	providerPlans := make(map[string]backendproviders.ProviderPlan)
+	if cfg.Backend != nil {
+		ctx := cmd.Context()
+		if ctx == nil {
+			ctx = context.Background()
+		}
+
+		// Get backend provider
+		providerID := cfg.Backend.Provider
+		provider, err := backendproviders.Get(providerID)
+		if err != nil {
+			// Log warning but don't fail - plan can still be generated without provider plan
+			logger.Debug("Could not get backend provider for planning",
+				logging.NewField("provider", providerID),
+				logging.NewField("error", err.Error()),
+			)
+		} else {
+			// Get provider config
+			providerCfg, err := cfg.Backend.GetProviderConfig()
+			if err != nil {
+				logger.Debug("Could not get provider config for planning",
+					logging.NewField("error", err.Error()),
+				)
+			} else {
+				// Construct image tag (same logic as deploy)
+				imageTag := fmt.Sprintf("%s:%s", cfg.Project.Name, version)
+
+				// Get workdir
+				workdir, err := os.Getwd()
+				if err != nil {
+					workdir = "."
+				}
+
+				// Call provider Plan()
+				planOpts := backendproviders.PlanOptions{
+					Config:   providerCfg,
+					ImageTag: imageTag,
+					WorkDir:  workdir,
+				}
+
+				providerPlan, err := provider.Plan(ctx, planOpts)
+				if err != nil {
+					logger.Debug("Provider plan generation failed",
+						logging.NewField("provider", providerID),
+						logging.NewField("error", err.Error()),
+					)
+				} else {
+					providerPlans[providerID] = providerPlan
+				}
+			}
+		}
+	}
+
+	// Store provider plans in metadata
+	plan.Metadata["provider_plans"] = providerPlans
+
+	// 12. Apply filters
 	filteredPlan, err := applyFilters(plan, services, nil, nil, nil) // roles, hosts, phases stubbed for v1
 	if err != nil {
 		return fmt.Errorf("applying filters: %w", err)
 	}
 
-	// 12. Render output
+	// 13. Render output
 	opts := PlanRenderOptions{
 		Format:  formatFlag,
 		Verbose: verboseFlag,
@@ -344,6 +404,31 @@ func renderPlanText(out io.Writer, plan *core.Plan, env, version string, opts Pl
 		}
 	}
 
+	// Render provider plans if available
+	if plan.Metadata != nil {
+		if providerPlansRaw, ok := plan.Metadata["provider_plans"]; ok {
+			if providerPlans, ok := providerPlansRaw.(map[string]backendproviders.ProviderPlan); ok && len(providerPlans) > 0 {
+				_, _ = fmt.Fprintf(out, "\nPROVIDER PLANS:\n")
+
+				// Sort provider IDs for deterministic output
+				providerIDs := make([]string, 0, len(providerPlans))
+				for id := range providerPlans {
+					providerIDs = append(providerIDs, id)
+				}
+				sort.Strings(providerIDs)
+
+				for _, providerID := range providerIDs {
+					providerPlan := providerPlans[providerID]
+					_, _ = fmt.Fprintf(out, "\nProvider: %s\n", providerID)
+					for j, step := range providerPlan.Steps {
+						_, _ = fmt.Fprintf(out, "  %d. %s\n", j+1, step.Name)
+						_, _ = fmt.Fprintf(out, "     - %s\n", step.Description)
+					}
+				}
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -397,6 +482,39 @@ func renderPlanJSON(out io.Writer, plan *core.Plan, env, version string, opts Pl
 		jsonPlan.Phases = append(jsonPlan.Phases, phase)
 	}
 
+	// Add provider plans if available
+	if plan.Metadata != nil {
+		if providerPlansRaw, ok := plan.Metadata["provider_plans"]; ok {
+			if providerPlans, ok := providerPlansRaw.(map[string]backendproviders.ProviderPlan); ok && len(providerPlans) > 0 {
+				jsonPlan.ProviderPlans = make(map[string]jsonProviderPlan)
+
+				// Sort provider IDs for deterministic output
+				providerIDs := make([]string, 0, len(providerPlans))
+				for id := range providerPlans {
+					providerIDs = append(providerIDs, id)
+				}
+				sort.Strings(providerIDs)
+
+				for _, providerID := range providerIDs {
+					providerPlan := providerPlans[providerID]
+					jsonProviderPlan := jsonProviderPlan{
+						Provider: providerPlan.Provider,
+						Steps:    make([]jsonProviderStep, len(providerPlan.Steps)),
+					}
+
+					for i, step := range providerPlan.Steps {
+						jsonProviderPlan.Steps[i] = jsonProviderStep{
+							Name:        step.Name,
+							Description: step.Description,
+						}
+					}
+
+					jsonPlan.ProviderPlans[providerID] = jsonProviderPlan
+				}
+			}
+		}
+	}
+
 	// Marshal to JSON with indentation
 	encoder := json.NewEncoder(out)
 	encoder.SetIndent("", "  ")
@@ -405,9 +523,10 @@ func renderPlanJSON(out io.Writer, plan *core.Plan, env, version string, opts Pl
 
 // jsonPlan is the JSON representation of a plan.
 type jsonPlan struct {
-	Env     string      `json:"env"`
-	Version string      `json:"version"`
-	Phases  []jsonPhase `json:"phases"`
+	Env           string                      `json:"env"`
+	Version       string                      `json:"version"`
+	Phases        []jsonPhase                 `json:"phases"`
+	ProviderPlans map[string]jsonProviderPlan `json:"provider_plans,omitempty"`
 }
 
 // jsonPhase is the JSON representation of a phase.
@@ -419,6 +538,18 @@ type jsonPhase struct {
 	Description string                 `json:"description"`
 	DependsOn   []string               `json:"depends_on"`
 	Metadata    map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// jsonProviderPlan is the JSON representation of a provider plan.
+type jsonProviderPlan struct {
+	Provider string             `json:"provider"`
+	Steps    []jsonProviderStep `json:"steps"`
+}
+
+// jsonProviderStep is the JSON representation of a provider step.
+type jsonProviderStep struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 // getOperationID generates a deterministic ID for an operation.

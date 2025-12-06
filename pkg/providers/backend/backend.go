@@ -46,6 +46,38 @@ type BuildDockerOptions struct {
 	WorkDir string
 }
 
+// PlanOptions contains options for generating a deployment plan.
+type PlanOptions struct {
+	// Config is the provider-specific configuration decoded from
+	// backend.providers[providerID] in stagecraft.yml.
+	// The provider implementation is responsible for unmarshaling this.
+	Config any
+
+	// ImageTag is the expected image tag that would be built
+	ImageTag string
+
+	// WorkDir is the working directory for the build
+	WorkDir string
+}
+
+// ProviderStep represents a single step in a provider's plan.
+type ProviderStep struct {
+	// Name is a short identifier for the step (e.g., "BuildImages", "UpServices")
+	Name string
+
+	// Description is a human-readable description of what this step would do
+	Description string
+}
+
+// ProviderPlan represents the plan from a backend provider.
+type ProviderPlan struct {
+	// Provider is the provider ID
+	Provider string
+
+	// Steps are the steps that would be executed
+	Steps []ProviderStep
+}
+
 // BackendProvider is the interface that all backend providers must implement.
 //
 //nolint:revive // BackendProvider is the preferred name for clarity
@@ -58,6 +90,10 @@ type BackendProvider interface {
 
 	// BuildDocker builds a Docker image for the backend.
 	BuildDocker(ctx context.Context, opts BuildDockerOptions) (string, error)
+
+	// Plan generates a deterministic, side-effect-free plan of what BuildDocker would do.
+	// This method must not perform any actual builds or external operations.
+	Plan(ctx context.Context, opts PlanOptions) (ProviderPlan, error)
 }
 
 // ProviderMetadata contains metadata about a provider.

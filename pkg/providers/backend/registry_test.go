@@ -47,6 +47,13 @@ func (m *mockProvider) BuildDocker(ctx context.Context, opts BuildDockerOptions)
 	return "", nil
 }
 
+func (m *mockProvider) Plan(ctx context.Context, opts PlanOptions) (ProviderPlan, error) {
+	return ProviderPlan{
+		Provider: m.id,
+		Steps:    []ProviderStep{},
+	}, nil
+}
+
 func TestRegistry_Register(t *testing.T) {
 	reg := NewRegistry()
 
