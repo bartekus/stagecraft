@@ -8,7 +8,8 @@ Deterministic Release Planning for Stagecraft
 
 Feature ID: CLI_PLAN
 Command: stagecraft plan
-Goal: Provide a deterministic, side-effect-free computation of what would happen on a deployment or rollback.
+Goal: Provide a deterministic, side-effect-free computation of what would happen on a deployment.
+Note: Rollback planning is not yet implemented; this command currently focuses on deployment plans.
 Output: A fully ordered, validated, provider-aware execution plan including phases, resources, and backend steps.
 
 This feature parallels tools like Terraform’s plan or Ansible’s check mode, giving users and CI the ability to inspect all derived behavior before executing a real deployment.
@@ -60,24 +61,13 @@ This feature parallels tools like Terraform’s plan or Ansible’s check mode, 
 
 4. Architecture
 
-4.1 Proposed New Core Type
+4.1 Implementation Approach
 
-Introduced in internal/core/plan/plan.go:
+The implementation reuses the existing `core.Plan` structure and extends it with provider plans stored in metadata:
 
-type ExecutionPlan struct {
-    ReleaseID     string
-    Phases        []PlannedPhase
-    ProviderPlans map[string]ProviderPlan
-}
-
-type PlannedPhase struct {
-    Name        string
-    Description string
-    Skipped     bool
-    Provider    string // optional
-    Inputs      any    // provider-defined
-    Outputs     any    // provider-defined expected outputs
-}
+- `core.Plan` is used as-is (no new ExecutionPlan type)
+- Provider plans are stored in `plan.Metadata["provider_plans"]` as `map[string]backend.ProviderPlan`
+- Provider types are defined in `pkg/providers/backend/backend.go`:
 
 type ProviderPlan struct {
     Provider string
@@ -113,18 +103,18 @@ stagecraft plan [flags]
 5.2 Flags
 
 Flag	Default	Description
---json	false	Output raw JSON plan for CI
---provider	auto-detect	Override provider resolution
---workdir	“.”	Override working directory
---env	“”	Override environment name
---verbose	false	Show expanded provider details
+--format	"text"	Output format: "text" or "json"
+--env	""	Required: Target environment name
+--version	"unknown"	Version to plan for (no git shell-out)
+--services	""	Comma-separated list of services to filter
+--verbose	false	Reserved for future verbose output
 
 5.3 Exit Codes
 
 Code	Meaning
 0	valid plan generated
-1	invalid config / provider failure
-2	plan contains critical errors
+1	invalid config / provider failure / planning error
+Note: Exit code 2 for "plan contains critical errors" is not yet implemented; all errors currently exit with code 1.
 
 
 ⸻

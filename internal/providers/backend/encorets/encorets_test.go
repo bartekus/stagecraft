@@ -1213,3 +1213,127 @@ func TestEncoreTsProvider_CheckEncoreAvailable(t *testing.T) {
 		t.Errorf("ProviderError.Category = %q, want %q", pe.Category, ErrProviderNotAvailable)
 	}
 }
+
+func TestEncoreTsProvider_Plan(t *testing.T) {
+	p := &EncoreTsProvider{}
+
+	tests := []struct {
+		name    string
+		config  any
+		opts    backend.PlanOptions
+		wantErr bool
+		check   func(t *testing.T, plan backend.ProviderPlan)
+	}{
+		{
+			name: "basic plan with default image name",
+			config: map[string]any{
+				"build": map[string]any{},
+			},
+			opts: backend.PlanOptions{
+				ImageTag: "v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: false,
+			check: func(t *testing.T, plan backend.ProviderPlan) {
+				if plan.Provider != "encore-ts" {
+					t.Errorf("Provider = %q, want %q", plan.Provider, "encore-ts")
+				}
+				if len(plan.Steps) != 3 {
+					t.Errorf("Steps length = %d, want 3", len(plan.Steps))
+				}
+				if plan.Steps[0].Name != "CheckEncoreAvailable" {
+					t.Errorf("Steps[0].Name = %q, want %q", plan.Steps[0].Name, "CheckEncoreAvailable")
+				}
+				if plan.Steps[1].Name != "ResolveImageReference" {
+					t.Errorf("Steps[1].Name = %q, want %q", plan.Steps[1].Name, "ResolveImageReference")
+				}
+				if plan.Steps[2].Name != "BuildDocker" {
+					t.Errorf("Steps[2].Name = %q, want %q", plan.Steps[2].Name, "BuildDocker")
+				}
+				if !strings.Contains(plan.Steps[1].Description, "api:v1.0.0") {
+					t.Errorf("Steps[1].Description should contain resolved image, got %q", plan.Steps[1].Description)
+				}
+			},
+		},
+		{
+			name: "plan with custom image name",
+			config: map[string]any{
+				"build": map[string]any{
+					"image_name": "my-api",
+				},
+			},
+			opts: backend.PlanOptions{
+				ImageTag: "v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: false,
+			check: func(t *testing.T, plan backend.ProviderPlan) {
+				if !strings.Contains(plan.Steps[1].Description, "my-api:v1.0.0") {
+					t.Errorf("Steps[1].Description should contain custom image name, got %q", plan.Steps[1].Description)
+				}
+			},
+		},
+		{
+			name: "plan with docker tag suffix",
+			config: map[string]any{
+				"build": map[string]any{
+					"image_name":        "my-api",
+					"docker_tag_suffix": "-encore",
+				},
+			},
+			opts: backend.PlanOptions{
+				ImageTag: "v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: false,
+			check: func(t *testing.T, plan backend.ProviderPlan) {
+				if !strings.Contains(plan.Steps[1].Description, "my-api:v1.0.0-encore") {
+					t.Errorf("Steps[1].Description should contain suffix, got %q", plan.Steps[1].Description)
+				}
+			},
+		},
+		{
+			name: "plan with full image reference",
+			config: map[string]any{
+				"build": map[string]any{},
+			},
+			opts: backend.PlanOptions{
+				ImageTag: "ghcr.io/org/app:v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: false,
+			check: func(t *testing.T, plan backend.ProviderPlan) {
+				if !strings.Contains(plan.Steps[1].Description, "ghcr.io/org/app:v1.0.0") {
+					t.Errorf("Steps[1].Description should contain full image reference, got %q", plan.Steps[1].Description)
+				}
+			},
+		},
+		{
+			name:   "plan with invalid config",
+			config: "not a map",
+			opts: backend.PlanOptions{
+				ImageTag: "v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.opts.Config = tt.config
+
+			ctx := context.Background()
+			plan, err := p.Plan(ctx, tt.opts)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Plan() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr && tt.check != nil {
+				tt.check(t, plan)
+			}
+		})
+	}
+}

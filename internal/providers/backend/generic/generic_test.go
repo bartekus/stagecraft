@@ -19,6 +19,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"stagecraft/pkg/providers/backend"
@@ -309,6 +310,116 @@ func TestGenericProvider_BuildDocker_ContextResolution(t *testing.T) {
 			// Error is expected, but we verify the logic doesn't panic
 			if err != nil && err.Error() == "" {
 				t.Error("expected error message, got empty")
+			}
+		})
+	}
+}
+
+func TestGenericProvider_Plan(t *testing.T) {
+	p := &GenericProvider{}
+
+	tests := []struct {
+		name    string
+		config  any
+		opts    backend.PlanOptions
+		wantErr bool
+		check   func(t *testing.T, plan backend.ProviderPlan)
+	}{
+		{
+			name: "basic plan with all config",
+			config: map[string]any{
+				"build": map[string]any{
+					"dockerfile": "./backend/Dockerfile",
+					"context":    "./backend",
+				},
+			},
+			opts: backend.PlanOptions{
+				ImageTag: "myapp:v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: false,
+			check: func(t *testing.T, plan backend.ProviderPlan) {
+				if plan.Provider != "generic" {
+					t.Errorf("Provider = %q, want %q", plan.Provider, "generic")
+				}
+				if len(plan.Steps) != 3 {
+					t.Errorf("Steps length = %d, want 3", len(plan.Steps))
+				}
+				if plan.Steps[0].Name != "ResolveDockerfile" {
+					t.Errorf("Steps[0].Name = %q, want %q", plan.Steps[0].Name, "ResolveDockerfile")
+				}
+				if plan.Steps[1].Name != "ResolveBuildContext" {
+					t.Errorf("Steps[1].Name = %q, want %q", plan.Steps[1].Name, "ResolveBuildContext")
+				}
+				if plan.Steps[2].Name != "BuildImage" {
+					t.Errorf("Steps[2].Name = %q, want %q", plan.Steps[2].Name, "BuildImage")
+				}
+				if !strings.Contains(plan.Steps[2].Description, "myapp:v1.0.0") {
+					t.Errorf("Steps[2].Description should contain image tag, got %q", plan.Steps[2].Description)
+				}
+			},
+		},
+		{
+			name: "plan with default dockerfile",
+			config: map[string]any{
+				"build": map[string]any{
+					"context": "./backend",
+				},
+			},
+			opts: backend.PlanOptions{
+				ImageTag: "myapp:v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: false,
+			check: func(t *testing.T, plan backend.ProviderPlan) {
+				if !strings.Contains(plan.Steps[0].Description, "Dockerfile") {
+					t.Errorf("Steps[0].Description should mention Dockerfile, got %q", plan.Steps[0].Description)
+				}
+			},
+		},
+		{
+			name: "plan with default context",
+			config: map[string]any{
+				"build": map[string]any{
+					"dockerfile": "./Dockerfile",
+				},
+			},
+			opts: backend.PlanOptions{
+				ImageTag: "myapp:v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: false,
+			check: func(t *testing.T, plan backend.ProviderPlan) {
+				if !strings.Contains(plan.Steps[1].Description, "/tmp/test") {
+					t.Errorf("Steps[1].Description should contain workdir, got %q", plan.Steps[1].Description)
+				}
+			},
+		},
+		{
+			name:   "plan with invalid config",
+			config: "not a map",
+			opts: backend.PlanOptions{
+				ImageTag: "myapp:v1.0.0",
+				WorkDir:  "/tmp/test",
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.opts.Config = tt.config
+
+			ctx := context.Background()
+			plan, err := p.Plan(ctx, tt.opts)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Plan() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr && tt.check != nil {
+				tt.check(t, plan)
 			}
 		})
 	}
