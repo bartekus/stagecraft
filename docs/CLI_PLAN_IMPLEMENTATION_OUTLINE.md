@@ -209,7 +209,7 @@ A plan is Invalid if:
 	•	Compose/env/provider files fail parsing
 	•	Required fields are missing
 
-Exit code 2 should be used when the plan is structurally valid but contains errors (similar to Terraform “plan failed”).
+**Note**: Exit code 2 for "plan contains critical errors" is not yet implemented in v1. All errors currently exit with code 1. This is a planned enhancement for future versions.
 
 ⸻
 
