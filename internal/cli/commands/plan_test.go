@@ -430,3 +430,71 @@ environments:
 		}
 	}
 }
+
+func TestPlanCommand_WithProviderPlan(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+
+	configContent := `project:
+  name: test-app
+backend:
+  provider: generic
+  providers:
+    generic:
+      build:
+        dockerfile: "./Dockerfile"
+        context: "."
+environments:
+  staging:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+	originalDir, _ := os.Getwd()
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
+
+	root := newTestRootCommand()
+	root.AddCommand(NewPlanCommand())
+
+	// Test text output
+	output, err := executeCommandForGolden(root, "plan", "--env", "staging")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Verify provider plans appear in text output
+	if !strings.Contains(output, "PROVIDER PLANS:") {
+		t.Errorf("output should contain 'PROVIDER PLANS:', got:\n%s", output)
+	}
+	if !strings.Contains(output, "Provider: generic") {
+		t.Errorf("output should contain 'Provider: generic', got:\n%s", output)
+	}
+	if !strings.Contains(output, "ResolveDockerfile") {
+		t.Errorf("output should contain provider step 'ResolveDockerfile', got:\n%s", output)
+	}
+
+	// Test JSON output
+	jsonOutput, err := executeCommandForGolden(root, "plan", "--env", "staging", "--format", "json")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// Verify provider plans appear in JSON output
+	if !strings.Contains(jsonOutput, `"provider_plans"`) {
+		t.Errorf("JSON output should contain 'provider_plans', got:\n%s", jsonOutput)
+	}
+	if !strings.Contains(jsonOutput, `"generic"`) {
+		t.Errorf("JSON output should contain provider 'generic', got:\n%s", jsonOutput)
+	}
+	if !strings.Contains(jsonOutput, `"ResolveDockerfile"`) {
+		t.Errorf("JSON output should contain step 'ResolveDockerfile', got:\n%s", jsonOutput)
+	}
+}
