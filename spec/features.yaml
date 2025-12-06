@@ -319,7 +319,7 @@ features:
 
   - id: CLI_PLAN
     title: "Plan command (dry-run)"
-    status: todo
+    status: done
     spec: "commands/plan.md"
     owner: bart
     tests:

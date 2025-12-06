@@ -2,7 +2,7 @@
 
 - **Feature ID**: `CLI_PLAN`
 - **Domain**: `commands`
-- **Status**: `todo`
+- **Status**: `done`
 - **Related features**:
   - `CORE_PLAN` (done)
   - `CORE_CONFIG` (done)
