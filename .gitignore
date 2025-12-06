@@ -39,3 +39,4 @@ go.work.sum
 
 # test created
 internal/providers/backend/generic/test_script.sh
+.stagecraft/

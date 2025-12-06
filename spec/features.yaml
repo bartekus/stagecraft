@@ -324,6 +324,11 @@ features:
     owner: bart
     tests:
       - "internal/cli/commands/plan_test.go"
+    depends_on:
+      - "CORE_PLAN"
+      - "CORE_CONFIG"
+      - "CLI_DEPLOY"
+      - "CLI_BUILD"
 
   - id: CLI_DEPLOY
     title: "Deploy command"
