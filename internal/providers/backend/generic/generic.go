@@ -141,6 +141,47 @@ func (p *GenericProvider) BuildDocker(ctx context.Context, opts backend.BuildDoc
 	return opts.ImageTag, nil
 }
 
+// Plan generates a deterministic plan of what BuildDocker would do.
+func (p *GenericProvider) Plan(ctx context.Context, opts backend.PlanOptions) (backend.ProviderPlan, error) {
+	cfg, err := p.parseConfig(opts.Config)
+	if err != nil {
+		return backend.ProviderPlan{}, fmt.Errorf("parsing generic provider config: %w", err)
+	}
+
+	dockerfile := cfg.Build.Dockerfile
+	if dockerfile == "" {
+		dockerfile = "Dockerfile"
+	}
+
+	buildContext := cfg.Build.Context
+	if buildContext == "" {
+		buildContext = opts.WorkDir
+	}
+	if buildContext == "" {
+		buildContext = "."
+	}
+
+	steps := []backend.ProviderStep{
+		{
+			Name:        "ResolveDockerfile",
+			Description: fmt.Sprintf("Would use Dockerfile: %s", dockerfile),
+		},
+		{
+			Name:        "ResolveBuildContext",
+			Description: fmt.Sprintf("Would use build context: %s", buildContext),
+		},
+		{
+			Name:        "BuildImage",
+			Description: fmt.Sprintf("Would build Docker image: %s", opts.ImageTag),
+		},
+	}
+
+	return backend.ProviderPlan{
+		Provider: p.ID(),
+		Steps:    steps,
+	}, nil
+}
+
 // parseConfig unmarshals the provider config.
 func (p *GenericProvider) parseConfig(cfg any) (*Config, error) {
 	// Convert to YAML bytes and unmarshal

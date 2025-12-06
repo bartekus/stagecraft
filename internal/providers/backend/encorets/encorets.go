@@ -390,6 +390,63 @@ func (p *EncoreTsProvider) BuildDocker(ctx context.Context, opts backend.BuildDo
 	return imageRef, nil
 }
 
+// Plan generates a deterministic plan of what BuildDocker would do.
+func (p *EncoreTsProvider) Plan(ctx context.Context, opts backend.PlanOptions) (backend.ProviderPlan, error) {
+	cfg, err := p.parseConfig(opts.Config)
+	if err != nil {
+		return backend.ProviderPlan{}, fmt.Errorf("parsing encore-ts provider config: %w", err)
+	}
+
+	// Resolve workdir
+	workDir := cfg.Build.WorkDir
+	if workDir == "" {
+		workDir = opts.WorkDir
+	}
+	if workDir == "" {
+		workDir = "."
+	}
+
+	// Resolve image reference (same logic as BuildDocker)
+	imageRef := opts.ImageTag
+	if !strings.Contains(opts.ImageTag, "/") {
+		imageName := cfg.Build.ImageName
+		if imageName == "" {
+			imageName = "api"
+		}
+
+		tag := opts.ImageTag
+		if cfg.Build.DockerTagSuffix != "" {
+			tag += cfg.Build.DockerTagSuffix
+		}
+		imageRef = fmt.Sprintf("%s:%s", imageName, tag)
+	} else if cfg.Build.DockerTagSuffix != "" {
+		parts := strings.SplitN(imageRef, ":", 2)
+		if len(parts) == 2 {
+			imageRef = fmt.Sprintf("%s:%s%s", parts[0], parts[1], cfg.Build.DockerTagSuffix)
+		}
+	}
+
+	steps := []backend.ProviderStep{
+		{
+			Name:        "CheckEncoreAvailable",
+			Description: "Would verify encore CLI is available",
+		},
+		{
+			Name:        "ResolveImageReference",
+			Description: fmt.Sprintf("Would build image: %s", imageRef),
+		},
+		{
+			Name:        "BuildDocker",
+			Description: fmt.Sprintf("Would run: encore build docker %s", imageRef),
+		},
+	}
+
+	return backend.ProviderPlan{
+		Provider: p.ID(),
+		Steps:    steps,
+	}, nil
+}
+
 // parseConfig unmarshals and validates the provider config.
 func (p *EncoreTsProvider) parseConfig(cfg any) (*Config, error) {
 	data, err := yaml.Marshal(cfg)
