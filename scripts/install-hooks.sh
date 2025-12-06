@@ -37,6 +37,15 @@ else
     echo "Warning: $HOOKS_SOURCE/pre-commit not found"
 fi
 
+# Install commit-msg hook
+if [ -f "$HOOKS_SOURCE/commit-msg" ]; then
+    ln -sf "../../$HOOKS_SOURCE/commit-msg" "$HOOKS_DIR/commit-msg"
+    chmod +x "$HOOKS_DIR/commit-msg"
+    echo "✓ Installed commit-msg hook"
+else
+    echo "Warning: $HOOKS_SOURCE/commit-msg not found"
+fi
+
 echo "Git hooks installed successfully!"
 echo ""
 echo "To test, try making a formatting error and committing:"

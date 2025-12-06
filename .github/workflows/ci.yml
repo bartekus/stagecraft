@@ -133,26 +133,95 @@ jobs:
             echo 'spec/features.yaml not found, skipping YAML validation'
           fi
 
-      - name: Run spec validation script (if present)
+      - name: Run spec validation script
         run: |
-          # This will be enhanced by the validation script
           if [ -f "scripts/validate-spec.sh" ]; then
             bash scripts/validate-spec.sh
           else
             echo "Spec validation script not found, skipping detailed checks"
+            exit 1
           fi
 
-      - name: Check for missing spec files
+      - name: Validate feature integrity
         run: |
-          # Basic check: ensure referenced spec files exist
-          while IFS= read -r line; do
-            if [[ $line =~ spec:\s*\"([^\"]+)\" ]]; then
-              SPEC_FILE="${BASH_REMATCH[1]}"
-              if [ ! -f "spec/$SPEC_FILE" ] && [ ! -f "$SPEC_FILE" ]; then
-                echo "WARNING: Referenced spec file not found: $SPEC_FILE"
+          if [ -f "scripts/validate-feature-integrity.sh" ]; then
+            bash scripts/validate-feature-integrity.sh
+          else
+            echo "Feature integrity validation script not found"
+            exit 1
+          fi
+
+      - name: Check spec synchronization
+        run: |
+          if [ -f "scripts/spec-sync-check.sh" ]; then
+            bash scripts/spec-sync-check.sh
+          else
+            echo "Spec sync check script not found"
+            exit 1
+          fi
+
+      - name: Check header comments
+        run: |
+          if [ -f "scripts/check-header-comments.sh" ]; then
+            bash scripts/check-header-comments.sh
+          else
+            echo "Header comment check script not found"
+            exit 1
+          fi
+
+      - name: Check required tests
+        run: |
+          if [ -f "scripts/check-required-tests.sh" ]; then
+            bash scripts/check-required-tests.sh
+          else
+            echo "Required tests check script not found"
+            exit 1
+          fi
+
+  commit-message:
+    name: Commit Message Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate commit messages
+        run: |
+          # Check all commits in the PR
+          if [ "${{ github.event.pull_request.base.sha }}" != "" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+            
+            # Get list of commits
+            COMMITS=$(git log --format="%H" $BASE_SHA..$HEAD_SHA)
+            
+            ERRORS=0
+            for commit in $COMMITS; do
+              COMMIT_MSG=$(git log --format="%B" -n 1 $commit)
+              SUBJECT=$(echo "$COMMIT_MSG" | head -n 1)
+              
+              # Check format
+              if ! echo "$SUBJECT" | grep -qE '^(feat|fix|refactor|docs|test|ci|chore)\([A-Z][A-Z0-9_]+\): .+'; then
+                echo "ERROR: Invalid commit message format in commit $commit"
+                echo "  Subject: $SUBJECT"
+                echo "  Expected: <type>(<FEATURE_ID>): <summary>"
+                ERRORS=$((ERRORS + 1))
               fi
+            done
+            
+            if [ $ERRORS -gt 0 ]; then
+              echo "Found $ERRORS commit(s) with invalid message format"
+              exit 1
             fi
-          done < <(grep -r "Spec:" --include="*.go" . || true)
+            
+            echo "✓ All commit messages are valid"
+          else
+            echo "Skipping commit message validation (not a PR)"
+          fi
 
   license:
     name: License Headers

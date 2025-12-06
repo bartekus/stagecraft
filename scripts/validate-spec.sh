@@ -117,6 +117,125 @@ for feature in data['features']:
         else:
             print(f"✓ Feature {feature_id}: test file exists: {test_file}")
 
+# Cross-checks: orphan specs, dangling features, domain-to-path mapping
+print("\n=== Cross-checks ===")
+
+# Find all spec files
+spec_files = set()
+for root, dirs, files in os.walk('spec'):
+    # Skip hidden directories
+    dirs[:] = [d for d in dirs if not d.startswith('.')]
+    for file in files:
+        if file.endswith('.md'):
+            full_path = os.path.join(root, file)
+            # Normalize path (remove spec/ prefix)
+            rel_path = os.path.relpath(full_path, 'spec')
+            spec_files.add(rel_path)
+
+# Check for orphan specs (spec exists with no feature entry)
+feature_spec_paths = set()
+for feature in data['features']:
+    spec_path = feature.get('spec', '')
+    if spec_path:
+        # Normalize path
+        normalized = spec_path.replace('spec/', '').replace('docs/', '')
+        feature_spec_paths.add(normalized)
+
+orphan_specs = spec_files - feature_spec_paths
+if orphan_specs:
+    for orphan in sorted(orphan_specs):
+        print(f"WARNING: Orphan spec file (no feature entry): spec/{orphan}")
+        warnings += 1
+
+# Check for dangling features (feature entry with no spec)
+dangling_features = []
+for feature in data['features']:
+    feature_id = feature.get('id', 'UNKNOWN')
+    spec_path = feature.get('spec', '')
+    if spec_path:
+        normalized = spec_path.replace('spec/', '').replace('docs/', '')
+        spec_full_paths = [
+            f"spec/{normalized}",
+            normalized,
+            f"docs/{normalized}"
+        ]
+        if not any(os.path.exists(p) for p in spec_full_paths):
+            if feature.get('status') in ['done', 'wip']:
+                print(f"ERROR: Dangling feature (spec missing): {feature_id} -> {spec_path}")
+                errors += 1
+            else:
+                print(f"WARNING: Dangling feature (spec missing): {feature_id} -> {spec_path}")
+                warnings += 1
+
+# Check domain-to-path mapping consistency
+for feature in data['features']:
+    feature_id = feature.get('id', 'UNKNOWN')
+    spec_path = feature.get('spec', '')
+    if not spec_path:
+        continue
+    
+    # Extract domain from feature ID prefix (CLI_, CORE_, PROVIDER_, etc.)
+    if feature_id.startswith('CLI_'):
+        expected_domain = 'commands'
+    elif feature_id.startswith('CORE_'):
+        expected_domain = 'core'
+    elif feature_id.startswith('PROVIDER_'):
+        # Provider features can be in providers/<type>/
+        expected_domain = 'providers'
+    else:
+        continue
+    
+    # Check if spec path matches expected domain
+    if expected_domain == 'commands' and 'commands/' not in spec_path:
+        print(f"WARNING: {feature_id}: CLI feature spec should be in commands/ domain, found: {spec_path}")
+        warnings += 1
+    elif expected_domain == 'core' and 'core/' not in spec_path:
+        print(f"WARNING: {feature_id}: CORE feature spec should be in core/ domain, found: {spec_path}")
+        warnings += 1
+    elif expected_domain == 'providers' and 'providers/' not in spec_path:
+        print(f"WARNING: {feature_id}: PROVIDER feature spec should be in providers/ domain, found: {spec_path}")
+        warnings += 1
+
+# Check for missing exit code definitions in command specs
+for feature in data['features']:
+    feature_id = feature.get('id', 'UNKNOWN')
+    spec_path = feature.get('spec', '')
+    status = feature.get('status', 'unknown')
+    
+    if not spec_path or status not in ['done', 'wip']:
+        continue
+    
+    # Check if it's a CLI command
+    if feature_id.startswith('CLI_'):
+        spec_full_paths = [
+            f"spec/{spec_path}",
+            spec_path,
+            f"docs/{spec_path}"
+        ]
+        spec_file = next((p for p in spec_full_paths if os.path.exists(p)), None)
+        
+        if spec_file:
+            try:
+                with open(spec_file, 'r') as f:
+                    spec_content = f.read()
+                
+                # Check for exit code section
+                if 'exit' in spec_content.lower() and 'code' in spec_content.lower():
+                    # Check for specific exit code definitions
+                    import re
+                    exit_code_patterns = [
+                        r'exit.*code.*0',
+                        r'exit.*code.*1',
+                        r'code.*0.*success',
+                        r'code.*1.*error'
+                    ]
+                    has_exit_codes = any(re.search(p, spec_content, re.IGNORECASE) for p in exit_code_patterns)
+                    if not has_exit_codes:
+                        print(f"WARNING: {feature_id}: CLI command spec should define exit codes")
+                        warnings += 1
+            except Exception:
+                pass
+
 sys.exit(0 if errors == 0 else 1)
 PYTHON_SCRIPT
 
