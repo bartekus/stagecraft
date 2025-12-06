@@ -31,6 +31,19 @@ Before doing anything, AI MUST:
   - If no Feature ID exists, STOP and ask
   - Feature ID is required before any branch operations
 
+0.1. **If creating a new feature (new command, provider behavior, config semantics):**
+  - AI MUST recommend running: `./scripts/new-feature.sh <FEATURE_ID> <DOMAIN> [feature-name]`
+  - This creates the complete feature skeleton:
+    - `docs/analysis/<FEATURE_ID>.md` (Analysis Brief)
+    - `docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md` (Implementation Outline)
+    - `spec/<domain>/<feature>.md` (Spec file)
+  - AI MUST follow the Feature Planning Protocol (see section 1.1) before any implementation
+  - After skeleton creation, AI MUST guide the user through filling in:
+    1. Analysis Brief (problem, motivation, success criteria)
+    2. Implementation Outline (v1 scope, data structures, testing plan)
+    3. Spec file (behavioral contract)
+  - Only after all three documents are complete and approved may implementation begin
+
 1. **Create or verify feature branch**
   - Ensure a clean working directory
   - Check current branch (see Git Branch Workflow below)
@@ -323,6 +336,134 @@ For CLI_INIT:
 
 ⸻
 
+## 1.1 Feature Planning Protocol
+
+Before any tests or code are written for a feature, AI MUST perform a three stage planning loop. This loop guarantees spec first, test first, deterministic, and provider safe development. It also ensures that all documentation and specifications remain aligned with the implementation.
+
+⸻
+
+### Stage 1. Feature Analysis Brief
+
+AI MUST check for and update:
+
+```
+docs/analysis/<FEATURE_ID>.md
+```
+
+This brief defines the problem and the intent of the feature. It MUST include:
+
+- Problem statement
+
+- Motivation for the feature
+
+- User roles and user stories
+
+- 5 to 7 v1 success criteria
+
+- Determinism and side effect constraints
+
+- Risks and architectural boundaries
+
+- Upstream dependencies
+
+If the brief is missing or incomplete, AI MUST create or refine it before continuing.
+
+⸻
+
+### Stage 2. Implementation Outline
+
+AI MUST create or update:
+
+```
+docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md
+```
+
+This outline describes the full v1 plan for the feature.
+
+It MUST include:
+
+- Feature summary and v1 scope
+
+- What is included, excluded, and reserved for the future
+
+- CLI or API contract (flags, exit codes, examples)
+
+- Data structures and JSON schemas
+
+- Determinism rules and side effect guarantees
+
+- Provider boundaries
+
+- Required tests (unit, integration, golden)
+
+- Completion criteria
+
+The Implementation Outline MUST match the Analysis Brief and MUST be approved before writing tests.
+
+⸻
+
+### Stage 3. Spec Alignment
+
+AI MUST create or update:
+
+```
+spec/<domain>/<feature>.md
+```
+
+The spec is the authoritative definition of the feature.
+
+It MUST match the Implementation Outline exactly for v1 and clearly mark all future extensions as unimplemented.
+
+The spec MUST define:
+
+- Behavior
+
+- Flag semantics
+
+- Exit codes
+
+- Data formats
+
+- Error conditions
+
+No implementation work may begin until the Spec and outline match line by line.
+
+⸻
+
+### Enforcement Rules
+
+1. AI MUST NOT write code before finishing Analysis Brief, Outline, and Spec alignment.
+
+2. If implementation requires a change to behavior, AI MUST:
+
+- Pause coding
+
+- Update Analysis Brief and Outline
+
+- Update Spec
+
+- Then resume tests and code
+
+3. All planned v1 behavior MUST be covered by tests.
+
+4. All features MUST complete the lifecycle defined in spec/features.yaml.
+
+⸻
+
+### Summary of Required Artifacts Per Feature
+
+| Stage | Required File | Purpose |
+|-------|---------------|---------|
+| Analysis | docs/analysis/<FEATURE_ID>.md | Defines why the feature exists |
+| Outline | docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md | Defines what v1 will deliver |
+| Spec | spec/<domain>/<feature>.md | Defines the contract the implementation must follow |
+| Tests | multiple | Validate v1 behavior |
+| Implementation | Go code | Implements the spec |
+
+AI MUST follow this protocol for every feature in Stagecraft.
+
+⸻
+
 ## 2. Feature ID Rules
 
 All meaningful changes must reference a Feature ID:
@@ -331,6 +472,48 @@ All meaningful changes must reference a Feature ID:
 // Feature: CLI_INIT
 // Spec: spec/commands/init.md
 ```
+
+### 2.1 Feature and Spec Header Comments
+
+All code files implementing a feature MUST include header comments linking to the Feature ID and spec:
+
+```go
+// Feature: <FEATURE_ID>
+// Spec: spec/<domain>/<feature>.md
+```
+
+**Enforcement:**
+
+- These comments MUST appear at the top of the file, after the license header
+- They MUST be present in the main implementation file(s) for the feature
+- They MUST be present in test files for the feature
+- The Spec path MUST match the entry in `spec/features.yaml`
+
+**Purpose:**
+
+- Guarantees traceability from code → spec
+- Enables automated validation of feature completeness
+- Makes feature boundaries explicit in code
+- Supports tooling for feature dependency analysis
+
+**Example:**
+
+```go
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// ... license header ...
+
+package commands
+
+// Feature: CLI_PLAN
+// Spec: spec/commands/plan.md
+
+// NewPlanCommand returns the `stagecraft plan` command.
+func NewPlanCommand() *cobra.Command {
+    // ...
+}
+```
+
+AI MUST add these comments when creating new feature implementations.
 
 ### Creating a Feature ID
 
