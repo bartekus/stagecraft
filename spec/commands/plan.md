@@ -77,10 +77,8 @@ stagecraft plan [flags]
 - `--version, -v <version>`
   - Optional
   - Version to plan for (for example Git SHA or tag)
-  - If omitted, uses the same default logic as deploy:
-    1. Check for `--version` flag
-    2. Try to get current Git SHA via `git rev-parse HEAD`
-    3. Fall back to `"unknown"` if Git is unavailable
+  - If omitted, CLI_PLAN MUST NOT shell out to git or any external command. In that case, it MUST use the string "unknown" as the version marker in output.
+  - Unlike `deploy` and `build`, the plan command does not call external commands (including git) to maintain its read-only, side-effect-free guarantee.
   - Used only to annotate the plan output; no state writes occur
 
 - `--services <svc1,svc2,...>`
@@ -172,7 +170,7 @@ stagecraft plan [flags]
 
 3. **Resolve version**
    - If `--version` provided, use it
-   - Else: use same resolution as deploy (see version resolution logic in `CLI_DEPLOY`)
+   - Else: use "unknown" (CLI_PLAN does NOT shell out to git or any external command)
    - No state write; purely used to annotate the plan
 
 4. **Generate plan (`CORE_PLAN`)**
