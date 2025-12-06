@@ -15,7 +15,6 @@ See https://www.gnu.org/licenses/ for license details.
 package commands
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -59,11 +58,6 @@ func NewPlanCommand() *cobra.Command {
 
 // runPlan executes the plan command.
 func runPlan(cmd *cobra.Command, args []string) error {
-	ctx := cmd.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
 	// 1. Resolve global flags
 	flags, err := ResolveFlags(cmd, nil)
 	if err != nil {
@@ -201,6 +195,7 @@ func applyFilters(plan *core.Plan, services, roles, hosts, phases []string) (*co
 }
 
 // operationTouchesServices checks if an operation touches any of the specified services.
+// Returns true if the operation has no service metadata (to preserve dependencies like migrations).
 func operationTouchesServices(op core.Operation, serviceSet map[string]bool) bool {
 	// Check metadata for service information
 	if services, ok := op.Metadata["services"].([]string); ok {
@@ -209,6 +204,8 @@ func operationTouchesServices(op core.Operation, serviceSet map[string]bool) boo
 				return true
 			}
 		}
+		// If services are specified but none match, return false
+		return false
 	}
 
 	// Check if services is stored as []interface{} (from JSON unmarshaling)
@@ -218,6 +215,8 @@ func operationTouchesServices(op core.Operation, serviceSet map[string]bool) boo
 				return true
 			}
 		}
+		// If services are specified but none match, return false
+		return false
 	}
 
 	// If no service info, include by default (preserves dependencies like migrations)
@@ -258,6 +257,8 @@ func renderPlan(out io.Writer, plan *core.Plan, env, version string, opts PlanRe
 
 // renderPlanText renders the plan in human-readable text format.
 func renderPlanText(out io.Writer, plan *core.Plan, env, version string, opts PlanRenderOptions, logger logging.Logger) error {
+	_ = opts.Verbose // Reserved for future verbose output enhancements
+	_ = logger       // Reserved for future logging enhancements
 	// Header
 	_, _ = fmt.Fprintf(out, "Environment: %s\n", env)
 	_, _ = fmt.Fprintf(out, "Version: %s\n", version)
@@ -348,6 +349,7 @@ func renderPlanText(out io.Writer, plan *core.Plan, env, version string, opts Pl
 
 // renderPlanJSON renders the plan in JSON format.
 func renderPlanJSON(out io.Writer, plan *core.Plan, env, version string, opts PlanRenderOptions) error {
+	_ = opts.Verbose // Reserved for future verbose output enhancements
 	// Build JSON structure
 	jsonPlan := jsonPlan{
 		Env:     env,
@@ -444,10 +446,11 @@ func getOperationID(op core.Operation, index int) string {
 func extractServicesFromOperation(op core.Operation) []string {
 	services := []string{}
 
-	if svcList, ok := op.Metadata["services"].([]string); ok {
-		services = svcList
-	} else if svcList, ok := op.Metadata["services"].([]interface{}); ok {
-		for _, svc := range svcList {
+	switch v := op.Metadata["services"].(type) {
+	case []string:
+		services = v
+	case []interface{}:
+		for _, svc := range v {
 			if svcStr, ok := svc.(string); ok {
 				services = append(services, svcStr)
 			}
@@ -473,10 +476,11 @@ func extractHostsFromPlan(ops []core.Operation) map[string]bool {
 func extractHostsFromOperation(op core.Operation) []string {
 	hosts := []string{}
 
-	if hostList, ok := op.Metadata["hosts"].([]string); ok {
-		hosts = hostList
-	} else if hostList, ok := op.Metadata["hosts"].([]interface{}); ok {
-		for _, host := range hostList {
+	switch v := op.Metadata["hosts"].(type) {
+	case []string:
+		hosts = v
+	case []interface{}:
+		for _, host := range v {
 			if hostStr, ok := host.(string); ok {
 				hosts = append(hosts, hostStr)
 			}
