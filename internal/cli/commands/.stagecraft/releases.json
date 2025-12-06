@@ -1,0 +1,19 @@
+{
+  "releases": [
+    {
+      "id": "rel-20251205-183717347",
+      "environment": "dev",
+      "version": "unknown",
+      "commit_sha": "",
+      "timestamp": "2025-12-05T18:37:17.347159-07:00",
+      "phases": {
+        "build": "failed",
+        "finalize": "pending",
+        "migrate_post": "pending",
+        "migrate_pre": "pending",
+        "push": "pending",
+        "rollout": "pending"
+      }
+    }
+  ]
+}

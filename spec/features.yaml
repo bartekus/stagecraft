@@ -311,7 +311,7 @@ features:
   # Phase 5: Build and Deploy
   - id: CLI_BUILD
     title: "stagecraft build command"
-    status: todo
+    status: done
     spec: "commands/build.md"
     owner: bart
     tests:
