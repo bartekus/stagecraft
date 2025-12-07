@@ -24,6 +24,8 @@ import (
 
 func main() {
 	root := flag.String("root", "spec", "root directory containing spec files")
+	featuresPath := flag.String("features", "spec/features.yaml", "path to features.yaml")
+	checkIntegrity := flag.Bool("check-integrity", false, "also validate features.yaml ↔ spec file integrity")
 	flag.Parse()
 
 	specs, err := specschema.LoadAllSpecs(*root)
@@ -38,6 +40,13 @@ func main() {
 
 	if err := specschema.ValidateAll(specs); err != nil {
 		log.Fatalf("spec validation failed: %v", err)
+	}
+
+	if *checkIntegrity {
+		if err := specschema.ValidateSpecIntegrity(*featuresPath, *root); err != nil {
+			log.Fatalf("spec integrity validation failed: %v", err)
+		}
+		fmt.Printf("✓ Spec integrity check passed\n")
 	}
 
 	fmt.Printf("✓ Validated %d spec file(s)\n", len(specs))

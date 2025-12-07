@@ -13,8 +13,11 @@ See https://www.gnu.org/licenses/ for license details.
 
 package features
 
+import "sort"
+
 // Impact returns all features that directly or transitively depend on the given feature ID.
 // This is the "impact analysis" - if feature ID changes, which features are affected?
+// Results are sorted lexicographically for deterministic output.
 func Impact(g *Graph, featureID string) []string {
 	if _, exists := g.Nodes[featureID]; !exists {
 		return nil
@@ -23,11 +26,12 @@ func Impact(g *Graph, featureID string) []string {
 	impacted := make(map[string]bool)
 	collectImpacted(g, featureID, impacted)
 
-	// Convert to slice
+	// Convert to slice and sort for deterministic output
 	result := make([]string, 0, len(impacted))
 	for id := range impacted {
 		result = append(result, id)
 	}
+	sort.Strings(result)
 
 	return result
 }

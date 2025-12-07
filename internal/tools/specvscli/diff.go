@@ -52,8 +52,32 @@ func CompareFlags(specFlags []specschema.CliFlag, cliFlags []cliintrospect.FlagI
 
 	// Check: spec declares flag that doesn't exist in CLI
 	for name, specFlag := range specFlagMap {
-		if _, exists := cliFlagMap[name]; !exists {
+		cliFlag, exists := cliFlagMap[name]
+		if !exists {
 			result.Errors = append(result.Errors, fmt.Sprintf("spec declares flag %q that does not exist in CLI", specFlag.Name))
+			continue
+		}
+
+		// Check type alignment (if spec specifies type)
+		if specFlag.Type != "" && cliFlag.Type != "" {
+			normalizedSpecType := normalizeType(specFlag.Type)
+			normalizedCLIType := normalizeType(cliFlag.Type)
+			if normalizedSpecType != normalizedCLIType {
+				result.Errors = append(result.Errors, fmt.Sprintf("flag %q type mismatch: spec has %q but CLI has %q", name, specFlag.Type, cliFlag.Type))
+			}
+		}
+
+		// Check default value alignment (if spec specifies default)
+		if specFlag.Default != "" && cliFlag.Default != "" {
+			if specFlag.Default != cliFlag.Default {
+				result.Warnings = append(result.Warnings, fmt.Sprintf("flag %q default mismatch: spec has %q but CLI has %q", name, specFlag.Default, cliFlag.Default))
+			}
+		}
+
+		// Check description alignment (if spec specifies description)
+		if specFlag.Description != "" && cliFlag.Usage != "" {
+			// Description comparison is lenient - just check if both are non-empty
+			// Full text matching would be too strict
 		}
 	}
 
@@ -70,6 +94,26 @@ func CompareFlags(specFlags []specschema.CliFlag, cliFlags []cliintrospect.FlagI
 	}
 
 	return result
+}
+
+// normalizeType normalizes type strings for comparison.
+func normalizeType(typ string) string {
+	typ = strings.ToLower(typ)
+	// Map common variations
+	switch typ {
+	case "string", "str":
+		return "string"
+	case "bool", "boolean":
+		return "bool"
+	case "int", "integer":
+		return "int"
+	case "stringslice", "[]string":
+		return "stringslice"
+	case "intslice", "[]int":
+		return "intslice"
+	default:
+		return typ
+	}
 }
 
 // CompareAllCommands compares all CLI commands to their corresponding specs.

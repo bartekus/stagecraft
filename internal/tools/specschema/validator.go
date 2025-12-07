@@ -15,6 +15,8 @@ package specschema
 
 import (
 	"fmt"
+	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -72,10 +74,26 @@ func ValidateSpec(spec Spec) error {
 		return fmt.Errorf("feature ID mismatch: frontmatter has %q but filename suggests %q", fm.Feature, expectedID)
 	}
 
+	// Validate domain matches path
+	expectedDomain := inferDomainFromPath(spec.Path)
+	if expectedDomain != "" && fm.Domain != expectedDomain {
+		return fmt.Errorf("domain mismatch: frontmatter has %q but path suggests %q", fm.Domain, expectedDomain)
+	}
+
+	// Validate version format (should be v1, v2, etc.)
+	if !isValidVersion(fm.Version) {
+		return fmt.Errorf("invalid version format: %q (expected v1, v2, etc.)", fm.Version)
+	}
+
 	// Validate flags if present
 	for i, flag := range fm.Inputs.Flags {
 		if flag.Name == "" {
 			return fmt.Errorf("flag[%d]: name is required", i)
+		}
+		// Normalize flag name for validation
+		normalizedName := strings.TrimPrefix(strings.TrimPrefix(flag.Name, "--"), "-")
+		if normalizedName == "" {
+			return fmt.Errorf("flag[%d]: name cannot be empty after normalization", i)
 		}
 	}
 
@@ -87,4 +105,26 @@ func ValidateSpec(spec Spec) error {
 	}
 
 	return nil
+}
+
+// inferDomainFromPath extracts the domain from a spec file path.
+// For example, "spec/commands/build.md" -> "commands"
+func inferDomainFromPath(path string) string {
+	// Remove spec/ prefix if present
+	relPath := strings.TrimPrefix(path, "spec/")
+	relPath = strings.TrimPrefix(relPath, "spec\\") // Windows
+
+	// Get first directory component
+	parts := strings.Split(relPath, string(filepath.Separator))
+	if len(parts) > 1 {
+		return parts[0]
+	}
+	return ""
+}
+
+// isValidVersion checks if version follows the expected format (v1, v2, etc.)
+var versionRegex = regexp.MustCompile(`^v\d+$`)
+
+func isValidVersion(version string) bool {
+	return versionRegex.MatchString(version)
 }

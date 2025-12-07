@@ -604,7 +604,7 @@ features:
   # Governance
   - id: GOV_V1_CORE
     title: "Governance Core for v1"
-    status: todo
+    status: wip
     spec: "governance/GOV_V1_CORE.md"
     owner: bart
     tests:

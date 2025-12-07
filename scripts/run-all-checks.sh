@@ -155,7 +155,7 @@ info "All spec file references are valid"
 section "Governance Checks"
 
 info "Validating spec frontmatter..."
-if ! go run ./cmd/spec-validate; then
+if ! go run ./cmd/spec-validate --check-integrity; then
     error "Spec frontmatter validation failed"
     exit 1
 fi

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -50,6 +51,11 @@ func LoadAllSpecs(root string) ([]Spec, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Sort specs by path for deterministic output
+	sort.Slice(specs, func(i, j int) bool {
+		return specs[i].Path < specs[j].Path
+	})
 
 	return specs, nil
 }

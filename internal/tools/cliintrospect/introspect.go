@@ -14,6 +14,7 @@ See https://www.gnu.org/licenses/ for license details.
 package cliintrospect
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -74,28 +75,33 @@ func collectCommands(cmd *cobra.Command, commands *[]CommandInfo, includeRoot bo
 }
 
 // collectFlags extracts flag information from a Cobra command.
+// Flags are sorted by name for deterministic output.
 func collectFlags(cmd *cobra.Command) []FlagInfo {
 	var flags []FlagInfo
+	flagMap := make(map[string]FlagInfo)
 
 	// Collect local flags
 	cmd.LocalFlags().VisitAll(func(flag *pflag.Flag) {
-		flags = append(flags, flagToInfo(flag, false))
+		flagMap[flag.Name] = flagToInfo(flag, false)
 	})
 
 	// Collect persistent flags (but only if they're not already in local flags)
 	cmd.InheritedFlags().VisitAll(func(flag *pflag.Flag) {
-		// Check if this flag is already in local flags
-		found := false
-		for _, f := range flags {
-			if f.Name == flag.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			flags = append(flags, flagToInfo(flag, true))
+		if _, exists := flagMap[flag.Name]; !exists {
+			flagMap[flag.Name] = flagToInfo(flag, true)
 		}
 	})
+
+	// Convert map to slice and sort by name
+	flagNames := make([]string, 0, len(flagMap))
+	for name := range flagMap {
+		flagNames = append(flagNames, name)
+	}
+	sort.Strings(flagNames)
+
+	for _, name := range flagNames {
+		flags = append(flags, flagMap[name])
+	}
 
 	return flags
 }

@@ -15,6 +15,7 @@ package features
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -25,8 +26,16 @@ func ToDOT(g *Graph) string {
 	sb.WriteString("  rankdir=LR;\n")
 	sb.WriteString("  node [shape=box];\n\n")
 
+	// Sort node IDs for deterministic output
+	nodeIDs := make([]string, 0, len(g.Nodes))
+	for id := range g.Nodes {
+		nodeIDs = append(nodeIDs, id)
+	}
+	sort.Strings(nodeIDs)
+
 	// Add nodes with status-based colors
-	for id, node := range g.Nodes {
+	for _, id := range nodeIDs {
+		node := g.Nodes[id]
 		color := getStatusColor(node.Status)
 		sb.WriteString(fmt.Sprintf("  \"%s\" [label=\"%s\\n[%s]\" fillcolor=\"%s\" style=filled];\n",
 			id, id, node.Status, color))
@@ -34,10 +43,15 @@ func ToDOT(g *Graph) string {
 
 	sb.WriteString("\n")
 
-	// Add edges (dependencies)
-	for _, node := range g.Nodes {
-		for _, depID := range node.DependsOn {
-			sb.WriteString(fmt.Sprintf("  \"%s\" -> \"%s\";\n", depID, node.ID))
+	// Add edges (dependencies) - sort for deterministic output
+	for _, id := range nodeIDs {
+		node := g.Nodes[id]
+		// Sort dependencies for deterministic edge ordering
+		deps := make([]string, len(node.DependsOn))
+		copy(deps, node.DependsOn)
+		sort.Strings(deps)
+		for _, depID := range deps {
+			sb.WriteString(fmt.Sprintf("  \"%s\" -> \"%s\";\n", depID, id))
 		}
 	}
 
