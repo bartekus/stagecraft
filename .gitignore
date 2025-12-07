@@ -41,3 +41,6 @@ go.work.sum
 internal/providers/backend/generic/test_script.sh
 .stagecraft/
 stagecraft
+
+# Internal strategy documents (DO NOT COMMIT)
+internal-strategy/

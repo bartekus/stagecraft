@@ -46,6 +46,10 @@ blog/05-development-strategy.md
 
 discussions/**
 
+# Internal strategy documents (DO NOT SCAN)
+
+internal-strategy/**
+
 # GitHub / CI metadata (rarely needed in AI context)
 
 .github/**

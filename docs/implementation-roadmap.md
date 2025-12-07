@@ -588,25 +588,27 @@ For each feature, follow this workflow:
 
 ## V2 Features (Deferred)
 
-These features are documented but deferred to v2 (from `04-new-feature-ideas.md`):
+These features are documented but deferred to v2. They represent future directions for Stagecraft but are not part of the v1 scope:
 
-1. **Ephemeral Environments** - First-class ephemeral environments
-2. **Audit Ledger** - Build/deploy replay & audit ledger
-3. **Infrastructure Recipes** - Stack templates
-4. **Topology Map** - Visual infrastructure map
-5. **AI Test Harness** - AI-enhanced testing
-6. **Unified Secrets Orchestrator** - Advanced secrets management
-7. **Health Watchdog** - Monitoring agent
-8. **Sync Primitives** - Local/remote sync
-9. **Composable Pipelines** - Inline pipelines
-10. **Snapshot Manager** - Droplet snapshots
-11. **Editor Plugins** - Cursor/Zed integration
-12. **Multi-owner Support** - Organization features
-13. **Observability Stack** - Monitoring stack
-14. **Budget Guardrails** - Cost monitoring
-15. **Migration Preflight** - Migration simulator
+1. **Ephemeral Environments** - Support for temporary, on-demand environments
+2. **Audit Ledger** - Comprehensive build and deployment history tracking
+3. **Infrastructure Recipes** - Reusable infrastructure templates
+4. **Topology Visualization** - Visual representation of infrastructure
+5. **Enhanced Testing** - Advanced testing capabilities
+6. **Secrets Management** - Enhanced secrets orchestration
+7. **Health Monitoring** - Proactive health monitoring and alerting
+8. **Sync Capabilities** - Local and remote synchronization primitives
+9. **Pipeline Composition** - Advanced pipeline configuration
+10. **Snapshot Management** - Infrastructure snapshot capabilities
+11. **Editor Integration** - IDE and editor plugin support
+12. **Multi-tenant Support** - Organization and team features
+13. **Observability** - Comprehensive monitoring and observability
+14. **Cost Management** - Budget tracking and guardrails
+15. **Migration Tooling** - Advanced migration planning and simulation
 
-These will be added to `spec/features.yaml` with `status: v2` when v1 is complete.
+> **Note**: Detailed strategic planning for v2 features is maintained internally. The v2 feature list above provides a high-level overview of future directions without revealing prioritization, competitive positioning, or implementation details.
+
+These will be added to `spec/features.yaml` with `status: v2` when v1 is complete and v2 planning begins.
 
 ---
 
@@ -618,7 +620,6 @@ These will be added to `spec/features.yaml` with `status: v2` when v1 is complet
 - [`blog/03-migration-strategies.md`](../blog/03-migration-strategies.md) - Migration system design
 - [`blog/04-features-now-and-future.md`](../blog/04-features-now-and-future.md) - v1/v2 feature split
 - [`blog/05-development-strategy.md`](../blog/05-development-strategy.md) - Development methodology
-- [`discussions/04-new-feature-ideas.md`](../discussions/04-new-feature-ideas.md) - v2 feature ideas
 
 ### Specifications
 - [`docs/stagecraft-spec.md`](stagecraft-spec.md) - Full application specification
@@ -633,4 +634,3 @@ These will be added to `spec/features.yaml` with `status: v2` when v1 is complet
 ### Related Features
 - See [`spec/core/config.md`](../spec/core/config.md) for config schema details
 - See [`spec/scaffold/stagecraft-dir.md`](../spec/scaffold/stagecraft-dir.md) for `.stagecraft/` directory structure
-
