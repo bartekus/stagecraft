@@ -169,7 +169,7 @@ fi
 info "Feature dependency graph is valid"
 
 info "Checking CLI vs Spec alignment (flags)..."
-if ! go run ./cmd/spec-vs-cli --warn-only; then
+if ! go run ./cmd/spec-vs-cli; then
     error "CLI vs Spec alignment check failed"
     exit 1
 fi

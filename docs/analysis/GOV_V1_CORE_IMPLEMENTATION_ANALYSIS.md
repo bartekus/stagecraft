@@ -292,13 +292,14 @@ But GOV_V1_CORE now implements the "thin slice" of what's described there.
 
 **Current State**:
 - All tools integrated into `run-all-checks.sh`
-- `spec-vs-cli` uses `--warn-only` flag
-- Script hard-fails on tool errors, but spec-vs-cli warnings are non-blocking
+- `spec-vs-cli` defaults to hard-fail mode (no `--warn-only` flag)
+- `--warn-only` flag available for local development convenience
+- Script hard-fails on all governance check errors
 
 **Action Required**:
-- No code changes needed
-- Update CI workflow to allow warnings (already implicit via --warn-only)
-- Document soft-fail behavior
+- ✅ **Done**: Removed `--warn-only` from `run-all-checks.sh` (hard-fail by default)
+- ✅ **Done**: `--warn-only` flag remains available for local use
+- Document hard-fail behavior in CI
 
 ---
 
@@ -307,18 +308,18 @@ But GOV_V1_CORE now implements the "thin slice" of what's described there.
 **Status**: ⚠️ **Mostly Ready** (one gap)
 
 **Prerequisites**:
-1. ✅ All specs have frontmatter (next task: add frontmatter to existing specs)
-2. ✅ All governance checks pass
-3. ⚠️ Add specvscli tests (recommended but not blocking)
-4. ⚠️ Resolve any spec-vs-cli false positives
+1. ⏸ All specs have frontmatter (next task: add frontmatter to existing specs)
+2. ⏸ All governance checks pass (blocked by frontmatter requirement)
+3. ✅ Add specvscli tests (completed)
+4. ⏸ Resolve any spec-vs-cli false positives (pending frontmatter)
 
 **Action Required**:
-- Remove `--warn-only` from `run-all-checks.sh`
-- Ensure all specs have valid frontmatter
-- Verify no false positives in spec-vs-cli
-- Update CI to fail on any governance violation
+- ✅ **Done**: Removed `--warn-only` from `run-all-checks.sh` (hard-fail by default)
+- ⏸ Ensure all specs have valid frontmatter (prerequisite)
+- ⏸ Verify no false positives in spec-vs-cli (after frontmatter added)
+- ✅ CI will fail on any governance violation (already configured)
 
-**Recommendation**: Complete frontmatter addition first, then flip to hard-fail.
+**Status**: Hard-fail mode is now active in CI. Governance checks will fail until all specs have frontmatter (expected behavior).
 
 ---
 

@@ -379,19 +379,17 @@ outputs:
 
 - ⏸ All specs have frontmatter (recommended for Phase 2, required for Phase 3)
 
-**Phase 2**: Add to CI with soft-fail (warning mode)
+**Phase 2**: ✅ **Complete** - Governance checks integrated into CI
 
-- Update `scripts/run-all-checks.sh` to treat governance failures as warnings
+**Phase 3**: ✅ **Active** - Hard-fail mode enabled
 
-- Update CI workflow to allow warnings (non-blocking)
+- ✅ Removed `--warn-only` from `run-all-checks.sh` (hard-fail by default)
 
-**Phase 3**: Flip to hard-fail (blocking)
+- ✅ CI will fail on any governance violation
 
-- Remove `--warn-only` flags from governance checks
+- ⏸ All specs need frontmatter (prerequisite - this is the next task)
 
-- Update CI to fail on any governance violation
-
-- Ensure all existing specs pass validation
+**Note**: `--warn-only` flag is still available for local development convenience (e.g., `go run ./cmd/spec-vs-cli --warn-only`), but CI uses hard-fail mode by default.
 
 **Do NOT begin Phase 2/3 until frontmatter addition is complete or at least well underway.**
 
