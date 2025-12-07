@@ -25,6 +25,7 @@ import (
 	"stagecraft/pkg/config"
 	"stagecraft/pkg/logging"
 	backendproviders "stagecraft/pkg/providers/backend"
+	frontendproviders "stagecraft/pkg/providers/frontend"
 )
 
 // Feature: CLI_DEV_BASIC
@@ -117,12 +118,45 @@ func runDev(cmd *cobra.Command, args []string) error {
 	)
 	logger.Debug("Working directory", logging.NewField("workdir", workDir))
 
-	// Call provider
-	opts := backendproviders.DevOptions{
+	// Call backend provider
+	backendOpts := backendproviders.DevOptions{
 		Config:  providerCfg,
 		WorkDir: workDir,
 		Env:     make(map[string]string), // Future: load from env files
 	}
 
-	return provider.Dev(ctx, opts)
+	// If frontend is configured, start it as well
+	if cfg.Frontend != nil {
+		frontendID := cfg.Frontend.Provider
+		frontendProvider, err := frontendproviders.Get(frontendID)
+		if err != nil {
+			available := frontendproviders.DefaultRegistry.IDs()
+			return fmt.Errorf("unknown frontend provider %q; available providers: %v", frontendID, available)
+		}
+
+		frontendProviderCfg, err := cfg.Frontend.GetProviderConfig()
+		if err != nil {
+			return fmt.Errorf("getting frontend provider config: %w", err)
+		}
+
+		logger.Info("Starting frontend",
+			logging.NewField("provider", frontendID),
+		)
+
+		frontendOpts := frontendproviders.DevOptions{
+			Config:  frontendProviderCfg,
+			WorkDir: workDir,
+			Env:     make(map[string]string), // Future: load from env files
+		}
+
+		// For now, run frontend in a goroutine (simple parallel execution)
+		// TODO: Replace with proper process management (DEV_PROCESS_MGMT)
+		go func() {
+			if err := frontendProvider.Dev(ctx, frontendOpts); err != nil {
+				logger.Error("Frontend exited with error", logging.NewField("error", err))
+			}
+		}()
+	}
+
+	return provider.Dev(ctx, backendOpts)
 }

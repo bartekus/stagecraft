@@ -269,7 +269,7 @@ features:
 
   - id: PROVIDER_FRONTEND_GENERIC
     title: "Generic dev command FrontendProvider"
-    status: todo
+    status: done
     spec: "providers/frontend/generic.md"
     owner: bart
     tests:

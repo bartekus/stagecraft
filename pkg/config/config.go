@@ -25,9 +25,11 @@ import (
 	// Import providers to ensure they register themselves
 	_ "stagecraft/internal/providers/backend/encorets"
 	_ "stagecraft/internal/providers/backend/generic"
+	_ "stagecraft/internal/providers/frontend/generic"
 	_ "stagecraft/internal/providers/migration/raw"
 
 	backendproviders "stagecraft/pkg/providers/backend"
+	frontendproviders "stagecraft/pkg/providers/frontend"
 	migrationengines "stagecraft/pkg/providers/migration"
 )
 
@@ -41,6 +43,7 @@ var ErrConfigNotFound = errors.New("stagecraft config not found")
 type Config struct {
 	Project      ProjectConfig                `yaml:"project"`
 	Backend      *BackendConfig               `yaml:"backend,omitempty"`
+	Frontend     *FrontendConfig              `yaml:"frontend,omitempty"`
 	Databases    map[string]DatabaseConfig    `yaml:"databases,omitempty"`
 	Environments map[string]EnvironmentConfig `yaml:"environments"`
 }
@@ -52,6 +55,12 @@ type ProjectConfig struct {
 
 // BackendConfig describes backend provider configuration.
 type BackendConfig struct {
+	Provider  string         `yaml:"provider"`
+	Providers map[string]any `yaml:"providers"`
+}
+
+// FrontendConfig describes frontend provider configuration.
+type FrontendConfig struct {
 	Provider  string         `yaml:"provider"`
 	Providers map[string]any `yaml:"providers"`
 }
@@ -90,6 +99,27 @@ func (c *BackendConfig) GetProviderConfig() (any, error) {
 	if !ok {
 		return nil, fmt.Errorf(
 			"backend.providers.%s is missing; provider-specific config is required",
+			c.Provider,
+		)
+	}
+
+	return cfg, nil
+}
+
+// GetProviderConfig returns the config for the selected frontend provider.
+func (c *FrontendConfig) GetProviderConfig() (any, error) {
+	if c.Provider == "" {
+		return nil, fmt.Errorf("frontend.provider is required")
+	}
+
+	if c.Providers == nil {
+		return nil, fmt.Errorf("frontend.providers is required")
+	}
+
+	cfg, ok := c.Providers[c.Provider]
+	if !ok {
+		return nil, fmt.Errorf(
+			"frontend.providers.%s is missing; provider-specific config is required",
 			c.Provider,
 		)
 	}
@@ -160,6 +190,13 @@ func validate(cfg *Config) error {
 		}
 	}
 
+	// Validate frontend configuration (if present)
+	if cfg.Frontend != nil {
+		if err := validateFrontend(cfg.Frontend); err != nil {
+			return err
+		}
+	}
+
 	// Validate database configurations (if present)
 	for dbName, dbCfg := range cfg.Databases {
 		if err := validateDatabase(dbName, dbCfg); err != nil {
@@ -201,6 +238,34 @@ func validateBackend(cfg *BackendConfig) error {
 	if _, ok := cfg.Providers[cfg.Provider]; !ok {
 		return fmt.Errorf(
 			"backend.providers.%s is missing; provider-specific config is required",
+			cfg.Provider,
+		)
+	}
+
+	return nil
+}
+
+// validateFrontend validates frontend configuration using the registry.
+func validateFrontend(cfg *FrontendConfig) error {
+	if cfg.Provider == "" {
+		return fmt.Errorf("frontend.provider is required")
+	}
+
+	if !frontendproviders.Has(cfg.Provider) {
+		return fmt.Errorf(
+			"unknown frontend provider %q; available providers: %v",
+			cfg.Provider,
+			frontendproviders.DefaultRegistry.IDs(),
+		)
+	}
+
+	if cfg.Providers == nil {
+		return fmt.Errorf("frontend.providers is required")
+	}
+
+	if _, ok := cfg.Providers[cfg.Provider]; !ok {
+		return fmt.Errorf(
+			"frontend.providers.%s is missing; provider-specific config is required",
 			cfg.Provider,
 		)
 	}
