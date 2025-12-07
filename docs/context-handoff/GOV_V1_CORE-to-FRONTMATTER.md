@@ -335,7 +335,7 @@ outputs:
 
 - ❌ Modify spec content when adding frontmatter (frontmatter only)
 
-- ❌ Implement Phase 2/3 before frontmatter is complete (recommended)
+- ❌ Change governance behaviour for Phase 2/3 without considering that Phase 3 is already active and frontmatter is still incomplete
 
 - ❌ Add frontmatter that doesn't match filename/domain
 
