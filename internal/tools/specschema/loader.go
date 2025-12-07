@@ -62,7 +62,7 @@ func LoadAllSpecs(root string) ([]Spec, error) {
 
 // LoadSpec loads a single spec file and extracts its frontmatter.
 func LoadSpec(path string) (*Spec, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is from config, not user input
 	if err != nil {
 		return nil, err
 	}

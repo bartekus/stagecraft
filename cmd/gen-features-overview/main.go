@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package main provides the gen-features-overview tool for generating feature overview documentation.
 package main
 
 import (

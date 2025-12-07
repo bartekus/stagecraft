@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package features provides tools for managing feature dependency graphs.
 package features
 
 import (
@@ -37,8 +38,9 @@ func ToDOT(g *Graph) string {
 	for _, id := range nodeIDs {
 		node := g.Nodes[id]
 		color := getStatusColor(node.Status)
-		sb.WriteString(fmt.Sprintf("  \"%s\" [label=\"%s\\n[%s]\" fillcolor=\"%s\" style=filled];\n",
-			id, id, node.Status, color))
+		label := fmt.Sprintf("%s\\n[%s]", id, node.Status)
+		sb.WriteString(fmt.Sprintf("  %q [label=%q fillcolor=%q style=filled];\n",
+			id, label, color))
 	}
 
 	sb.WriteString("\n")
@@ -51,7 +53,7 @@ func ToDOT(g *Graph) string {
 		copy(deps, node.DependsOn)
 		sort.Strings(deps)
 		for _, depID := range deps {
-			sb.WriteString(fmt.Sprintf("  \"%s\" -> \"%s\";\n", depID, id))
+			sb.WriteString(fmt.Sprintf("  %q -> %q;\n", depID, id))
 		}
 	}
 

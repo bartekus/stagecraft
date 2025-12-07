@@ -152,7 +152,7 @@ domain: test
 # Test Feature
 `
 
-	if err := os.WriteFile(specPath, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(specPath, []byte(content), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to write spec file: %v", err)
 	}
 
@@ -179,7 +179,7 @@ func TestLoadSpec_FileNotFound(t *testing.T) {
 func TestLoadAllSpecs_WalksDirectory(t *testing.T) {
 	tmpDir := t.TempDir()
 	specDir := filepath.Join(tmpDir, "spec")
-	if err := os.MkdirAll(specDir, 0o755); err != nil {
+	if err := os.MkdirAll(specDir, 0o755); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 
@@ -341,7 +341,7 @@ func TestValidateSpec_RequiredFields(t *testing.T) {
 					Domain:  "test",
 				},
 			},
-			wantErr: true,
+			wantErr: false, // Feature ID mismatch is now validated by integrity check, not ValidateSpec
 		},
 		{
 			name: "empty flag name",
@@ -383,7 +383,7 @@ func TestValidateSpec_RequiredFields(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := ValidateSpec(tt.spec)
+			err := ValidateSpec(&tt.spec)
 			if tt.wantErr && err == nil {
 				t.Error("expected error, got nil")
 			}

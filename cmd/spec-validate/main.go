@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package main provides the spec-validate tool for validating spec file frontmatter.
 package main
 
 import (

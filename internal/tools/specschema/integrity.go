@@ -79,12 +79,13 @@ func ValidateSpecIntegrity(featuresPath, specRoot string) error {
 		// Note: Some spec files are shared by multiple features (e.g., core/backend-registry.md
 		// is used by both CORE_BACKEND_REGISTRY and PROVIDER_BACKEND_INTERFACE). In such cases,
 		// we check if the file exists and has valid frontmatter, but don't require exact feature ID match.
-		if spec, exists := specMap[id]; exists {
+		if spec, found := specMap[id]; found {
 			// File exists and was loaded - check if it has valid frontmatter
 			if spec.Frontmatter.Feature == "" {
 				errors = append(errors, fmt.Sprintf("feature %q spec file has empty feature ID", id))
 			}
 			// Don't require exact match - allow shared spec files
+			_ = found // suppress unused variable warning
 		} else {
 			// Spec file exists but doesn't have frontmatter with matching ID
 			// Try to load it
@@ -98,17 +99,14 @@ func ValidateSpecIntegrity(featuresPath, specRoot string) error {
 			if spec.Frontmatter.Feature == "" {
 				errors = append(errors, fmt.Sprintf("feature %q spec file %q has empty feature ID", id, node.Spec))
 			}
+			_ = spec // spec loaded and validated above
 		}
 	}
 
 	// Check: spec files should be referenced in features.yaml (warning only)
 	// This is less strict - we allow orphaned spec files
-	for _, spec := range specs {
-		if _, exists := graph.Nodes[spec.Frontmatter.Feature]; !exists {
-			// This is a warning, not an error - orphaned specs are allowed
-			// But we could add a flag to make this strict
-		}
-	}
+	// Note: We intentionally don't check this to allow orphaned specs
+	_ = len(specs) // suppress unused variable warning
 
 	if len(errors) > 0 {
 		return fmt.Errorf("spec integrity validation failed:\n  %s", strings.Join(errors, "\n  "))

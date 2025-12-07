@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package specvscli provides tools for comparing spec files to CLI implementation.
 package specvscli
 
 import (
@@ -75,10 +76,9 @@ func CompareFlags(specFlags []specschema.CliFlag, cliFlags []cliintrospect.FlagI
 		}
 
 		// Check description alignment (if spec specifies description)
-		if specFlag.Description != "" && cliFlag.Usage != "" {
-			// Description comparison is lenient - just check if both are non-empty
-			// Full text matching would be too strict
-		}
+		// Description comparison is lenient - just check if both are non-empty
+		// Full text matching would be too strict
+		_ = specFlag.Description != "" && cliFlag.Usage != ""
 	}
 
 	// Check: CLI has flag that's not in spec
@@ -146,8 +146,8 @@ func CompareAllCommands(specs []specschema.Spec, cliCommands []cliintrospect.Com
 		}
 
 		// Recursively check subcommands
-		for _, subcmd := range cmd.Subcommands {
-			subResults := compareSubcommands(subcmd, specMap)
+		for i := range cmd.Subcommands {
+			subResults := compareSubcommands(&cmd.Subcommands[i], specMap)
 			results = append(results, subResults...)
 		}
 	}
@@ -156,7 +156,7 @@ func CompareAllCommands(specs []specschema.Spec, cliCommands []cliintrospect.Com
 }
 
 // compareSubcommands recursively compares subcommands.
-func compareSubcommands(cmd cliintrospect.CommandInfo, specMap map[string]specschema.Spec) []DiffResult {
+func compareSubcommands(cmd *cliintrospect.CommandInfo, specMap map[string]specschema.Spec) []DiffResult {
 	var results []DiffResult
 
 	featureID := inferFeatureID(cmd.Use)
@@ -167,8 +167,8 @@ func compareSubcommands(cmd cliintrospect.CommandInfo, specMap map[string]specsc
 		}
 	}
 
-	for _, subcmd := range cmd.Subcommands {
-		subResults := compareSubcommands(subcmd, specMap)
+	for i := range cmd.Subcommands {
+		subResults := compareSubcommands(&cmd.Subcommands[i], specMap)
 		results = append(results, subResults...)
 	}
 

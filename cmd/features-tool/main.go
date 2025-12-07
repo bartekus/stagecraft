@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package main provides the features-tool for managing feature dependency graphs.
 package main
 
 import (

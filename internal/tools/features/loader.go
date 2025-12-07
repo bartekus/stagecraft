@@ -22,12 +22,12 @@ import (
 
 // LoadGraph loads features.yaml and constructs a dependency graph.
 func LoadGraph(path string) (*Graph, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is from config, not user input
 	if err != nil {
 		return nil, fmt.Errorf("failed to read features.yaml: %w", err)
 	}
 
-	var featuresYAML FeaturesYAML
+	var featuresYAML YAML
 	if err := yaml.Unmarshal(data, &featuresYAML); err != nil {
 		return nil, fmt.Errorf("failed to parse features.yaml: %w", err)
 	}
@@ -40,7 +40,8 @@ func LoadGraph(path string) (*Graph, error) {
 	}
 
 	// Add edges (dependencies)
-	for _, feature := range featuresYAML.Features {
+	for i := range featuresYAML.Features {
+		feature := &featuresYAML.Features[i]
 		for _, depID := range feature.DependsOn {
 			// Verify dependency exists
 			if _, exists := graph.Nodes[depID]; !exists {

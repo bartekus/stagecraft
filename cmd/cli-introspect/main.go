@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package main provides the cli-introspect tool for introspecting CLI commands.
 package main
 
 import (

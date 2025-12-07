@@ -24,9 +24,9 @@ import (
 func ValidateAll(specs []Spec) error {
 	var errors []string
 
-	for _, spec := range specs {
-		if err := ValidateSpec(spec); err != nil {
-			errors = append(errors, fmt.Sprintf("%s: %v", spec.Path, err))
+	for i := range specs {
+		if err := ValidateSpec(&specs[i]); err != nil {
+			errors = append(errors, fmt.Sprintf("%s: %v", specs[i].Path, err))
 		}
 	}
 
@@ -38,7 +38,7 @@ func ValidateAll(specs []Spec) error {
 }
 
 // ValidateSpec validates a single spec's frontmatter.
-func ValidateSpec(spec Spec) error {
+func ValidateSpec(spec *Spec) error {
 	fm := spec.Frontmatter
 
 	// Check required fields

@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package docs provides documentation generation tools.
 package docs
 
 import (
@@ -41,7 +42,7 @@ func TestGenerateFeatureOverview_CreatesFile(t *testing.T) {
     tests: []
 `
 
-	if err := os.WriteFile(featuresPath, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(featuresPath, []byte(content), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to write features.yaml: %v", err)
 	}
 
@@ -56,7 +57,7 @@ func TestGenerateFeatureOverview_CreatesFile(t *testing.T) {
 	}
 
 	// Check content
-	data, err := os.ReadFile(outPath)
+	data, err := os.ReadFile(outPath) //nolint:gosec // test file //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to read overview file: %v", err)
 	}
@@ -74,7 +75,7 @@ func TestGenerateFeatureOverview_WithSpecFrontmatter(t *testing.T) {
 	tmpDir := t.TempDir()
 	featuresPath := filepath.Join(tmpDir, "features.yaml")
 	specDir := filepath.Join(tmpDir, "spec")
-	if err := os.MkdirAll(specDir, 0o755); err != nil {
+	if err := os.MkdirAll(specDir, 0o755); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 	outPath := filepath.Join(tmpDir, "OVERVIEW.md")
@@ -89,13 +90,13 @@ func TestGenerateFeatureOverview_WithSpecFrontmatter(t *testing.T) {
     tests: []
 `
 
-	if err := os.WriteFile(featuresPath, []byte(featuresContent), 0o644); err != nil {
+	if err := os.WriteFile(featuresPath, []byte(featuresContent), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to write features.yaml: %v", err)
 	}
 
 	// Create spec with frontmatter
 	specSubDir := filepath.Join(specDir, "test")
-	if err := os.MkdirAll(specSubDir, 0o755); err != nil {
+	if err := os.MkdirAll(specSubDir, 0o755); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create spec subdir: %v", err)
 	}
 	specPath := filepath.Join(specSubDir, "FEATURE1.md")
@@ -108,7 +109,7 @@ domain: test
 # Feature 1
 `
 
-	if err := os.WriteFile(specPath, []byte(specContent), 0o644); err != nil {
+	if err := os.WriteFile(specPath, []byte(specContent), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to write spec: %v", err)
 	}
 

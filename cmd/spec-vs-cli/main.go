@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package main provides the spec-vs-cli tool for comparing specs to CLI implementation.
 package main
 
 import (

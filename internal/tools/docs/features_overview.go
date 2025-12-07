@@ -49,12 +49,12 @@ func GenerateFeatureOverview(featuresPath, specRoot, outPath string) error {
 	content := generateMarkdown(graph, specMap)
 
 	// Ensure output directory exists
-	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil { //nolint:gosec // output directory needs write permissions
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
 	// Write file
-	if err := os.WriteFile(outPath, []byte(content), 0o644); err != nil {
+	if err := os.WriteFile(outPath, []byte(content), 0o644); err != nil { //nolint:gosec // output file needs read permissions
 		return fmt.Errorf("failed to write overview file: %w", err)
 	}
 

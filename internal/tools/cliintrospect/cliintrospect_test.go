@@ -11,6 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
+// Package cliintrospect provides CLI command introspection functionality.
 package cliintrospect
 
 import (

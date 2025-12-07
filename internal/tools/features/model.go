@@ -26,8 +26,8 @@ type FeatureNode struct {
 	Description string   `yaml:"description"`
 }
 
-// FeaturesYAML represents the root structure of features.yaml.
-type FeaturesYAML struct {
+// YAML represents the root structure of features.yaml.
+type YAML struct {
 	Features []FeatureNode `yaml:"features"`
 }
 
