@@ -197,6 +197,8 @@ Every pull request must satisfy:
    ```
    
    The pre-commit hook runs gofumpt and basic checks, and will block commits on formatting errors. See the "Git Hooks" section below for details.
+   
+   For a complete list of scripts and their usage, see [scripts/README.md](scripts/README.md).
 
 4. **Run tests**:
    ```bash
@@ -230,6 +232,8 @@ If the hook is missing, formatting or basic checks may fail in CI and PRs will b
 - Run `golangci-lint` before committing
 - Write tests for new features
 - Update documentation as needed
+
+See [docs/README.md](docs/README.md) for a map of all project documentation.
 
 ## Submitting Changes
 

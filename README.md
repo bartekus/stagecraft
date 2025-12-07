@@ -364,6 +364,11 @@ Right now this is experimental and evolving quickly.
 - **Implementation Status**: `docs/implementation-status.md` - Feature progress
 - **Getting Started**: `docs/guides/getting-started.md` - User guide
 
+**Further Documentation**:
+- **[docs/README.md](docs/README.md)** - Complete documentation index and navigation guide
+- **[docs/engine-index.md](docs/engine-index.md)** - Quick reference for which docs to open per feature type
+- **[scripts/README.md](scripts/README.md)** - Utility scripts reference and usage guide
+
 For more details, see:
 - [Agent.md](Agent.md) - Development guidelines
 - [docs/implementation-status.md](docs/implementation-status.md) - Feature tracking

@@ -684,6 +684,8 @@ If modification is necessary:
 
 Before committing, AI MUST ensure all changes pass the complete CI check suite.
 
+> **Note**: For a complete list of scripts and their usage, see [scripts/README.md](scripts/README.md).
+
 ### Mandatory Pre-Commit Checks
 
 AI MUST run `./scripts/run-all-checks.sh` before committing to verify all checks pass. This script
