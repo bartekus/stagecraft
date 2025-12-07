@@ -612,6 +612,7 @@ features:
       - "internal/tools/cliintrospect/cliintrospect_test.go"
       - "internal/tools/features/features_test.go"
       - "internal/tools/docs/docs_test.go"
+      - "internal/tools/specvscli/diff_test.go"
     depends_on:
       - "CORE_STATE"
       - "CLI_PHASE_EXECUTION_COMMON"
