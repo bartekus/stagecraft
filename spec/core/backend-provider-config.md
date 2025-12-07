@@ -1,3 +1,13 @@
+---
+feature: CORE_BACKEND_PROVIDER_CONFIG_SCHEMA
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Backend Provider Configuration Schema
 
 - Feature ID: `CORE_BACKEND_PROVIDER_CONFIG_SCHEMA`

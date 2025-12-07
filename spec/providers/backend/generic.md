@@ -1,3 +1,13 @@
+---
+feature: PROVIDER_BACKEND_GENERIC
+version: v1
+status: done
+domain: providers
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Generic Backend Provider
 
 - Feature ID: `PROVIDER_BACKEND_GENERIC`

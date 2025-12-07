@@ -1,3 +1,13 @@
+---
+feature: CORE_CONFIG
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Core Config – Loading and Validation
 
 - Feature ID: `CORE_CONFIG`

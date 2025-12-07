@@ -1,3 +1,13 @@
+---
+feature: CORE_STATE
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # State Management (Release History)
 
 - Feature ID: `CORE_STATE`

@@ -1,3 +1,13 @@
+---
+feature: CORE_BACKEND_REGISTRY
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Backend Provider Registry
 
 - Feature ID: `CORE_BACKEND_REGISTRY`

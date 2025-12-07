@@ -1,3 +1,13 @@
+---
+feature: PROVIDER_FRONTEND_INTERFACE
+version: v1
+status: done
+domain: providers
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Frontend Provider Interface
 
 - Feature ID: `PROVIDER_FRONTEND_INTERFACE`

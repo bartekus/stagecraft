@@ -1,3 +1,13 @@
+---
+feature: ARCH_OVERVIEW
+version: v1
+status: done
+domain: overview
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Stagecraft – Project Overview
 
 Stagecraft is a deployment and infrastructure orchestration CLI written in Go.

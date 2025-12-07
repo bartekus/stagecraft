@@ -1,3 +1,13 @@
+---
+feature: CORE_COMPOSE
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Docker Compose Integration
 
 - Feature ID: `CORE_COMPOSE`

@@ -1,3 +1,13 @@
+---
+feature: CLI_PHASE_EXECUTION_COMMON
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # CORE_PHASE_EXECUTION_COMMON – Shared Phase Execution Semantics
 
 - Feature ID: `CLI_PHASE_EXECUTION_COMMON`

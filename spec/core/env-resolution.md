@@ -1,3 +1,13 @@
+---
+feature: CORE_ENV_RESOLUTION
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Environment Resolution and Context
 
 - Feature ID: `CORE_ENV_RESOLUTION`

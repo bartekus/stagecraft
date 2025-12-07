@@ -1,3 +1,13 @@
+---
+feature: PROVIDER_NETWORK_INTERFACE
+version: v1
+status: done
+domain: providers
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Network Provider Interface
 
 - Feature ID: `PROVIDER_NETWORK_INTERFACE`

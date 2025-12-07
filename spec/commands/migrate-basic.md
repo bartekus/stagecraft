@@ -1,3 +1,31 @@
+---
+feature: CLI_MIGRATE_BASIC
+version: v1
+status: done
+domain: commands
+inputs:
+  flags:
+    - name: --database
+      type: string
+      default: "main"
+      description: "Database name to migrate"
+    - name: --plan
+      type: bool
+      default: "false"
+      description: "Show migration plan without executing"
+    - name: --verbose
+      type: bool
+      default: "false"
+      description: "Enable verbose output"
+    - name: -v
+      type: bool
+      default: "false"
+      description: "Shorthand for --verbose"
+outputs:
+  exit_codes:
+    success: 0
+    error: 1
+---
 # `stagecraft migrate` – Basic Migration Command
 
 - Feature ID: `CLI_MIGRATE_BASIC`

@@ -151,6 +151,44 @@ if [ $missing_specs -gt 0 ]; then
 fi
 info "All spec file references are valid"
 
+# === Governance Checks (GOV_V1_CORE) ===
+section "Governance Checks"
+
+info "Validating spec frontmatter..."
+if ! go run ./cmd/spec-validate --check-integrity; then
+    error "Spec frontmatter validation failed"
+    exit 1
+fi
+info "Spec frontmatter validation passed"
+
+info "Validating feature dependency graph..."
+if ! go run ./cmd/features-tool graph; then
+    error "Feature dependency graph validation failed"
+    exit 1
+fi
+info "Feature dependency graph is valid"
+
+info "Checking CLI vs Spec alignment (flags)..."
+if ! go run ./cmd/spec-vs-cli; then
+    error "CLI vs Spec alignment check failed"
+    exit 1
+fi
+info "CLI vs Spec alignment check passed"
+
+info "Generating feature overview..."
+if ! go run ./cmd/gen-features-overview; then
+    error "Failed to generate feature overview"
+    exit 1
+fi
+
+info "Verifying feature overview is up to date..."
+if ! git diff --exit-code docs/features/OVERVIEW.md 2>/dev/null; then
+    error "docs/features/OVERVIEW.md is out of date; please regenerate and commit"
+    error "Run: go run ./cmd/gen-features-overview"
+    exit 1
+fi
+info "Feature overview is up to date"
+
 # === License Checks (matches CI license job) ===
 section "License Headers"
 

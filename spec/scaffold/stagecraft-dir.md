@@ -1,3 +1,13 @@
+---
+feature: SCAFFOLD_STAGECRAFT_DIR
+version: v1
+status: todo
+domain: scaffold
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # .stagecraft/ Directory Structure
 
 - Feature ID: `SCAFFOLD_STAGECRAFT_DIR`

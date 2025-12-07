@@ -1,3 +1,13 @@
+---
+feature: CLI_GLOBAL_FLAGS
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Global Flags – CLI Global Flag Handling
 
 - Feature ID: `CLI_GLOBAL_FLAGS`

@@ -1,3 +1,43 @@
+---
+feature: CLI_DEPLOY
+version: v1
+status: done
+domain: commands
+inputs:
+  flags:
+    - name: --env
+      type: string
+      default: ""
+      description: "Target environment name (required)"
+    - name: -e
+      type: string
+      default: ""
+      description: "Shorthand for --env"
+    - name: --version
+      type: string
+      default: ""
+      description: "Deploy a specific version (optional)"
+    - name: -v
+      type: string
+      default: ""
+      description: "Shorthand for --version"
+    - name: --dry-run
+      type: bool
+      default: "false"
+      description: "Show what would be deployed without creating releases or executing side effects"
+    - name: --config
+      type: string
+      default: ""
+      description: "Override config file"
+    - name: --verbose
+      type: bool
+      default: "false"
+      description: "Increase logging verbosity"
+outputs:
+  exit_codes:
+    success: 0
+    error: 1
+---
 # CLI_DEPLOY - Deploy command
 
 - **Feature ID**: `CLI_DEPLOY`

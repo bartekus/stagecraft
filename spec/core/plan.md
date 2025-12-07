@@ -1,3 +1,13 @@
+---
+feature: CORE_PLAN
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Deployment Planning Engine
 
 - Feature ID: `CORE_PLAN`

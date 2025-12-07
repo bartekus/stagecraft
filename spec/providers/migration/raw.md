@@ -1,3 +1,13 @@
+---
+feature: MIGRATION_ENGINE_RAW
+version: v1
+status: done
+domain: providers
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Raw Migration Engine
 
 - Feature ID: `MIGRATION_ENGINE_RAW`
