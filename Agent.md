@@ -1253,6 +1253,113 @@ AI MUST generate messages that:
 
 ⸻
 
+### 🔥 Commit Message Enforcement & Discipline
+
+**Purpose:** Ensure all commits in Stagecraft follow deterministic, spec-linked, traceable commit message rules.
+
+**Agent Mission:**
+
+You are responsible for enforcing Stagecraft's strict commit message discipline. Your goal is to guarantee absolute traceability between:
+
+**spec → tests → code → docs → commit → PR**
+
+You MUST ensure commit messages:
+
+- Follow required format
+- Reference correct Feature ID
+- Pass all structural rules
+- Integrate with branch naming rules
+- Reinforce test-first, spec-first, deterministic workflows
+
+**Commit Format Rule (Mandatory):**
+
+AI MUST generate commit messages using:
+
+```
+<type>(<FEATURE_ID>): <summary>
+```
+
+Where:
+
+- `<type>` ∈ { `feat`, `fix`, `refactor`, `docs`, `test`, `ci`, `chore` }
+- `<FEATURE_ID>` = SCREAMING_SNAKE_CASE
+- `<summary>` = ≤72 chars, no trailing period, lowercase after colon
+
+**If the Feature ID is missing → STOP and ask.**
+
+**AI MUST Perform These Steps Before Committing:**
+
+1. **Verify `.git/hooks/commit-msg` exists**
+   - If missing → run `./scripts/install-hooks.sh`
+   - If installation fails → STOP and report error
+
+2. **Validate commit message against required pattern**
+   - Format MUST be: `<type>(<FEATURE_ID>): <summary>`
+   - Type MUST be lowercase
+   - Feature ID MUST be SCREAMING_SNAKE_CASE
+   - Summary MUST be ≤72 characters
+   - Summary MUST NOT have trailing period
+   - Summary MUST NOT start with capital letter after type
+
+3. **Verify FEATURE_ID matches the active feature branch**
+   - Check current branch: `git branch --show-current`
+   - Extract FEATURE_ID from branch name
+   - Ensure commit message FEATURE_ID matches branch FEATURE_ID
+   - If mismatch → STOP and report
+
+4. **Verify no protected files are touched**
+   - Protected files: LICENSE, README.md, ADRs, NOTICE
+   - If protected files modified → STOP and report
+
+5. **Run all CI checks**
+   - Execute: `./scripts/run-all-checks.sh`
+   - All checks MUST pass before committing
+   - If any check fails → STOP, fix issues, re-run
+
+6. **Only then create commit message and commit**
+
+**If any check fails: STOP and report.**
+
+**Commit Quality Rules:**
+
+AI MUST ensure:
+
+- Subject ≤72 chars
+- No trailing period
+- No unicode decorations (emojis, fancy characters)
+- Summary is literal, precise, minimal
+- Message describes exactly the scoped changes
+- References both spec and tests in the body
+
+Example body:
+
+```
+Spec: spec/commands/deploy.md
+Tests: cmd/deploy_test.go
+```
+
+**AI MUST Reject These Commit Messages:**
+
+- Missing Feature ID
+- Wrong format (missing parentheses, missing colon)
+- Messages starting with uppercase after type
+- Multi-feature changes
+- Vague descriptions
+- Long subjects (>72 chars)
+- Commit-msg hook bypassing (using `STAGECRAFT_SKIP_HOOKS=1` or `SKIP_HOOKS=1`)
+
+**Outcome:**
+
+By following these rules:
+
+- Every commit becomes a deterministic artifact
+- Full traceability is maintained
+- Specs and features map 1:1 to history
+- Git hygiene and review quality improve
+- AI assistants remain aligned with Stagecraft's engineering doctrine
+
+⸻
+
 ### Branch Verification
 
 AI MUST confirm:
