@@ -89,6 +89,11 @@ Context handoff documents ensure:
 - **To**: Phase 3 (Commit intelligence & historical analysis)
 - **Use when**: Starting work on Phase 3 commit intelligence features after Phase 1 and Phase 2 are complete
 
+#### `COMMIT_REPORT_TYPES_PHASE3.md`
+- **From**: Phase 1 & Phase 2 (Commit message discipline enforcement)
+- **To**: Phase 3.A (Commit report Go types & golden tests)
+- **Use when**: Starting work on Phase 3.A commit report data model implementation (types + golden roundtrip tests)
+
 ## Template
 
 For creating new handoff documents, use:

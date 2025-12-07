@@ -41,17 +41,17 @@ type CommitRange struct {
 
 // Summary contains aggregate statistics.
 type Summary struct {
-	TotalCommits    int            `json:"total_commits"`
-	ValidCommits    int            `json:"valid_commits"`
-	InvalidCommits  int            `json:"invalid_commits"`
-	ViolationsByCode map[string]int `json:"violations_by_code"`
+	TotalCommits    int                    `json:"total_commits"`
+	ValidCommits    int                    `json:"valid_commits"`
+	InvalidCommits  int                    `json:"invalid_commits"`
+	ViolationsByCode map[ViolationCode]int `json:"violations_by_code"`
 }
 
 // Rule describes a commit validation rule.
 type Rule struct {
-	Code        string `json:"code"`
-	Description string `json:"description"`
-	Severity    string `json:"severity"` // "info", "warning", "error"
+	Code        ViolationCode `json:"code"`
+	Description string        `json:"description"`
+	Severity    Severity      `json:"severity"`
 }
 
 // Commit represents a single commit's health status.
@@ -63,10 +63,10 @@ type Commit struct {
 
 // Violation represents a single validation violation.
 type Violation struct {
-	Code     string         `json:"code"`
-	Severity string         `json:"severity"` // "info", "warning", "error"
-	Message  string         `json:"message"`
-	Details  map[string]any `json:"details"`
+	Code     ViolationCode    `json:"code"`
+	Severity Severity         `json:"severity"`
+	Message  string           `json:"message"`
+	Details  map[string]any   `json:"details"`
 }
 
 // ViolationCode represents known violation codes.
@@ -171,8 +171,8 @@ type CommitsInfo struct {
 
 // Problem represents a traceability problem for a feature.
 type Problem struct {
-	Code     string         `json:"code"`
-	Severity string         `json:"severity"` // "info", "warning", "error"
+	Code     ProblemCode    `json:"code"`
+	Severity Severity       `json:"severity"`
 	Message  string         `json:"message"`
 	Details  map[string]any `json:"details"`
 }
@@ -209,9 +209,9 @@ const (
 ### Determinism Requirements
 
 1. **Key Sorting:**
-   - When marshaling to JSON, use `json.Marshal` with sorted keys
+   - `encoding/json` already sorts map keys deterministically
+   - When building reports, ensure all slice fields (e.g. file paths, SHAs) are sorted before marshaling
    - For maps, iterate keys in sorted order when building the report
-   - For arrays, ensure consistent ordering (already sorted in struct definitions)
 
 2. **Stable Output:**
    - Same inputs must produce identical JSON output
@@ -242,16 +242,16 @@ report := commithealth.Report{
         TotalCommits:   12,
         ValidCommits:   10,
         InvalidCommits: 2,
-        ViolationsByCode: map[string]int{
-            "MISSING_FEATURE_ID": 1,
-            "MULTIPLE_FEATURE_IDS": 1,
+        ViolationsByCode: map[commithealth.ViolationCode]int{
+            commithealth.ViolationCodeMissingFeatureID: 1,
+            commithealth.ViolationCodeMultipleFeatureIDs: 1,
         },
     },
     Rules: []commithealth.Rule{
         {
-            Code:        "MISSING_FEATURE_ID",
+            Code:        commithealth.ViolationCodeMissingFeatureID,
             Description: "Commit message is missing a Feature ID",
-            Severity:    "error",
+            Severity:    commithealth.SeverityError,
         },
     },
     Commits: map[string]commithealth.Commit{
