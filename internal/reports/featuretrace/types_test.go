@@ -144,7 +144,7 @@ func marshalCompactJSON(t *testing.T, v any) []byte {
 func readFile(t *testing.T, path string) []byte {
 	t.Helper()
 
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // G304: golden file path is derived from test directory
 	if err != nil {
 		t.Fatalf("failed to read golden file %s: %v", path, err)
 	}

@@ -74,6 +74,7 @@ type Violation struct {
 // ViolationCode represents known violation codes.
 type ViolationCode string
 
+// Violation code constants for commit message validation.
 const (
 	ViolationCodeMissingFeatureID           ViolationCode = "MISSING_FEATURE_ID"
 	ViolationCodeInvalidType                ViolationCode = "INVALID_TYPE"
@@ -91,6 +92,7 @@ const (
 // Severity represents violation severity levels.
 type Severity string
 
+// Severity level constants for commit validation violations.
 const (
 	SeverityInfo    Severity = "info"
 	SeverityWarning Severity = "warning"

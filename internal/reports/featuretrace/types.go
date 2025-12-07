@@ -49,6 +49,7 @@ type Feature struct {
 // FeatureStatus represents the lifecycle state of a feature.
 type FeatureStatus string
 
+// Feature status constants for feature lifecycle tracking.
 const (
 	FeatureStatusTodo       FeatureStatus = "todo"
 	FeatureStatusWIP        FeatureStatus = "wip"
@@ -92,6 +93,7 @@ type Problem struct {
 // ProblemCode represents known problem codes.
 type ProblemCode string
 
+// Problem code constants for feature traceability issues.
 const (
 	ProblemCodeMissingSpec                        ProblemCode = "MISSING_SPEC"
 	ProblemCodeMissingImplementation              ProblemCode = "MISSING_IMPLEMENTATION"
@@ -107,6 +109,7 @@ const (
 // Severity represents problem severity levels.
 type Severity string
 
+// Severity level constants for feature traceability problems.
 const (
 	SeverityInfo    Severity = "info"
 	SeverityWarning Severity = "warning"
