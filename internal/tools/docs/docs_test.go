@@ -119,7 +119,7 @@ domain: test
 	}
 
 	// Check domain is inferred from spec
-	data, err := os.ReadFile(outPath)
+	data, err := os.ReadFile(outPath) //nolint:gosec // test file
 	if err != nil {
 		t.Fatalf("failed to read overview: %v", err)
 	}

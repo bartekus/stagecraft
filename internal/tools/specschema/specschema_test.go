@@ -192,13 +192,13 @@ status: done
 domain: test
 ---
 `
-	if err := os.WriteFile(spec1, []byte(content1), 0o644); err != nil {
+	if err := os.WriteFile(spec1, []byte(content1), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to write spec1: %v", err)
 	}
 
 	// Create another valid spec in subdirectory
 	subDir := filepath.Join(specDir, "sub")
-	if err := os.MkdirAll(subDir, 0o755); err != nil {
+	if err := os.MkdirAll(subDir, 0o755); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to create subdir: %v", err)
 	}
 	spec2 := filepath.Join(subDir, "FEATURE2.md")
@@ -209,13 +209,13 @@ status: wip
 domain: test
 ---
 `
-	if err := os.WriteFile(spec2, []byte(content2), 0o644); err != nil {
+	if err := os.WriteFile(spec2, []byte(content2), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to write spec2: %v", err)
 	}
 
 	// Create non-markdown file (should be ignored)
 	nonMd := filepath.Join(specDir, "readme.txt")
-	if err := os.WriteFile(nonMd, []byte("not a spec"), 0o644); err != nil {
+	if err := os.WriteFile(nonMd, []byte("not a spec"), 0o644); err != nil { //nolint:gosec // test file
 		t.Fatalf("failed to write non-md file: %v", err)
 	}
 
