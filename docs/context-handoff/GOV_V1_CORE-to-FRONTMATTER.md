@@ -160,9 +160,9 @@ specvscli.CompareAllCommands(specs []Spec, cliCommands []CommandInfo) []DiffResu
 
 **Task**: Add YAML frontmatter to all existing spec files so they pass validation
 
-**Why**: Governance tools are integrated into CI but will fail until all specs have valid frontmatter. This is a prerequisite for Phase 2/3 of GOV_V1_CORE.
+**Why**: Governance tools are integrated into CI with hard-fail mode active (Phase 3). CI will fail until all specs have valid frontmatter. Adding frontmatter is required for governance checks to pass.
 
-**Status**: `todo` (prerequisite for Phase 2/3)
+**Status**: `todo` (blocking - CI currently fails until this is complete)
 
 **Dependencies**:
 
@@ -371,13 +371,17 @@ outputs:
 
 **Feature ID**: `GOV_V1_CORE`
 
-**Status**: `wip` (Phase 1 complete, Phase 2/3 pending)
+**Status**: `wip` (Phase 1 complete, Phase 2 complete, Phase 3 active)
 
 **Dependencies**: 
 
-- ✅ Phase 1 (ready)
+- ✅ Phase 1 (complete)
 
-- ⏸ All specs have frontmatter (recommended for Phase 2, required for Phase 3)
+- ✅ Phase 2 (complete - governance checks integrated)
+
+- ✅ Phase 3 (active - hard-fail mode enabled)
+
+- ⏸ All specs have frontmatter (required for governance checks to pass)
 
 **Phase 2**: ✅ **Complete** - Governance checks integrated into CI
 
@@ -391,7 +395,7 @@ outputs:
 
 **Note**: `--warn-only` flag is still available for local development convenience (e.g., `go run ./cmd/spec-vs-cli --warn-only`), but CI uses hard-fail mode by default.
 
-**Do NOT begin Phase 2/3 until frontmatter addition is complete or at least well underway.**
+**Important**: Phase 3 (hard-fail mode) is already active. CI will fail until all specs have frontmatter. This is expected behavior and provides pressure to complete the frontmatter rollout. The ideal rollout order (frontmatter first, then hard-fail) was not followed, but the system is coherent: hard-fail is on, failures are expected until frontmatter is complete, and frontmatter addition is the immediate next task.
 
 **Reference Spec**: `spec/governance/GOV_V1_CORE.md` section 6 (Rollout)
 
