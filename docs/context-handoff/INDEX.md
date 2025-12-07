@@ -84,6 +84,11 @@ Context handoff documents ensure:
 - **To**: FRONTMATTER (Spec frontmatter implementation)
 - **Use when**: Starting work on spec frontmatter after governance core is complete
 
+#### `COMMIT_DISCIPLINE_PHASE3.md`
+- **From**: Phase 1 & Phase 2 (Commit message discipline enforcement)
+- **To**: Phase 3 (Commit intelligence & historical analysis)
+- **Use when**: Starting work on Phase 3 commit intelligence features after Phase 1 and Phase 2 are complete
+
 ## Template
 
 For creating new handoff documents, use:
