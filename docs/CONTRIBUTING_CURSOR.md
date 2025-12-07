@@ -17,6 +17,8 @@ See https://www.gnu.org/licenses/ for license details.
 This guide explains how to use Cursor efficiently when working on Stagecraft,
 so we keep AI costs low while preserving ALIGNED / STRUC-C discipline.
 
+> **Note**: This guide is subordinate to [Agent.md](../Agent.md) – if anything conflicts, Agent.md wins.
+
 The high-level principles:
 
 - One **feature per thread**

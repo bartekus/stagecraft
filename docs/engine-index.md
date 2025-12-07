@@ -99,10 +99,10 @@ Open:
 - `spec/core/migration-registry.md` (for migration providers)
 
 ### Required Code Files
-- `pkg/providers/<provider-type>/interface.go` (interface definition)
-- `internal/providers/<provider-type>/<provider-name>.go` (implementation)
-- `internal/providers/<provider-type>/<provider-name>_test.go` (tests)
-- `pkg/providers/<provider-type>/<provider-name>.go` (if public API exists)
+- `pkg/providers/<provider-type>/<provider-type>.go` (interface/type definitions, e.g., `backend.go`, `migration.go`)
+- `pkg/providers/<provider-type>/registry.go` (registry implementation)
+- `internal/providers/<provider-type>/<provider-name>/<provider-name>.go` (implementation, may be in subdirectory)
+- `internal/providers/<provider-type>/<provider-name>/<provider-name>_test.go` (tests)
 
 ### Related Docs
 - `docs/providers/<provider-type>.md` (if exists)
@@ -114,9 +114,10 @@ Open:
 - spec/providers/backend/interface.md
 - spec/providers/backend/encore-ts.md
 - spec/core/backend-registry.md
-- pkg/providers/backend/interface.go
-- internal/providers/backend/encore.go
-- internal/providers/backend/encore_test.go
+- pkg/providers/backend/backend.go
+- pkg/providers/backend/registry.go
+- internal/providers/backend/encorets/encorets.go
+- internal/providers/backend/encorets/encorets_test.go
 ```
 
 ---
@@ -129,9 +130,10 @@ Open:
 - `spec/commands/migrate-basic.md` (if working on CLI integration)
 
 ### Required Code Files
-- `pkg/providers/migration/interface.go`
-- `internal/providers/migration/raw.go`
-- `internal/providers/migration/raw_test.go`
+- `pkg/providers/migration/migration.go` (interface/type definitions)
+- `pkg/providers/migration/registry.go` (registry implementation)
+- `internal/providers/migration/raw/raw.go` (implementation)
+- `internal/providers/migration/raw/raw_test.go` (tests)
 - `internal/cli/commands/migrate.go` (if touching CLI)
 
 ### Related Docs
@@ -200,12 +202,14 @@ These docs are useful across many feature types but should be opened explicitly 
 
 ### PROVIDER_* (Providers)
 - Spec: `spec/providers/<type>/interface.md` + `<provider>.md`
-- Code: `internal/providers/<type>/<provider>.go` + `_test.go`
-- Interface: `pkg/providers/<type>/interface.go`
+- Code: `internal/providers/<type>/<provider>/<provider>.go` + `_test.go` (may be in subdirectory)
+- Interface: `pkg/providers/<type>/<type>.go` (e.g., `backend.go`, `migration.go`)
+- Registry: `pkg/providers/<type>/registry.go`
 
 ### MIGRATION_* (Migrations)
 - Spec: `spec/providers/migration/*.md`
-- Code: `internal/providers/migration/*.go`
+- Code: `internal/providers/migration/<engine>/<engine>.go` (e.g., `raw/raw.go`)
+- Interface: `pkg/providers/migration/migration.go`
 
 ### GOV_* (Governance)
 - Spec: `spec/governance/*.md`
