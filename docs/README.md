@@ -20,6 +20,7 @@ This directory contains all project documentation. This guide explains the organ
 
 ### 🎯 Start Here
 
+- **[README.md](../README.md)** - High-level project description and overview
 - **[Agent.md](../Agent.md)** - Core governance and development protocol (read this first)
 - **[CONTRIBUTING.md](../CONTRIBUTING.md)** - Contribution guidelines
 - **[CONTRIBUTING_CURSOR.md](./CONTRIBUTING_CURSOR.md)** - AI-assisted development workflow

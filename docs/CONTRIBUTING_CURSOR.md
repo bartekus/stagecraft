@@ -249,6 +249,8 @@ Workflow:
 
    - Or use `scripts/run-all-checks.sh`
 
+   > **Note**: See [scripts/README.md](../../scripts/README.md) for a complete list of scripts and their usage.
+
 Avoid letting Cursor bulk-edit golden/testdata files across the repo in one go.
 
 ---

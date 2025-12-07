@@ -23,6 +23,8 @@ This document enumerates the **AI-critical** technical documentation that should
 - **Test-aware** - Include test files in context
 - **Minimal scope** - Only open files directly relevant to the current feature
 
+> **Note**: See [docs/README.md](./README.md) for complete documentation structure and navigation guide.
+
 ---
 
 ## Feature Type: CLI Commands
