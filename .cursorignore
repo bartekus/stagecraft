@@ -1,0 +1,66 @@
+# OS / Editor junk
+
+.DS_Store
+*.swp
+*.swo
+
+# Build artifacts & binaries
+
+bin/
+stagecraft
+coverage.out
+
+# Node/npm artifacts if they appear later
+
+node_modules/
+**/node_modules/
+
+# Go build cache (if checked in somewhere accidentally)
+
+*.test
+
+# Internal Stagecraft CLI state
+
+internal/cli/commands/.stagecraft/
+internal/cli/commands/.stagecraft/releases.json
+
+# Golden files & testdata fixtures
+
+internal/cli/commands/testdata/**
+internal/compose/testdata/**
+
+# Misc examples (include when you're explicitly working on them)
+
+examples/**
+
+# Blog & drafts (marketing/content, not core engine)
+
+blog/drafts/**
+blog/01-why-not-kamal.md
+blog/02-project-scaffold.md
+blog/03-migration-strategies.md
+blog/04-features-now-and-future.md
+blog/05-development-strategy.md
+
+# Discussions / exploratory docs
+
+discussions/**
+
+# GitHub / CI metadata (rarely needed in AI context)
+
+.github/**
+
+# Local tools / generated summaries
+
+gen-features-overview/**
+features-tool/**
+spec-validate/**
+spec-vs-cli/**
+cli-introspect/**
+
+# Misc:
+# (uncomment if you find Cursor scanning these too aggressively)
+# docs/context-handoff/**
+# docs/reference/**
+# docs/guides/**
+

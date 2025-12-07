@@ -1,0 +1,224 @@
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+
+<!--
+
+Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
+
+Copyright (C) 2025  Bartek Kus
+
+This program is free software licensed under the terms of the GNU AGPL v3 or later.
+
+See https://www.gnu.org/licenses/ for license details.
+
+-->
+
+# Stagecraft Engine Documentation Index
+
+This document enumerates the **AI-critical** technical documentation that should be routinely opened in Cursor when working on different feature types. This index helps maintain cost-efficient AI workflows while ensuring proper context.
+
+## Core Principles
+
+- **One feature per thread** - See [CONTRIBUTING_CURSOR.md](./CONTRIBUTING_CURSOR.md)
+- **Spec-first** - Always start with the relevant spec(s)
+- **Test-aware** - Include test files in context
+- **Minimal scope** - Only open files directly relevant to the current feature
+
+---
+
+## Feature Type: CLI Commands
+
+### Required Specs
+- `spec/commands/<command>.md` (e.g., `build.md`, `deploy.md`, `plan.md`)
+- `spec/core/global-flags.md` (for any command)
+- `spec/governance/GOV_V1_CORE.md` (for commands that interact with state)
+
+### Required Code Files
+- `internal/cli/root.go` (command registration)
+- `internal/cli/commands/<command>.go` (implementation)
+- `internal/cli/commands/<command>_test.go` (tests)
+
+### Related Core Files (as needed)
+- `internal/core/phases_*.go` (for build/deploy/rollback)
+- `internal/core/plan.go` (for plan command)
+- `internal/core/state/state.go` (for stateful commands)
+
+### Related Docs
+- `docs/CLI_<COMMAND>_ANALYSIS.md` (if exists)
+- `docs/CLI_<COMMAND>_IMPLEMENTATION_OUTLINE.md` (if exists)
+- `docs/context-handoff/*-to-CLI_<COMMAND>.md` (if exists)
+
+### Example: Working on `CLI_BUILD`
+```
+Open:
+- spec/commands/build.md
+- spec/core/global-flags.md
+- internal/cli/commands/build.go
+- internal/cli/commands/build_test.go
+- internal/core/phases_build.go
+- internal/cli/root.go (for registration context)
+```
+
+---
+
+## Feature Type: Core Engine (State, Plan, Config, etc.)
+
+### Required Specs
+- `spec/core/<feature>.md` (e.g., `state.md`, `plan.md`, `config.md`)
+- `spec/governance/GOV_V1_CORE.md` (for state-related features)
+
+### Required Code Files
+- `internal/core/<feature>.go` (or subdirectory)
+- `internal/core/<feature>_test.go` (or `internal/core/<feature>/<feature>_test.go`)
+- `pkg/config/*.go` (for config features)
+- `pkg/executil/*.go` (for executil features)
+- `pkg/logging/*.go` (for logging features)
+
+### Related Docs
+- `docs/analysis/*.md` (if exists for this feature)
+- `docs/context-handoff/*-to-CORE_<FEATURE>.md` (if exists)
+
+### Example: Working on `CORE_STATE`
+```
+Open:
+- spec/core/state.md
+- spec/core/state-consistency.md
+- spec/core/state-test-isolation.md
+- spec/governance/GOV_V1_CORE.md
+- internal/core/state/state.go
+- internal/core/state/state_test.go
+```
+
+---
+
+## Feature Type: Provider Implementation
+
+### Required Specs
+- `spec/providers/<provider-type>/interface.md` (e.g., `backend/interface.md`, `migration/interface.md`)
+- `spec/providers/<provider-type>/<provider-name>.md` (for specific provider, e.g., `backend/encore-ts.md`)
+- `spec/core/backend-registry.md` (for backend providers)
+- `spec/core/migration-registry.md` (for migration providers)
+
+### Required Code Files
+- `pkg/providers/<provider-type>/interface.go` (interface definition)
+- `internal/providers/<provider-type>/<provider-name>.go` (implementation)
+- `internal/providers/<provider-type>/<provider-name>_test.go` (tests)
+- `pkg/providers/<provider-type>/<provider-name>.go` (if public API exists)
+
+### Related Docs
+- `docs/providers/<provider-type>.md` (if exists)
+- `docs/registry-implementation-summary.md` (for registry-related work)
+
+### Example: Working on `PROVIDER_BACKEND_ENCORE`
+```
+Open:
+- spec/providers/backend/interface.md
+- spec/providers/backend/encore-ts.md
+- spec/core/backend-registry.md
+- pkg/providers/backend/interface.go
+- internal/providers/backend/encore.go
+- internal/providers/backend/encore_test.go
+```
+
+---
+
+## Feature Type: Migration Engine
+
+### Required Specs
+- `spec/providers/migration/raw.md` (for raw SQL migrations)
+- `spec/core/migration-registry.md`
+- `spec/commands/migrate-basic.md` (if working on CLI integration)
+
+### Required Code Files
+- `pkg/providers/migration/interface.go`
+- `internal/providers/migration/raw.go`
+- `internal/providers/migration/raw_test.go`
+- `internal/cli/commands/migrate.go` (if touching CLI)
+
+### Related Docs
+- `docs/providers/migrations.md`
+
+---
+
+## Feature Type: Compose Integration
+
+### Required Specs
+- `spec/core/compose.md`
+
+### Required Code Files
+- `internal/compose/compose.go`
+- `internal/compose/compose_test.go`
+
+---
+
+## Feature Type: Governance / Spec Compliance
+
+### Required Specs
+- `spec/governance/GOV_V1_CORE.md`
+- All relevant specs being governed
+
+### Required Code Files
+- Files implementing the governed features
+
+### Related Docs
+- `docs/analysis/GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md`
+- `docs/context-handoff/GOV_V1_CORE-to-*.md`
+
+---
+
+## Universal Reference Docs
+
+These docs are useful across many feature types but should be opened explicitly when needed:
+
+### Specs
+- `spec/overview.md` - High-level architecture
+- `spec/features.yaml` - Feature registry and dependencies
+- `spec/scaffold/stagecraft-dir.md` - Project structure
+
+### Implementation Docs
+- `docs/stagecraft-spec.md` - Complete spec reference
+- `docs/features/OVERVIEW.md` - Feature status overview
+- `docs/implementation-status.md` - Implementation tracking
+- `docs/registry-implementation-summary.md` - Provider registry details
+
+### Context Handoff
+- `docs/context-handoff/INDEX.md` - Handoff doc index
+- `docs/context-handoff/<specific-handoff>.md` - Feature-specific handoff
+
+---
+
+## Quick Reference by Feature ID Prefix
+
+### CLI_* (Commands)
+- Spec: `spec/commands/<command-name>.md`
+- Code: `internal/cli/commands/<command>.go` + `_test.go`
+- Root: `internal/cli/root.go`
+
+### CORE_* (Core Engine)
+- Spec: `spec/core/<feature-name>.md`
+- Code: `internal/core/<feature>.go` or `internal/core/<feature>/*.go`
+- Tests: Matching `_test.go` files
+
+### PROVIDER_* (Providers)
+- Spec: `spec/providers/<type>/interface.md` + `<provider>.md`
+- Code: `internal/providers/<type>/<provider>.go` + `_test.go`
+- Interface: `pkg/providers/<type>/interface.go`
+
+### MIGRATION_* (Migrations)
+- Spec: `spec/providers/migration/*.md`
+- Code: `internal/providers/migration/*.go`
+
+### GOV_* (Governance)
+- Spec: `spec/governance/*.md`
+- Code: All governed feature implementations
+
+---
+
+## Notes
+
+- **Don't open everything** - Only open files directly relevant to the current feature
+- **Use attachments** - For large specs, attach them rather than pasting inline
+- **Close threads** - When a feature is done, close the thread and start fresh for the next feature
+- **Check context-handoff** - Before starting, check if there's a handoff doc for your feature
+
+For detailed workflow guidance, see [CONTRIBUTING_CURSOR.md](./CONTRIBUTING_CURSOR.md).
+

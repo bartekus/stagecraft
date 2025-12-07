@@ -241,6 +241,23 @@ If the hook is missing, formatting or basic checks may fail in CI and PRs will b
 6. **Push to your fork**: `git push origin feature/your-feature-name`
 7. **Open a Pull Request**
 
+## AI-Assisted Development with Cursor
+
+If you're using Cursor or other AI coding assistants, we have a dedicated guide for efficient AI workflows:
+
+📖 **[Cursor Contributor Workflow Guide](docs/CONTRIBUTING_CURSOR.md)**
+
+This guide covers:
+- Thread hygiene (one feature per thread)
+- File hygiene (what to open vs. attach)
+- Using STRUC-C/L methodology in Cursor
+- Cost-efficient AI usage patterns
+- Examples of good vs. bad AI interactions
+
+For a quick reference on which specs and docs to open for different feature types, see:
+
+📖 **[Engine Documentation Index](docs/engine-index.md)**
+
 ## Questions?
 
 If you have questions about contributing or the license requirements, please open an issue or contact the maintainers.
