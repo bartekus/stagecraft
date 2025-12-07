@@ -1,3 +1,13 @@
+---
+feature: CORE_EXECUTIL
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Core ExecUtil – Process Execution Utilities
 
 - Feature ID: `CORE_EXECUTIL`

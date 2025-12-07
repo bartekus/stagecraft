@@ -1,3 +1,31 @@
+---
+feature: CLI_RELEASES
+version: v1
+status: done
+domain: commands
+inputs:
+  flags:
+    - name: --env
+      type: string
+      default: ""
+      description: "Filter releases by environment (optional)"
+    - name: --verbose
+      type: bool
+      default: "false"
+      description: "Enable verbose output"
+    - name: -v
+      type: bool
+      default: "false"
+      description: "Shorthand for --verbose"
+    - name: --config
+      type: string
+      default: ""
+      description: "Specify config file path"
+outputs:
+  exit_codes:
+    success: 0
+    error: 1
+---
 # `stagecraft releases` – Releases Command
 
 - Feature ID: `CLI_RELEASES`

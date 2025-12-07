@@ -1,3 +1,47 @@
+---
+feature: CLI_ROLLBACK
+version: v1
+status: done
+domain: commands
+inputs:
+  flags:
+    - name: --env
+      type: string
+      default: ""
+      description: "Target environment (required)"
+    - name: --to-previous
+      type: bool
+      default: "false"
+      description: "Rollback to immediately previous release"
+    - name: --to-release
+      type: string
+      default: ""
+      description: "Rollback to specific release ID"
+    - name: --to-version
+      type: string
+      default: ""
+      description: "Rollback to most recent release with matching version"
+    - name: --dry-run
+      type: bool
+      default: "false"
+      description: "Show rollback plan without creating release or executing phases"
+    - name: --verbose
+      type: bool
+      default: "false"
+      description: "Enable verbose output"
+    - name: -v
+      type: bool
+      default: "false"
+      description: "Shorthand for --verbose"
+    - name: --config
+      type: string
+      default: ""
+      description: "Specify config file path"
+outputs:
+  exit_codes:
+    success: 0
+    error: 1
+---
 # `stagecraft rollback` – Rollback Command
 
 - Feature ID: `CLI_ROLLBACK`

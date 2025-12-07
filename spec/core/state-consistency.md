@@ -1,3 +1,13 @@
+---
+feature: CORE_STATE_CONSISTENCY
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # CORE_STATE_CONSISTENCY - State Durability and Read-after-write Guarantees
 
 - **Feature ID**: `CORE_STATE_CONSISTENCY`

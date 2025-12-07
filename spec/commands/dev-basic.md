@@ -1,3 +1,23 @@
+---
+feature: CLI_DEV_BASIC
+version: v1
+status: done
+domain: commands
+inputs:
+  flags:
+    - name: --verbose
+      type: bool
+      default: "false"
+      description: "Enable verbose output"
+    - name: -v
+      type: bool
+      default: "false"
+      description: "Shorthand for --verbose"
+outputs:
+  exit_codes:
+    success: 0
+    error: 1
+---
 # `stagecraft dev` – Basic Development Command
 
 - Feature ID: `CLI_DEV_BASIC`

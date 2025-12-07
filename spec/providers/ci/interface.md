@@ -1,3 +1,13 @@
+---
+feature: PROVIDER_CI_INTERFACE
+version: v1
+status: done
+domain: providers
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # CI Provider Interface
 
 - Feature ID: `PROVIDER_CI_INTERFACE`

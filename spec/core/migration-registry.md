@@ -1,3 +1,13 @@
+---
+feature: CORE_MIGRATION_REGISTRY
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Migration Engine Registry
 
 - Feature ID: `CORE_MIGRATION_REGISTRY`

@@ -1,3 +1,43 @@
+---
+feature: CLI_BUILD
+version: v1
+status: done
+domain: commands
+inputs:
+  flags:
+    - name: --env
+      type: string
+      default: ""
+      description: "Target environment. MUST refer to a defined environment in config."
+    - name: -e
+      type: string
+      default: ""
+      description: "Shorthand for --env"
+    - name: --version
+      type: string
+      default: ""
+      description: "Override the build image tag/version"
+    - name: --push
+      type: bool
+      default: "false"
+      description: "If set, provider MUST push built images to registry after successful build"
+    - name: --dry-run
+      type: bool
+      default: "false"
+      description: "Print the resolved build plan and exit without performing any build"
+    - name: --services
+      type: string
+      default: ""
+      description: "Limit the build to specific services (comma-separated)"
+outputs:
+  exit_codes:
+    success: 0
+    user_error: 1
+    plan_failure: 2
+    build_failure: 3
+    push_failure: 4
+    internal_error: 5
+---
 # CLI_BUILD
 
 `stagecraft build` builds application container images for a given environment using the configured backend provider, without performing a deploy.  

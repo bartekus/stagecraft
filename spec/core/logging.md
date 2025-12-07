@@ -1,3 +1,13 @@
+---
+feature: CORE_LOGGING
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Core Logging – Structured Logging Helpers
 
 - Feature ID: `CORE_LOGGING`

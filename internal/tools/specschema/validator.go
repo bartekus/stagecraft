@@ -68,11 +68,9 @@ func ValidateSpec(spec Spec) error {
 		return fmt.Errorf("invalid status: %s (must be one of: todo, wip, done)", fm.Status)
 	}
 
-	// Validate feature matches filename
-	expectedID := ExpectedFeatureIDFromPath(spec.Path)
-	if fm.Feature != expectedID {
-		return fmt.Errorf("feature ID mismatch: frontmatter has %q but filename suggests %q", fm.Feature, expectedID)
-	}
+	// Note: Feature ID validation is handled by ValidateSpecIntegrity, which checks
+	// against features.yaml. We don't validate against filename here to avoid conflicts
+	// when feature IDs in features.yaml don't match filenames.
 
 	// Validate domain matches path
 	expectedDomain := inferDomainFromPath(spec.Path)

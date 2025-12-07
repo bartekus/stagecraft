@@ -1,3 +1,15 @@
+---
+feature: CLI_INIT
+version: v1
+status: done
+domain: commands
+inputs:
+  flags: []
+outputs:
+  exit_codes:
+    success: 0
+    error: 1
+---
 # `stagecraft init` – Project Bootstrap Command
 
 - Feature ID: `CLI_INIT`

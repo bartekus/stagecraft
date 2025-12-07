@@ -1,3 +1,13 @@
+---
+feature: CORE_STATE_TEST_ISOLATION
+version: v1
+status: done
+domain: core
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # CORE_STATE_TEST_ISOLATION - State Test Isolation for CLI Commands
 
 - **Feature ID**: `CORE_STATE_TEST_ISOLATION`

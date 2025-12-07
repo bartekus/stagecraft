@@ -1,3 +1,51 @@
+---
+feature: CLI_PLAN
+version: v1
+status: done
+domain: commands
+inputs:
+  flags:
+    - name: --env
+      type: string
+      default: ""
+      description: "Target environment name (required)"
+    - name: -e
+      type: string
+      default: ""
+      description: "Shorthand for --env"
+    - name: --version
+      type: string
+      default: ""
+      description: "Version to plan for (optional)"
+    - name: -v
+      type: string
+      default: ""
+      description: "Shorthand for --version"
+    - name: --services
+      type: string
+      default: ""
+      description: "Comma-separated list of services to include"
+    - name: --format
+      type: string
+      default: "text"
+      description: "Output format: text (default) or json"
+    - name: --verbose
+      type: bool
+      default: "false"
+      description: "Enable verbose output (reserved for future use)"
+    - name: -V
+      type: bool
+      default: "false"
+      description: "Shorthand for --verbose"
+    - name: --config
+      type: string
+      default: ""
+      description: "Override config file"
+outputs:
+  exit_codes:
+    success: 0
+    error: 1
+---
 # CLI_PLAN - Plan command
 
 - **Feature ID**: `CLI_PLAN`

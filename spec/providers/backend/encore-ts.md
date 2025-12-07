@@ -1,3 +1,13 @@
+---
+feature: PROVIDER_BACKEND_ENCORE
+version: v1
+status: done
+domain: providers
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # Encore.ts Backend Provider
 
 - Feature ID: `PROVIDER_BACKEND_ENCORE`
