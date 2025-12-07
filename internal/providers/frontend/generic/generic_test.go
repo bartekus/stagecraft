@@ -228,6 +228,7 @@ echo "Local: http://localhost:5173"
 sleep 1
 echo "Server running"
 `
+	//nolint:gosec // G306: 0755 is required for executable test scripts
 	if err := os.WriteFile(testScript, []byte(scriptContent), 0o755); err != nil {
 		t.Fatalf("failed to create test script: %v", err)
 	}
@@ -267,6 +268,7 @@ sleep 0.1
 echo "Server error"
 exit 1
 `
+	//nolint:gosec // G306: 0755 is required for executable test scripts
 	if err := os.WriteFile(testScript, []byte(scriptContent), 0o755); err != nil {
 		t.Fatalf("failed to create test script: %v", err)
 	}
@@ -305,6 +307,7 @@ while true; do
   echo "Still running..."
 done
 `
+	//nolint:gosec // G306: 0755 is required for executable test scripts
 	if err := os.WriteFile(testScript, []byte(scriptContent), 0o755); err != nil {
 		t.Fatalf("failed to create test script: %v", err)
 	}
@@ -354,6 +357,7 @@ while true; do
   sleep 1
 done
 `
+	//nolint:gosec // G306: 0755 is required for executable test scripts
 	if err := os.WriteFile(testScript, []byte(scriptContent), 0o755); err != nil {
 		t.Fatalf("failed to create test script: %v", err)
 	}

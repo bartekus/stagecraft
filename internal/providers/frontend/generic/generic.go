@@ -155,7 +155,7 @@ func (p *GenericProvider) runWithReadyPattern(ctx context.Context, cmd *exec.Cmd
 		scanner := bufio.NewScanner(stdoutPipe)
 		for scanner.Scan() {
 			line := scanner.Text()
-			os.Stdout.WriteString(line + "\n")
+			_, _ = os.Stdout.WriteString(line + "\n")
 			if re.MatchString(line) {
 				readyOnce.Do(func() {
 					select {
@@ -175,7 +175,7 @@ func (p *GenericProvider) runWithReadyPattern(ctx context.Context, cmd *exec.Cmd
 		scanner := bufio.NewScanner(stderrPipe)
 		for scanner.Scan() {
 			line := scanner.Text()
-			os.Stderr.WriteString(line + "\n")
+			_, _ = os.Stderr.WriteString(line + "\n")
 			if re.MatchString(line) {
 				readyOnce.Do(func() {
 					select {
