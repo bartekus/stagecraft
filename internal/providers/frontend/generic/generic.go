@@ -107,6 +107,8 @@ func (p *GenericProvider) Dev(ctx context.Context, opts frontend.DevOptions) err
 	}
 
 	// Otherwise, just stream output directly
+	// TODO: Consider using structured logging instead of direct stdout/stderr writes
+	// per Agent.md guidance. For v1, direct streaming is acceptable for dev-only provider.
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
@@ -147,6 +149,8 @@ func (p *GenericProvider) runWithReadyPattern(ctx context.Context, cmd *exec.Cmd
 	var readyOnce sync.Once
 
 	// Monitor stdout
+	// TODO: Consider using structured logging instead of direct os.Stdout writes
+	// per Agent.md guidance. For v1, direct streaming is acceptable for dev-only provider.
 	go func() {
 		scanner := bufio.NewScanner(stdoutPipe)
 		for scanner.Scan() {

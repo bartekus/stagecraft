@@ -11,7 +11,7 @@ outputs:
 # Generic Frontend Provider
 
 - Feature ID: `PROVIDER_FRONTEND_GENERIC`
-- Status: todo
+- Status: done
 - Depends on: `PROVIDER_FRONTEND_INTERFACE`, `CORE_EXECUTIL`
 
 ## Goal
