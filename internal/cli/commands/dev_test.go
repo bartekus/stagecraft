@@ -142,6 +142,101 @@ environments:
 	}
 }
 
+func TestDevCommand_UnknownFrontendProvider(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+
+	configContent := `project:
+  name: test-app
+backend:
+  provider: generic
+  providers:
+    generic:
+      dev:
+        command: ["echo", "backend"]
+frontend:
+  provider: unknown-frontend-provider
+  providers:
+    unknown-frontend-provider:
+      dev:
+        command: ["echo", "frontend"]
+environments:
+  dev:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+	originalDir, _ := os.Getwd()
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
+
+	root := &cobra.Command{Use: "stagecraft"}
+	root.AddCommand(NewDevCommand())
+
+	_, err := executeCommandForGolden(root, "dev")
+	if err == nil {
+		t.Fatalf("expected error for unknown frontend provider")
+	}
+
+	if !strings.Contains(err.Error(), "unknown frontend provider") {
+		t.Fatalf("expected unknown frontend provider error, got: %v", err)
+	}
+}
+
+func TestDevCommand_FrontendConfigValidated(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+
+	// Config with frontend but missing provider config
+	configContent := `project:
+  name: test-app
+backend:
+  provider: generic
+  providers:
+    generic:
+      dev:
+        command: ["echo", "backend"]
+frontend:
+  provider: generic
+  providers: {}
+environments:
+  dev:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+	originalDir, _ := os.Getwd()
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
+
+	root := &cobra.Command{Use: "stagecraft"}
+	root.AddCommand(NewDevCommand())
+
+	_, err := executeCommandForGolden(root, "dev")
+	if err == nil {
+		t.Fatalf("expected error for missing frontend provider config")
+	}
+
+	// Should fail during config validation or when getting provider config
+	if !strings.Contains(err.Error(), "frontend.providers") && !strings.Contains(err.Error(), "frontend") {
+		t.Fatalf("expected frontend config error, got: %v", err)
+	}
+}
+
 func TestDevCommand_Help(t *testing.T) {
 	root := &cobra.Command{Use: "stagecraft"}
 	root.AddCommand(NewDevCommand())
