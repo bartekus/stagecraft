@@ -27,17 +27,37 @@ import (
 func TestBuildMissingEnvFails(t *testing.T) {
 	t.Parallel()
 
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+
+	configContent := `project:
+  name: test-app
+environments:
+  staging:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+
+	// Get absolute path to avoid working directory race conditions in parallel tests
+	absConfigPath, err := filepath.Abs(configPath)
+	if err != nil {
+		t.Fatalf("failed to get absolute config path: %v", err)
+	}
+
 	root := newTestRootCommand()
 	root.AddCommand(NewBuildCommand())
 
-	_, err := executeCommandForGolden(root, "build")
+	_, err = executeCommandForGolden(root, "build", "--config", absConfigPath)
 	if err == nil {
 		t.Fatalf("expected error when --env is missing")
 	}
 
 	// Check for build error message about --env requirement
-	if !strings.Contains(err.Error(), "build") && !strings.Contains(err.Error(), "--env") && !strings.Contains(err.Error(), "env") {
-		t.Fatalf("unexpected error: %v", err)
+	// The error should be about missing --env flag, not about missing config file
+	if !strings.Contains(err.Error(), "--env") && !strings.Contains(err.Error(), "env") && !strings.Contains(err.Error(), "required") {
+		t.Fatalf("expected error about missing --env flag, got: %v", err)
 	}
 }
 

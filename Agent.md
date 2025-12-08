@@ -341,6 +341,8 @@ For CLI_INIT:
 Before any tests or code are written for a feature, AI MUST perform a three stage planning loop. This loop guarantees spec first, test first, deterministic, and provider safe development. It also ensures that all documentation and specifications remain aligned with the implementation.
 
 > **Documentation Organization**: For how docs are organized (engine vs narrative vs governance vs archive), see `docs/README.md`. AI MUST prefer `docs/engine` docs for implementation context and treat `docs/archive` as historical only.
+>
+> **Documentation Directory Structure**: Governance docs live under `docs/governance/`, coverage docs under `docs/coverage/`, and agent briefs under `docs/agents/`. AI MUST NOT create new governance, coverage, or agent brief documents in the repository root. All planning and operational documentation belongs under `docs/`.
 
 ⸻
 
