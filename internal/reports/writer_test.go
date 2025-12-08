@@ -12,7 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 */
 
 // Feature: PROVIDER_FRONTEND_GENERIC
-// Spec: docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md
+// Docs: docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md
 package reports
 
 import (

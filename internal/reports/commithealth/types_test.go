@@ -12,7 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 */
 
 // Feature: GOV_V1_CORE
-// Spec: docs/design/commit-reports-go-types.md
+// Docs: docs/design/commit-reports-go-types.md
 package commithealth
 
 import (

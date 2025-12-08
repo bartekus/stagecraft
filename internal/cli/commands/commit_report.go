@@ -27,7 +27,7 @@ import (
 )
 
 // Feature: PROVIDER_FRONTEND_GENERIC
-// Spec: docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md
+// Docs: docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md
 
 var newHistorySource = git.NewHistorySource
 

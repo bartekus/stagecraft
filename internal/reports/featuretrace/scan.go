@@ -14,7 +14,7 @@ See https://www.gnu.org/licenses/ for license details.
 // Package featuretrace defines the data model for feature traceability reports.
 //
 // Feature: PROVIDER_FRONTEND_GENERIC
-// Spec: docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md
+// Docs: docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md
 package featuretrace
 
 import (

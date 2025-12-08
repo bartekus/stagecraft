@@ -14,7 +14,7 @@ See https://www.gnu.org/licenses/ for license details.
 // Package commithealth defines the data model for commit health reports.
 //
 // Feature: GOV_V1_CORE
-// Spec: docs/design/commit-reports-go-types.md
+// Docs: docs/design/commit-reports-go-types.md
 package commithealth
 
 // Report represents the complete commit health report.
