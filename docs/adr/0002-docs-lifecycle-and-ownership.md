@@ -90,7 +90,7 @@ superseded_by: ../Agent.md # optional
 **Automated Enforcement:**
 - `implementation-status.md` is generated from `spec/features.yaml` (CI enforced)
 - `stagecraft-spec.md` is an index (no spec duplication)
-- CI checks for legacy path patterns (old `docs/analysis/` path, now `docs/engine/analysis/`, old outline patterns)
+- CI checks for legacy path patterns (former docs/analysis path, now docs/engine/analysis, and old outline patterns)
 - Scripts validate feature integrity and detect orphans
 
 **Manual Processes:**

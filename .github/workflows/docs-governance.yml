@@ -60,8 +60,8 @@ jobs:
             sudo apt-get install -y ripgrep
           fi
 
-          # Fail if old analysis path is referenced
-          if rg -n "docs/analysis/" docs spec scripts Agent.md .github 2>/dev/null || false; then
+          # Fail if old analysis path is referenced (excluding this workflow file itself)
+          if rg -n "docs/analysis/" docs spec scripts Agent.md .github 2>/dev/null | grep -v ".github/workflows/docs-governance.yml" | grep -q .; then
             echo "::error ::Found references to deprecated docs/analysis/ path. Use docs/engine/analysis/ instead."
             exit 1
           fi
