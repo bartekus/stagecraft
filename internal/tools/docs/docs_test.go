@@ -57,7 +57,7 @@ func TestGenerateFeatureOverview_CreatesFile(t *testing.T) {
 	}
 
 	// Check content
-	data, err := os.ReadFile(outPath) //nolint:gosec // test file //nolint:gosec // test file
+	data, err := os.ReadFile(outPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("failed to read overview file: %v", err)
 	}
@@ -246,7 +246,7 @@ func TestGenerateImplementationStatus_CreatesFile(t *testing.T) {
 	}
 
 	// Check content
-	data, err := os.ReadFile(outPath)
+	data, err := os.ReadFile(outPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("failed to read implementation status file: %v", err)
 	}
@@ -299,7 +299,7 @@ func TestGenerateImplementationStatus_WithMultipleFeatures(t *testing.T) {
 	}
 
 	// Check content
-	data, err := os.ReadFile(outPath)
+	data, err := os.ReadFile(outPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("failed to read implementation status file: %v", err)
 	}

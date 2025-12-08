@@ -191,12 +191,12 @@ func TestRawEngine_Run_EmptyMigrations(t *testing.T) {
 	originalEnv := os.Getenv(opts.ConnectionEnv)
 	defer func() {
 		if originalEnv != "" {
-			os.Setenv(opts.ConnectionEnv, originalEnv)
+			_ = os.Setenv(opts.ConnectionEnv, originalEnv)
 		} else {
-			os.Unsetenv(opts.ConnectionEnv)
+			_ = os.Unsetenv(opts.ConnectionEnv)
 		}
 	}()
-	os.Unsetenv(opts.ConnectionEnv)
+	_ = os.Unsetenv(opts.ConnectionEnv)
 
 	err := e.Run(context.Background(), opts)
 	if err == nil {
@@ -225,12 +225,12 @@ func TestRawEngine_Run_MissingConnectionEnv(t *testing.T) {
 	originalEnv := os.Getenv("DATABASE_URL")
 	defer func() {
 		if originalEnv != "" {
-			os.Setenv("DATABASE_URL", originalEnv)
+			_ = os.Setenv("DATABASE_URL", originalEnv)
 		} else {
-			os.Unsetenv("DATABASE_URL")
+			_ = os.Unsetenv("DATABASE_URL")
 		}
 	}()
-	os.Unsetenv("DATABASE_URL")
+	_ = os.Unsetenv("DATABASE_URL")
 
 	opts := migration.RunOptions{
 		MigrationPath: tmpDir,

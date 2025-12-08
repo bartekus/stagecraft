@@ -8,6 +8,7 @@
 //
 // See https://www.gnu.org/licenses/ for license details.
 
+// Package main provides a tool to validate spec file references in Go source code.
 package main
 
 // Feature: GOV_V1_CORE
@@ -35,13 +36,14 @@ type SpecError struct {
 }
 
 func main() {
-	if err := run("."); err != nil {
+	if err := run(); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 }
 
-func run(root string) error {
+func run() error {
+	const root = "."
 	files, err := walkGoFiles(root)
 	if err != nil {
 		return fmt.Errorf("walking go files: %w", err)
@@ -50,7 +52,7 @@ func run(root string) error {
 	var specErrors []SpecError
 
 	for _, f := range files {
-		content, err := os.ReadFile(f)
+		content, err := os.ReadFile(f) //nolint:gosec // G304: file path is from walkGoFiles, safe
 		if err != nil {
 			specErrors = append(specErrors, SpecError{
 				File: f,

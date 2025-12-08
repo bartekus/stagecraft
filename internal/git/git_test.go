@@ -165,7 +165,7 @@ func TestHistorySourceImpl_Commits(t *testing.T) {
 
 	// Create and commit a file
 	testFile := filepath.Join(repoPath, "test.txt")
-	if err := os.WriteFile(testFile, []byte("test content"), 0o644); err != nil {
+	if err := os.WriteFile(testFile, []byte("test content"), 0o600); err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
 
@@ -290,7 +290,7 @@ func TestRunGitLog(t *testing.T) {
 
 	// Create and commit a file
 	testFile := filepath.Join(repoPath, "test.txt")
-	if err := os.WriteFile(testFile, []byte("test"), 0o644); err != nil {
+	if err := os.WriteFile(testFile, []byte("test"), 0o600); err != nil {
 		t.Fatalf("failed to create test file: %v", err)
 	}
 
