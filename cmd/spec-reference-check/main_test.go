@@ -334,11 +334,11 @@ func TestRun_ValidReferences(t *testing.T) {
 
 	// Create spec file
 	specDir := filepath.Join(tmpDir, "spec", "commands")
-	if err := os.MkdirAll(specDir, 0o750); err != nil {
+	if err := os.MkdirAll(specDir, 0o755); err != nil {
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 	specFile := filepath.Join(specDir, "deploy.md")
-	if err := os.WriteFile(specFile, []byte("# Deploy"), 0o600); err != nil {
+	if err := os.WriteFile(specFile, []byte("# Deploy\n"), 0o644); err != nil {
 		t.Fatalf("failed to create spec file: %v", err)
 	}
 
@@ -352,28 +352,13 @@ func TestRun_ValidReferences(t *testing.T) {
 func main() {
 }
 `)
-	if err := os.WriteFile(goFile, goContent, 0o600); err != nil {
+	if err := os.WriteFile(goFile, []byte(goContent), 0o644); err != nil {
 		t.Fatalf("failed to create go file: %v", err)
 	}
 
-	// Change to tmpDir for relative path resolution
-	originalDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("failed to get current dir: %v", err)
-	}
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore dir: %v", err)
-		}
-	}()
-
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change dir: %v", err)
-	}
-
 	// Run should succeed
-	if err := run(); err != nil {
-		t.Errorf("run() = %v, want nil", err)
+	if err := run(tmpDir); err != nil {
+		t.Errorf("run(%q) = %v, want nil", tmpDir, err)
 	}
 }
 
@@ -392,26 +377,12 @@ func TestRun_MissingSpecFile(t *testing.T) {
 func main() {
 }
 `)
-	if err := os.WriteFile(goFile, goContent, 0o600); err != nil {
+	if err := os.WriteFile(goFile, goContent, 0o644); err != nil {
 		t.Fatalf("failed to create go file: %v", err)
 	}
 
-	originalDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("failed to get current dir: %v", err)
-	}
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore dir: %v", err)
-		}
-	}()
-
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change dir: %v", err)
-	}
-
 	// Run should fail
-	if err := run(); err == nil {
+	if err := run(tmpDir); err == nil {
 		t.Error("run() = nil, want error")
 	} else if !strings.Contains(err.Error(), "spec reference validation failed") {
 		t.Errorf("run() = %v, want error about spec reference validation", err)
@@ -433,26 +404,12 @@ func TestRun_InvalidPathFormat(t *testing.T) {
 func main() {
 }
 `)
-	if err := os.WriteFile(goFile, goContent, 0o600); err != nil {
+	if err := os.WriteFile(goFile, goContent, 0o644); err != nil {
 		t.Fatalf("failed to create go file: %v", err)
 	}
 
-	originalDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("failed to get current dir: %v", err)
-	}
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore dir: %v", err)
-		}
-	}()
-
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change dir: %v", err)
-	}
-
 	// Run should fail with invalid path format error
-	if err := run(); err == nil {
+	if err := run(tmpDir); err == nil {
 		t.Error("run() = nil, want error")
 	} else if !strings.Contains(err.Error(), "spec reference validation failed") {
 		t.Errorf("run() = %v, want error about spec reference validation", err)
@@ -466,11 +423,11 @@ func TestRun_IgnoresTestdata(t *testing.T) {
 
 	// Create spec file that main.go will reference
 	specDir := filepath.Join(tmpDir, "spec", "commands")
-	if err := os.MkdirAll(specDir, 0o750); err != nil {
+	if err := os.MkdirAll(specDir, 0o755); err != nil {
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 	specFile := filepath.Join(specDir, "deploy.md")
-	if err := os.WriteFile(specFile, []byte("# Deploy"), 0o600); err != nil {
+	if err := os.WriteFile(specFile, []byte("# Deploy\n"), 0o644); err != nil {
 		t.Fatalf("failed to create spec file: %v", err)
 	}
 
@@ -484,13 +441,13 @@ func TestRun_IgnoresTestdata(t *testing.T) {
 func main() {
 }
 `)
-	if err := os.WriteFile(validFile, validContent, 0o600); err != nil {
+	if err := os.WriteFile(validFile, validContent, 0o644); err != nil {
 		t.Fatalf("failed to create valid.go: %v", err)
 	}
 
 	// Create testdata directory with invalid reference (should be ignored)
 	testdataDir := filepath.Join(tmpDir, "testdata")
-	if err := os.MkdirAll(testdataDir, 0o750); err != nil {
+	if err := os.MkdirAll(testdataDir, 0o755); err != nil {
 		t.Fatalf("failed to create testdata dir: %v", err)
 	}
 
@@ -503,28 +460,14 @@ func main() {
 func test() {
 }
 `)
-	if err := os.WriteFile(testdataFile, testdataContent, 0o600); err != nil {
+	if err := os.WriteFile(testdataFile, testdataContent, 0o644); err != nil {
 		t.Fatalf("failed to create testdata file: %v", err)
-	}
-
-	originalDir, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("failed to get current dir: %v", err)
-	}
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore dir: %v", err)
-		}
-	}()
-
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change dir: %v", err)
 	}
 
 	// Run should succeed because:
 	// 1. main.go has a valid reference to an existing spec file
 	// 2. testdata files are ignored (even though they have invalid references)
-	if err := run(); err != nil {
-		t.Errorf("run() = %v, want nil (testdata should be ignored)", err)
+	if err := run(tmpDir); err != nil {
+		t.Errorf("run(%q) = %v, want nil (testdata should be ignored)", tmpDir, err)
 	}
 }

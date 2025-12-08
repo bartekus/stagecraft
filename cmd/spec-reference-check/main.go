@@ -36,14 +36,13 @@ type SpecError struct {
 }
 
 func main() {
-	if err := run(); err != nil {
+	if err := run("."); err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 }
 
-func run() error {
-	const root = "."
+func run(root string) error {
 	files, err := walkGoFiles(root)
 	if err != nil {
 		return fmt.Errorf("walking go files: %w", err)
@@ -75,7 +74,9 @@ func run() error {
 				continue
 			}
 
-			if _, err := os.Stat(r.Path); err != nil {
+			// Resolve spec path relative to root directory
+			specPath := filepath.Join(root, r.Path)
+			if _, err := os.Stat(specPath); err != nil {
 				if os.IsNotExist(err) {
 					specErrors = append(specErrors, SpecError{
 						File: r.File,
