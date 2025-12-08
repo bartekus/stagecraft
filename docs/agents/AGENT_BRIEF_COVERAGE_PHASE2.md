@@ -2,7 +2,7 @@
 
 **Feature ID**: GOV_V1_CORE  
 **Spec**: `spec/governance/GOV_V1_CORE.md`  
-**Context**: Non-blocking coverage improvements for low-coverage packages. See `TEST_COVERAGE_ANALYSIS.md`, `COVERAGE_COMPLIANCE_PLAN.md`, and `AGENT_BRIEF_COVERAGE_PHASE1.md`.
+**Context**: Non-blocking coverage improvements for low-coverage packages. See `docs/coverage/TEST_COVERAGE_ANALYSIS.md`, `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md`, and `docs/agents/AGENT_BRIEF_COVERAGE_PHASE1.md`.
 
 ---
 
@@ -16,7 +16,7 @@ This is a **quality lift**, not a compliance unblock. Phase 2 may only start aft
 
 ## Scope
 
-Focus strictly on the three low-coverage packages called out in `TEST_COVERAGE_ANALYSIS.md`:
+Focus strictly on the three low-coverage packages called out in `docs/coverage/TEST_COVERAGE_ANALYSIS.md`:
 
 1. **`internal/git`**
    - **Current**: 46.9%
@@ -230,17 +230,17 @@ Phase 2 is complete when **all** of the following hold:
 
 - [ ] Run `./scripts/run-all-checks.sh`
 - [ ] Run `./scripts/check-coverage.sh --fail-on-warning`
-- [ ] Capture updated coverage summary (for future `TEST_COVERAGE_ANALYSIS.md` refresh)
+- [ ] Capture updated coverage summary (for future `docs/coverage/TEST_COVERAGE_ANALYSIS.md` refresh)
 - [ ] Ensure working directory is clean and branch is ready for PR
 
 ---
 
 ## Reference Documents
 
-- `TEST_COVERAGE_ANALYSIS.md` – Original coverage analysis and metrics
-- `COVERAGE_COMPLIANCE_PLAN.md` – Phase 1 and Phase 2 framing
-- `COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Detailed Phase 2 plan
-- `AGENT_BRIEF_COVERAGE_PHASE1.md` – Phase 1 compliance brief
+- `docs/coverage/TEST_COVERAGE_ANALYSIS.md` – Original coverage analysis and metrics
+- `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` – Phase 1 and Phase 2 framing
+- `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Detailed Phase 2 plan
+- `docs/agents/AGENT_BRIEF_COVERAGE_PHASE1.md` – Phase 1 compliance brief
 - `spec/governance/GOV_V1_CORE.md` – Governance specification
 - `Agent.md` – Development protocol and constraints
 

@@ -280,7 +280,7 @@ These are documentation/architecture features that don't require code tests:
 
 ### Phase 1: Compliance Unblock (Current Priority)
 
-See `COVERAGE_COMPLIANCE_PLAN.md` for detailed action plan.
+See `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` for detailed action plan.
 
 **Immediate Actions** (Required for compliance):
 1. Fix 4 failing tests (Phase 1.A)
@@ -292,14 +292,14 @@ See `COVERAGE_COMPLIANCE_PLAN.md` for detailed action plan.
    - `pkg/providers/backend/backend_test.go`
    - `test/e2e/deploy_smoke_test.go`
 
-**Agent Brief**: See `AGENT_BRIEF_COVERAGE_PHASE1.md` for ready-to-paste task specification.
+**Agent Brief**: See `docs/agents/AGENT_BRIEF_COVERAGE_PHASE1.md` for ready-to-paste task specification.
 
 ### Phase 2: Quality Lift (Non-Blocking)
 
 **Status**: Planned, not yet started  
 **Prerequisite**: Phase 1 must be complete
 
-See `COVERAGE_COMPLIANCE_PLAN_PHASE2.md` and `AGENT_BRIEF_COVERAGE_PHASE2.md` for detailed Phase 2 plan.
+See `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` and `docs/agents/AGENT_BRIEF_COVERAGE_PHASE2.md` for detailed Phase 2 plan.
 
 **Target Packages:**
 - `internal/git` (46.9% → ≥ 70%)

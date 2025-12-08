@@ -328,7 +328,7 @@ fi
 ## Related Documents
 
 - `spec/governance/GOV_V1_CORE.md` – Governance feature specification
-- `COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Phase 2 plan (Phase 3 section)
+- `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Phase 2 plan (Phase 3 section)
 - `scripts/run-all-checks.sh` – Current implementation
 - `Agent.md` – Development protocol
 

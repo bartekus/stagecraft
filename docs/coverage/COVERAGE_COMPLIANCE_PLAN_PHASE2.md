@@ -28,7 +28,7 @@ Phase 2 focuses on raising coverage for low-coverage, non-core packages to stabl
 
 ### In Scope
 
-**Three low-coverage packages** identified in `TEST_COVERAGE_ANALYSIS.md`:
+**Three low-coverage packages** identified in `docs/coverage/TEST_COVERAGE_ANALYSIS.md`:
 
 1. **`internal/git`** (46.9% → ≥ 70%)
 2. **`internal/tools/docs`** (37.9% → ≥ 60%)
@@ -328,10 +328,10 @@ See `TEST_COVERAGE_ANALYSIS.md` for detailed recommendations.
 
 ## Related Documents
 
-- `TEST_COVERAGE_ANALYSIS.md` - Detailed coverage analysis and findings
-- `COVERAGE_COMPLIANCE_PLAN.md` - Phase 1 and overall plan
-- `AGENT_BRIEF_COVERAGE_PHASE1.md` - Phase 1 agent brief
-- `AGENT_BRIEF_COVERAGE_PHASE2.md` - Phase 2 agent brief (ready-to-paste)
+- `docs/coverage/TEST_COVERAGE_ANALYSIS.md` - Detailed coverage analysis and findings
+- `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` - Phase 1 and overall plan
+- `docs/agents/AGENT_BRIEF_COVERAGE_PHASE1.md` - Phase 1 agent brief
+- `docs/agents/AGENT_BRIEF_COVERAGE_PHASE2.md` - Phase 2 agent brief (ready-to-paste)
 - `spec/governance/GOV_V1_CORE.md` - Governance feature specification
 - `Agent.md` - Development protocol
 
