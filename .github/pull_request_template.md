@@ -16,7 +16,7 @@ Brief description of what this PR implements.
 
 ## Changes
 
-- [ ] Analysis Brief: `docs/analysis/<FEATURE_ID>.md` (created/updated)
+- [ ] Analysis Brief: `docs/engine/analysis/<FEATURE_ID>.md` (created/updated)
 - [ ] Implementation Outline: `docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md` (created/updated)
 - [ ] Spec: `spec/<domain>/<feature>.md` (created/updated)
 - [ ] Tests: (list test files added/updated)
