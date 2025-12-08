@@ -2,7 +2,7 @@
 
 **Feature ID**: GOV_V1_CORE  
 **Spec**: `spec/governance/GOV_V1_CORE.md`  
-**Context**: Test coverage & governance hardening. See `TEST_COVERAGE_ANALYSIS.md` and `COVERAGE_COMPLIANCE_PLAN.md`.
+**Context**: Test coverage & governance hardening. See `docs/coverage/TEST_COVERAGE_ANALYSIS.md` and `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md`.
 
 ---
 
@@ -123,7 +123,7 @@ Bring Stagecraft into coverage compliance by completing **Phase 1 – Compliance
 - **No failing tests** across the suite
 - **`pkg/config` coverage ≥ 80%**
 - **Both missing test files exist** and are wired to their Feature IDs
-- `TEST_COVERAGE_ANALYSIS.md` remains accurate (or minimally updated to reflect "fully compliant" status)
+- `docs/coverage/TEST_COVERAGE_ANALYSIS.md` remains accurate (or minimally updated to reflect "fully compliant" status)
 
 ---
 
@@ -146,8 +146,8 @@ Bring Stagecraft into coverage compliance by completing **Phase 1 – Compliance
 
 ## Reference Documents
 
-- `TEST_COVERAGE_ANALYSIS.md` - Detailed analysis
-- `COVERAGE_COMPLIANCE_PLAN.md` - Complete action plan
+- `docs/coverage/TEST_COVERAGE_ANALYSIS.md` - Detailed analysis
+- `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` - Complete action plan
 - `spec/governance/GOV_V1_CORE.md` - Feature specification
 - `Agent.md` - Development protocol
 

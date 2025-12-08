@@ -8,7 +8,7 @@
 
 ## Overview
 
-This plan addresses the critical compliance blockers identified in `TEST_COVERAGE_ANALYSIS.md` to bring Stagecraft into full test coverage compliance without changing user-facing behavior.
+This plan addresses the critical compliance blockers identified in `docs/coverage/TEST_COVERAGE_ANALYSIS.md` to bring Stagecraft into full test coverage compliance without changing user-facing behavior.
 
 **Current Status**: ⚠️ Partially Compliant
 - Overall coverage: 71.7% ✅ (exceeds 60%)
@@ -277,8 +277,8 @@ Phase 2 focuses on raising coverage for low-coverage, non-core packages to stabl
 - `internal/providers/migration/raw` (33.3% → ≥ 70%)
 
 **See:**
-- `COVERAGE_COMPLIANCE_PLAN_PHASE2.md` - Detailed Phase 2 plan
-- `AGENT_BRIEF_COVERAGE_PHASE2.md` - Ready-to-paste Phase 2 agent brief
+- `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` - Detailed Phase 2 plan
+- `docs/agents/AGENT_BRIEF_COVERAGE_PHASE2.md` - Ready-to-paste Phase 2 agent brief
 
 ---
 
@@ -291,13 +291,13 @@ Phase 2 focuses on raising coverage for low-coverage, non-core packages to stabl
 - Add integration test scenarios
 - Coverage trend monitoring
 
-See `TEST_COVERAGE_ANALYSIS.md` for detailed recommendations.
+See `docs/coverage/TEST_COVERAGE_ANALYSIS.md` for detailed recommendations.
 
 ---
 
 ## Related Documents
 
-- `TEST_COVERAGE_ANALYSIS.md` - Detailed coverage analysis and findings
+- `docs/coverage/TEST_COVERAGE_ANALYSIS.md` - Detailed coverage analysis and findings
 - `spec/governance/GOV_V1_CORE.md` - Governance feature specification
 - `scripts/check-coverage.sh` - Coverage validation script
 - `Agent.md` - Development protocol

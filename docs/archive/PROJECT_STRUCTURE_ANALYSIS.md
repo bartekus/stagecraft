@@ -246,7 +246,7 @@ docs/
 
 **Recommendation**:
 - Keep `Agent.md`, `CONTRIBUTING.md`, `README.md` in root
-- Move `ASSESSMENT.md` → `docs/analysis/ASSESSMENT.md`
+- Move `ASSESSMENT.md` → `docs/engine/analysis/ASSESSMENT.md`
 - Move `IMPROVEMENTS.md` → `docs/narrative/IMPROVEMENTS.md` (if creating narrative/)
 - `PR_SUMMARY.md` - Review if still needed, otherwise remove
 

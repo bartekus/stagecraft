@@ -47,6 +47,8 @@ gen-implementation-status
 spec-validate
 spec-reference-check
 spec-vs-cli
+feature-map-check
+feature-dashboard
 stagecraft
 coverage.out
 

@@ -33,8 +33,8 @@ We adopt a structured documentation model with explicit lifecycle states and aut
 ```
 docs/
 ├── engine/              # Implementation-aligned, AI-critical
-│   ├── analysis/       # Feature analysis briefs
-│   ├── outlines/        # Implementation outlines
+│   ├── analysis/       # Feature analysis briefs (docs/engine/analysis/<FEATURE_ID>.md)
+│   ├── outlines/        # Implementation outlines (docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md)
 │   ├── status/          # Generated status tracking
 │   └── engine-index.md  # File location guide
 ├── narrative/           # Human-facing planning and overview
@@ -90,7 +90,7 @@ superseded_by: ../Agent.md # optional
 **Automated Enforcement:**
 - `implementation-status.md` is generated from `spec/features.yaml` (CI enforced)
 - `stagecraft-spec.md` is an index (no spec duplication)
-- CI checks for legacy path patterns (`docs/analysis/`, old outline patterns)
+- CI checks for legacy path patterns (former docs/analysis path, now docs/engine/analysis, and old outline patterns)
 - Scripts validate feature integrity and detect orphans
 
 **Manual Processes:**

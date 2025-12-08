@@ -2,7 +2,7 @@
 
 **Feature ID**: GOV_V1_CORE  
 **Spec**: `spec/governance/GOV_V1_CORE.md`  
-**Context**: Hardening governance tooling to eliminate false positives in spec reference validation. See `COVERAGE_COMPLIANCE_PLAN_PHASE2.md` Phase 3 section.
+**Context**: Hardening governance tooling to eliminate false positives in spec reference validation. See `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` Phase 3 section.
 
 **Status**: ✅ Phase 3 implemented and merged. `Spec:` is now reserved for `spec/*.md` files and enforced by `cmd/spec-reference-check`. All non-spec references converted to `Docs:` comments.
 
@@ -205,7 +205,7 @@ Phase 3 is complete when **all** of the following hold:
 ## Reference Documents
 
 - `spec/governance/GOV_V1_CORE.md` – Governance feature specification
-- `COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Phase 2 plan (Phase 3 section)
+- `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Phase 2 plan (Phase 3 section)
 - `scripts/run-all-checks.sh` – Current implementation (lines 128-151)
 - `Agent.md` – Development protocol and constraints
 

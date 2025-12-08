@@ -106,8 +106,8 @@ List feature, spec, or provider dependencies:
 After this issue is approved:
 
 1. Run `./scripts/new-feature.sh FEATURE_ID DOMAIN feature-name` to create skeleton
-2. Fill in Analysis Brief (`docs/analysis/<FEATURE_ID>.md`)
-3. Fill in Implementation Outline (`docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md`)
+2. Fill in Analysis Brief (`docs/engine/analysis/<FEATURE_ID>.md`)
+3. Fill in Implementation Outline (`docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md`)
 4. Fill in Spec (`spec/<domain>/<feature>.md`)
 5. Add feature entry to `spec/features.yaml`
 6. Begin implementation following Feature Planning Protocol (see `Agent.md`)

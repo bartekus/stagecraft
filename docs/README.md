@@ -87,6 +87,61 @@ This directory contains all project documentation organized by purpose and lifec
 - `COMMIT_MESSAGE_ANALYSIS.md` - Commit message format analysis
 - `STRATEGIC_DOC_MIGRATION.md` - Strategic document handling guide
 
+#### Feature Mapping Check (GOV_V1_CORE Phase 4)
+
+Stagecraft enforces a **Feature Mapping Invariant** to keep specs, code, and tests aligned.
+
+**Run:**
+
+```bash
+go run ./cmd/feature-map-check --root . --features spec/features.yaml
+```
+
+**You will see output like:**
+
+```
+ERROR [CLI_DEPLOY] internal/cli/commands/deploy.go:42: missing Spec header
+WARNING [CLI_DEV] internal/cli/commands/dev.go:37: todo feature has spec but no implementation
+```
+
+**How to read this:**
+
+- **Severity**
+  - `ERROR` — breaks governance; CI will fail.
+  - `WARNING` — advisory for `todo` / partially-implemented features.
+- **Feature ID**
+  - The `[...]` block indicates the Feature ID from `spec/features.yaml`.
+- **Location**
+  - `file:line` points at the header or code line causing the issue.
+
+**Common fixes:**
+
+- **Missing `Feature:` header:**
+  - Add at top of file:
+    ```go
+    // Feature: CLI_DEPLOY
+    // Spec: spec/commands/deploy.md
+    ```
+- **Mismatched spec path:**
+  - Ensure `Spec:` path matches the spec entry in `spec/features.yaml`.
+- **`done` feature with no tests:**
+  - Add appropriate tests with matching `Feature:` header.
+
+#### Feature Governance Dashboard
+
+For a high-level summary of feature governance health, use the dashboard tool:
+
+```bash
+go run ./cmd/feature-dashboard --root . --features spec/features.yaml
+```
+
+This provides a snapshot view of:
+- Feature counts by status (todo, wip, done, deprecated, removed)
+- Missing specs, implementations, or tests
+- Dangling feature IDs and orphan specs
+
+Use this when planning or reviewing GOV_V1_CORE to get a governance overview.
+
 ### 📦 Archive (`archive/`)
 
 **Historical, completed work (frozen):**
