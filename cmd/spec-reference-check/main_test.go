@@ -338,7 +338,7 @@ func TestRun_ValidReferences(t *testing.T) {
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 	specFile := filepath.Join(specDir, "deploy.md")
-	if err := os.WriteFile(specFile, []byte("# Deploy"), 0o644); err != nil {
+	if err := os.WriteFile(specFile, []byte("# Deploy"), 0o600); err != nil {
 		t.Fatalf("failed to create spec file: %v", err)
 	}
 
@@ -470,7 +470,7 @@ func TestRun_IgnoresTestdata(t *testing.T) {
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 	specFile := filepath.Join(specDir, "deploy.md")
-	if err := os.WriteFile(specFile, []byte("# Deploy"), 0o644); err != nil {
+	if err := os.WriteFile(specFile, []byte("# Deploy"), 0o600); err != nil {
 		t.Fatalf("failed to create spec file: %v", err)
 	}
 
@@ -484,7 +484,7 @@ func TestRun_IgnoresTestdata(t *testing.T) {
 func main() {
 }
 `)
-	if err := os.WriteFile(validFile, validContent, 0o644); err != nil {
+	if err := os.WriteFile(validFile, validContent, 0o600); err != nil {
 		t.Fatalf("failed to create valid.go: %v", err)
 	}
 
@@ -503,7 +503,7 @@ func main() {
 func test() {
 }
 `)
-	if err := os.WriteFile(testdataFile, testdataContent, 0o644); err != nil {
+	if err := os.WriteFile(testdataFile, testdataContent, 0o600); err != nil {
 		t.Fatalf("failed to create testdata file: %v", err)
 	}
 
