@@ -248,3 +248,52 @@ This feature is considered **done** when:
 
 - Phase 3: Flip to "hard fail": PRs cannot merge if any governance checks fail.
 
+- Phase 4: Feature Mapping Invariant & Cross-Validation (see below).
+
+## 7. Phase 4 — Feature Mapping Invariant & Cross-Validation
+
+**Goal:** Enforce the Feature Mapping Invariant across specs, `spec/features.yaml`, implementation code, and tests.
+
+### 7.1 Invariants
+
+1. Every Feature ID in `spec/features.yaml` has exactly one canonical spec file.
+
+2. Every spec file is bound to exactly one Feature ID.
+
+3. Implementation files declare:
+
+   ```go
+   // Feature: <FEATURE_ID>
+   // Spec: spec/<domain>/<feature>.md
+   ```
+
+4. Test files for `wip` and `done` features declare the same `Feature:` header.
+
+5. `todo` features may exist without specs or code, but:
+
+   - Any `Spec:` reference for a `todo` feature MUST point at an existing spec.
+
+6. `wip` and `done` features:
+
+   - MUST have a spec file.
+
+   - MUST have at least one implementation or test file referencing the Feature ID.
+
+7. `done` features:
+
+   - MUST have both implementation and test coverage.
+
+### 7.2 Tooling
+
+Phase 4 is enforced by:
+
+- `internal/tools/features` — feature mapping index, validation, and reporting.
+
+- `cmd/feature-map-check` — CLI wrapper used by CI and local workflows.
+
+- `scripts/run-all-checks.sh` — invokes `feature-map-check` as part of governance validation.
+
+Violations for `wip` and `done` features are treated as hard errors in CI.
+
+Violations for `todo` features are emitted as warnings only.
+

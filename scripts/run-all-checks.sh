@@ -174,6 +174,13 @@ if ! go run ./cmd/spec-vs-cli; then
 fi
 info "CLI vs Spec alignment check passed"
 
+info "Running feature mapping validation..."
+if ! go run ./cmd/feature-map-check --root . --features spec/features.yaml; then
+    error "Feature mapping validation failed"
+    exit 1
+fi
+info "Feature mapping validation passed"
+
 info "Generating feature overview..."
 if ! go run ./cmd/gen-features-overview; then
     error "Failed to generate feature overview"
