@@ -34,8 +34,8 @@ Before doing anything, AI MUST:
 0.1. **If creating a new feature (new command, provider behavior, config semantics):**
   - AI MUST recommend running: `./scripts/new-feature.sh <FEATURE_ID> <DOMAIN> [feature-name]`
   - This creates the complete feature skeleton:
-    - `docs/analysis/<FEATURE_ID>.md` (Analysis Brief)
-    - `docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md` (Implementation Outline)
+    - `docs/engine/analysis/<FEATURE_ID>.md` (Analysis Brief)
+    - `docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md` (Implementation Outline)
     - `spec/<domain>/<feature>.md` (Spec file)
   - AI MUST follow the Feature Planning Protocol (see section 1.1) before any implementation
   - After skeleton creation, AI MUST guide the user through filling in:
@@ -340,6 +340,8 @@ For CLI_INIT:
 
 Before any tests or code are written for a feature, AI MUST perform a three stage planning loop. This loop guarantees spec first, test first, deterministic, and provider safe development. It also ensures that all documentation and specifications remain aligned with the implementation.
 
+> **Documentation Organization**: For how docs are organized (engine vs narrative vs governance vs archive), see `docs/README.md`. AI MUST prefer `docs/engine` docs for implementation context and treat `docs/archive` as historical only.
+
 ⸻
 
 ### Stage 1. Feature Analysis Brief
@@ -347,7 +349,7 @@ Before any tests or code are written for a feature, AI MUST perform a three stag
 AI MUST check for and update:
 
 ```
-docs/analysis/<FEATURE_ID>.md
+docs/engine/analysis/<FEATURE_ID>.md
 ```
 
 This brief defines the problem and the intent of the feature. It MUST include:
@@ -375,7 +377,7 @@ If the brief is missing or incomplete, AI MUST create or refine it before contin
 AI MUST create or update:
 
 ```
-docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md
+docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md
 ```
 
 This outline describes the full v1 plan for the feature.
@@ -452,11 +454,11 @@ No implementation work may begin until the Spec and outline match line by line.
 
 ### Summary of Required Artifacts Per Feature
 
-| Stage | Required File | Purpose |
-|-------|---------------|---------|
-| Analysis | docs/analysis/<FEATURE_ID>.md | Defines why the feature exists |
-| Outline | docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md | Defines what v1 will deliver |
-| Spec | spec/<domain>/<feature>.md | Defines the contract the implementation must follow |
+| Stage    | Required File                                      | Purpose                         |
+|----------|----------------------------------------------------|---------------------------------|
+| Analysis | docs/engine/analysis/<FEATURE_ID>.md               | Defines why the feature exists |
+| Outline  | docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md | Defines what v1 will deliver |
+| Spec     | spec/<domain>/<feature>.md                         | Defines the contract the implementation must follow |
 | Tests | multiple | Validate v1 behavior |
 | Implementation | Go code | Implements the spec |
 

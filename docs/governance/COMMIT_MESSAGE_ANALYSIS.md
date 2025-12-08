@@ -1,3 +1,8 @@
+---
+status: canonical
+scope: v1
+---
+
 # Commit Message Format Analysis
 
 ## Issue Summary
@@ -133,7 +138,7 @@ Commit messages are a required link in the feature lifecycle:
 - **Spec traceability**: Commit messages enable automated linking to:
   - `spec/features.yaml` (feature definition)
   - `spec/<domain>/<feature>.md` (spec file)
-  - `docs/analysis/<FEATURE_ID>.md` (analysis brief)
+  - `docs/engine/analysis/<FEATURE_ID>.md` (analysis brief)
   - Related test files
 
 **AI MUST ensure commit messages maintain this traceability chain.**

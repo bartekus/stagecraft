@@ -1,3 +1,8 @@
+---
+status: canonical
+scope: v1
+---
+
 # Stagecraft Architecture
 
 ## Layers

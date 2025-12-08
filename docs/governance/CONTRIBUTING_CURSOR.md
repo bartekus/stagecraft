@@ -1,3 +1,8 @@
+---
+status: canonical
+scope: meta
+---
+
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 
 <!--
@@ -145,7 +150,7 @@ Open only the files you are actively editing for this feature:
 
   - `docs/context-handoff/*.md`
 
-  - `docs/stagecraft-spec.md`
+  - `docs/narrative/stagecraft-spec.md`
 
   - `docs/features/OVERVIEW.md`
 

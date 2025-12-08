@@ -2,7 +2,7 @@
 
 **Quick reference for AI assistants committing to Stagecraft.**
 
-> For detailed analysis, see: [`docs/COMMIT_MESSAGE_ANALYSIS.md`](../COMMIT_MESSAGE_ANALYSIS.md)  
+> For detailed analysis, see: [`docs/governance/COMMIT_MESSAGE_ANALYSIS.md`](../governance/COMMIT_MESSAGE_ANALYSIS.md)  
 > For full agent rules, see: [`Agent.md`](../../Agent.md#-commit-message-enforcement--discipline)
 
 ⸻
@@ -155,13 +155,13 @@ Commit messages MUST maintain traceability:
 - **Spec traceability**: Links to:
   - `spec/features.yaml` (feature definition)
   - `spec/<domain>/<feature>.md` (spec file)
-  - `docs/analysis/<FEATURE_ID>.md` (analysis brief)
+  - `docs/engine/analysis/<FEATURE_ID>.md` (analysis brief)
 
 ⸻
 
 ## 📚 Related Documentation
 
-- **Full Analysis**: [`docs/COMMIT_MESSAGE_ANALYSIS.md`](../COMMIT_MESSAGE_ANALYSIS.md)
+- **Full Analysis**: [`docs/governance/COMMIT_MESSAGE_ANALYSIS.md`](../governance/COMMIT_MESSAGE_ANALYSIS.md)
 - **Agent Rules**: [`Agent.md`](../../Agent.md#-commit-message-enforcement--discipline)
 - **Phase 1 Issue**: [`.github/ISSUE_TEMPLATE/commit_message_phase1.md`](../../.github/ISSUE_TEMPLATE/commit_message_phase1.md)
 - **Phase 2 Issue**: [`.github/ISSUE_TEMPLATE/commit_message_phase2.md`](../../.github/ISSUE_TEMPLATE/commit_message_phase2.md)

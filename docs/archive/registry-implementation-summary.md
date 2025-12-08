@@ -1,3 +1,9 @@
+---
+status: archived
+scope: v1
+superseded_by: ../spec/core/backend-registry.md
+---
+
 # Registry-Based Architecture Implementation Summary
 
 > **Date**: Implementation completed

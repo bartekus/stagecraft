@@ -64,8 +64,8 @@ if [ ! -d "$DOMAIN_DIR" ]; then
 fi
 
 # Check if files already exist
-ANALYSIS_FILE="docs/analysis/${FEATURE_ID}.md"
-OUTLINE_FILE="docs/${FEATURE_ID}_IMPLEMENTATION_OUTLINE.md"
+ANALYSIS_FILE="docs/engine/analysis/${FEATURE_ID}.md"
+OUTLINE_FILE="docs/engine/outlines/${FEATURE_ID}_IMPLEMENTATION_OUTLINE.md"
 SPEC_FILE="${DOMAIN_DIR}/${FEATURE_NAME}.md"
 
 if [ -f "$ANALYSIS_FILE" ] || [ -f "$OUTLINE_FILE" ] || [ -f "$SPEC_FILE" ]; then
@@ -87,11 +87,11 @@ mkdir -p "$(dirname "$ANALYSIS_FILE")"
 
 # Create analysis brief from template
 echo "Creating analysis brief: $ANALYSIS_FILE"
-sed "s/<FEATURE_ID>/$FEATURE_ID/g" docs/analysis/TEMPLATE.md > "$ANALYSIS_FILE"
+sed "s/<FEATURE_ID>/$FEATURE_ID/g" docs/engine/analysis/TEMPLATE.md > "$ANALYSIS_FILE"
 
 # Create implementation outline from template
 echo "Creating implementation outline: $OUTLINE_FILE"
-sed "s/<FEATURE_ID>/$FEATURE_ID/g" docs/IMPLEMENTATION_OUTLINE_TEMPLATE.md | \
+sed "s/<FEATURE_ID>/$FEATURE_ID/g" docs/engine/outlines/IMPLEMENTATION_OUTLINE_TEMPLATE.md | \
     sed "s|<domain>|$DOMAIN|g" | \
     sed "s|<feature>|$FEATURE_NAME|g" > "$OUTLINE_FILE"
 

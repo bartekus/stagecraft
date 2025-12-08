@@ -1,3 +1,8 @@
+---
+status: canonical
+scope: meta
+---
+
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 
 <!--
@@ -18,12 +23,12 @@ This document enumerates the **AI-critical** technical documentation that should
 
 ## Core Principles
 
-- **One feature per thread** - See [CONTRIBUTING_CURSOR.md](./CONTRIBUTING_CURSOR.md)
+- **One feature per thread** - See [CONTRIBUTING_CURSOR.md](../governance/CONTRIBUTING_CURSOR.md)
 - **Spec-first** - Always start with the relevant spec(s)
 - **Test-aware** - Include test files in context
 - **Minimal scope** - Only open files directly relevant to the current feature
 
-> **Note**: See [docs/README.md](./README.md) for complete documentation structure and navigation guide.
+> **Note**: See [docs/README.md](../README.md) for complete documentation structure and navigation guide.
 
 ---
 
@@ -45,8 +50,8 @@ This document enumerates the **AI-critical** technical documentation that should
 - `internal/core/state/state.go` (for stateful commands)
 
 ### Related Docs
-- `docs/CLI_<COMMAND>_ANALYSIS.md` (if exists)
-- `docs/CLI_<COMMAND>_IMPLEMENTATION_OUTLINE.md` (if exists)
+- `docs/engine/analysis/CLI_<COMMAND>_ANALYSIS.md` (if exists)
+- `docs/engine/outlines/CLI_<COMMAND>_IMPLEMENTATION_OUTLINE.md` (if exists)
 - `docs/context-handoff/*-to-CLI_<COMMAND>.md` (if exists)
 
 ### Example: Working on `CLI_BUILD`
@@ -76,7 +81,7 @@ Open:
 - `pkg/logging/*.go` (for logging features)
 
 ### Related Docs
-- `docs/analysis/*.md` (if exists for this feature)
+- `docs/engine/analysis/*.md` (if exists for this feature)
 - `docs/context-handoff/*-to-CORE_<FEATURE>.md` (if exists)
 
 ### Example: Working on `CORE_STATE`
@@ -108,7 +113,8 @@ Open:
 
 ### Related Docs
 - `docs/providers/<provider-type>.md` (if exists)
-- `docs/registry-implementation-summary.md` (for registry-related work)
+- `spec/core/backend-registry.md` (for backend registry details)
+- `spec/core/migration-registry.md` (for migration registry details)
 
 ### Example: Working on `PROVIDER_BACKEND_ENCORE`
 ```
@@ -164,8 +170,8 @@ Open:
 - Files implementing the governed features
 
 ### Related Docs
-- `docs/analysis/GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md`
-- `docs/context-handoff/GOV_V1_CORE-to-*.md`
+- `docs/engine/analysis/GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md` (if exists)
+- `docs/context-handoff/GOV_V1_CORE-to-*.md` (if exists)
 
 ---
 
@@ -179,10 +185,9 @@ These docs are useful across many feature types but should be opened explicitly 
 - `spec/scaffold/stagecraft-dir.md` - Project structure
 
 ### Implementation Docs
-- `docs/stagecraft-spec.md` - Complete spec reference
+- `docs/narrative/stagecraft-spec.md` - Complete spec reference (index)
 - `docs/features/OVERVIEW.md` - Feature status overview
-- `docs/implementation-status.md` - Implementation tracking
-- `docs/registry-implementation-summary.md` - Provider registry details
+- `docs/engine/status/implementation-status.md` - Implementation tracking (generated)
 
 ### Context Handoff
 - `docs/context-handoff/INDEX.md` - Handoff doc index
@@ -226,5 +231,5 @@ These docs are useful across many feature types but should be opened explicitly 
 - **Close threads** - When a feature is done, close the thread and start fresh for the next feature
 - **Check context-handoff** - Before starting, check if there's a handoff doc for your feature
 
-For detailed workflow guidance, see [CONTRIBUTING_CURSOR.md](./CONTRIBUTING_CURSOR.md).
+For detailed workflow guidance, see [CONTRIBUTING_CURSOR.md](../governance/CONTRIBUTING_CURSOR.md).
 

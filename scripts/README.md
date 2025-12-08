@@ -115,8 +115,8 @@ This directory contains utility scripts for development, testing, and maintenanc
 ```
 
 **What it creates**:
-- `docs/analysis/<FEATURE_ID>.md` - Analysis brief template
-- `docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md` - Implementation outline template
+- `docs/engine/analysis/<FEATURE_ID>.md` - Analysis brief template
+- `docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md` - Implementation outline template
 - `spec/<domain>/<feature>.md` - Spec file template
 - Updates `spec/features.yaml` with new feature entry
 

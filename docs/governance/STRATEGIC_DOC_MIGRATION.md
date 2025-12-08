@@ -1,3 +1,8 @@
+---
+status: canonical
+scope: meta
+---
+
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 
 <!--

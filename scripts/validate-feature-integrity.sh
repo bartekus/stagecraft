@@ -62,13 +62,13 @@ for FEATURE_ID in $FEATURE_IDS; do
     fi
     
     # Check for analysis brief
-    ANALYSIS_FILE="docs/analysis/${FEATURE_ID}.md"
+    ANALYSIS_FILE="docs/engine/analysis/${FEATURE_ID}.md"
     if [ ! -f "$ANALYSIS_FILE" ]; then
         MISSING+=("analysis brief: ${ANALYSIS_FILE}")
     fi
     
     # Check for implementation outline
-    OUTLINE_FILE="docs/${FEATURE_ID}_IMPLEMENTATION_OUTLINE.md"
+    OUTLINE_FILE="docs/engine/outlines/${FEATURE_ID}_IMPLEMENTATION_OUTLINE.md"
     if [ ! -f "$OUTLINE_FILE" ]; then
         MISSING+=("implementation outline: ${OUTLINE_FILE}")
     fi
@@ -95,8 +95,8 @@ else
     echo "❌ Found ${ERRORS} feature(s) with missing artifacts"
     echo ""
     echo "Required artifacts per feature:"
-    echo "  - Analysis Brief: docs/analysis/<FEATURE_ID>.md"
-    echo "  - Implementation Outline: docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md"
+    echo "  - Analysis Brief: docs/engine/analysis/<FEATURE_ID>.md"
+    echo "  - Implementation Outline: docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md"
     echo "  - Spec file: spec/<domain>/<feature>.md (as specified in features.yaml)"
     echo "  - Entry in spec/features.yaml"
     exit 1

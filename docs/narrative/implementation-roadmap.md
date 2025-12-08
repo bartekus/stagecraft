@@ -1,3 +1,8 @@
+---
+status: canonical
+scope: v1
+---
+
 # Stagecraft Implementation Roadmap
 
 > **Purpose**: This document captures all features discussed across the project's design documents and organizes them into a progressive implementation plan that maintains our core development practices (spec-first, TDD, ADR-driven).
@@ -69,7 +74,7 @@ After Phase 0, focus on these in order:
 
 - See individual feature specs in `spec/` for detailed requirements
 - Check ADRs in `docs/adr/` for architectural decisions
-- Review `docs/stagecraft-spec.md` for full application specification
+- Review `docs/narrative/stagecraft-spec.md` for full application specification
 - Follow the [Implementation Workflow](#implementation-workflow) for each feature
 
 ---
@@ -182,7 +187,7 @@ All features must follow these principles (from `05-development-strategy.md`):
 3. Write tests (TDD for core logic)
 4. Implement feature
 5. Update feature status (wip → done)
-6. Update docs/implementation-status.md
+6. Update docs/engine/status/implementation-status.md (regenerate from spec/features.yaml)
 ```
 
 ---
@@ -631,13 +636,13 @@ These will be added to `spec/features.yaml` with `status: v2` when v1 is complet
 - [`blog/05-development-strategy.md`](../blog/05-development-strategy.md) - Development methodology
 
 ### Specifications
-- [`docs/stagecraft-spec.md`](stagecraft-spec.md) - Full application specification
+- [`docs/narrative/stagecraft-spec.md`](stagecraft-spec.md) - Full application specification
 - [`spec/features.yaml`](../spec/features.yaml) - Feature tracking (source of truth)
-- [`docs/implementation-status.md`](implementation-status.md) - Quick reference status
+- [`docs/engine/status/implementation-status.md`](../engine/status/implementation-status.md) - Quick reference status
 
 ### Architecture
 - [`docs/adr/0001-architecture.md`](adr/0001-architecture.md) - Architecture and directory structure
-- [`docs/architecture.md`](architecture.md) - System architecture overview
+- [`docs/narrative/architecture.md`](architecture.md) - System architecture overview
 - [`spec/overview.md`](../spec/overview.md) - Project overview
 
 ### Related Features

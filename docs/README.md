@@ -1,3 +1,8 @@
+---
+status: canonical
+scope: meta
+---
+
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 
 <!--
@@ -14,126 +19,149 @@ See https://www.gnu.org/licenses/ for license details.
 
 # Stagecraft Documentation
 
-This directory contains all project documentation. This guide explains the organization and helps you find what you need.
+This directory contains all project documentation organized by purpose and lifecycle.
 
-## Documentation Categories
+## Quick Navigation
+
+- **[engine/](engine/)** - Implementation-aligned, AI-critical technical docs
+- **[narrative/](narrative/)** - Human-facing planning, roadmaps, architecture
+- **[governance/](governance/)** - Process, discipline, and workflow docs
+- **[archive/](archive/)** - Historical, completed work (frozen)
+- **[spec/](../spec/)** - Source of truth for all specifications
+
+## Documentation Structure
 
 ### 🎯 Start Here
 
-- **[README.md](../README.md)** - High-level project description and overview
+- **[README.md](../README.md)** - High-level project description
 - **[Agent.md](../Agent.md)** - Core governance and development protocol (read this first)
 - **[CONTRIBUTING.md](../CONTRIBUTING.md)** - Contribution guidelines
-- **[CONTRIBUTING_CURSOR.md](./CONTRIBUTING_CURSOR.md)** - AI-assisted development workflow
-- **[engine-index.md](./engine-index.md)** - Quick reference for which docs to open per feature type
+- **[engine/engine-index.md](engine/engine-index.md)** - Quick reference for which docs to open per feature type
 
-### 📋 Specifications
+### 📋 Specifications (Source of Truth)
 
-- **[stagecraft-spec.md](./stagecraft-spec.md)** - Complete specification reference
-- **[spec/](../spec/)** - Source of truth for all feature specifications
+- **[spec/](../spec/)** - All feature specifications
   - `spec/commands/` - CLI command specifications
   - `spec/core/` - Core engine specifications
   - `spec/providers/` - Provider interface specifications
   - `spec/governance/` - Governance specifications
+  - `spec/features.yaml` - Feature registry (source of truth)
 
-### 🔧 Engine Documentation (Technical / Implementation)
+- **[narrative/stagecraft-spec.md](narrative/stagecraft-spec.md)** - Specification index (links to spec/ files)
 
-These are the "AI-critical" technical docs that should be opened when working on features:
+### 🔧 Engine Documentation (`engine/`)
 
-- **Analysis Documents** (`analysis/`)
-  - Implementation analysis for specific features
-  - Template for creating new analyses
-  - Example: `GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md`
+**AI-critical technical documentation** for implementation work:
 
-- **Implementation Outlines** (root level)
-  - `CLI_*_IMPLEMENTATION_OUTLINE.md` - Command implementation plans
-  - `IMPLEMENTATION_OUTLINE_TEMPLATE.md` - Template for new outlines
+- **`engine/analysis/`** - Feature implementation analysis
+  - `CLI_PLAN_ANALYSIS.md`
+  - `PROJECT_STRUCTURE_ANALYSIS.md`
+  - `GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md`
+  - `TEMPLATE.md`
 
-- **Implementation Status**
-  - `implementation-status.md` - Current implementation tracking
-  - `registry-implementation-summary.md` - Provider registry details
+- **`engine/outlines/`** - Implementation outlines and templates
+  - `CLI_PLAN_IMPLEMENTATION_OUTLINE.md`
+  - `IMPLEMENTATION_OUTLINE_TEMPLATE.md`
 
-- **Feature Documentation** (`features/`)
-  - `OVERVIEW.md` - Feature registry and status overview
+- **`engine/status/`** - Generated status tracking
+  - `implementation-status.md` - Auto-generated from `spec/features.yaml`
+  - `README.md` - Explains generation process
 
-- **Provider Documentation** (`providers/`)
-  - Provider-specific implementation guides
-  - Example: `backend.md`, `migrations.md`
+- **`engine/engine-index.md`** - Quick reference: which files to open per feature type
 
-- **Context Handoff** (`context-handoff/`)
-  - Deterministic context for AI agents transitioning between features
-  - See `context-handoff/INDEX.md` for navigation
+### 📖 Narrative Documentation (`narrative/`)
 
-- **Project Structure** (`PROJECT_STRUCTURE_ANALYSIS.md`)
-  - Analysis of project structure and improvement recommendations
+**Human-facing planning and overview docs:**
 
-### 📖 Narrative Documentation (Human-Facing / Planning)
+- `architecture.md` - High-level architecture overview
+- `implementation-roadmap.md` - Implementation roadmap and feature catalog
+- `stagecraft-spec.md` - Specification index (links to spec/)
+- `FUTURE_ENHANCEMENTS.md` - Future feature ideas
+- `V2_FEATURES.md` - v2 feature overview
 
-These are planning, roadmap, and high-level docs:
+### 🛡️ Governance Documentation (`governance/`)
 
-- **Architecture** (`architecture.md`, `adr/`)
-  - High-level architecture overview
-  - Architecture Decision Records
+**Process, discipline, and workflow docs:**
 
-- **Roadmaps & Planning**
-  - `implementation-roadmap.md` - Implementation roadmap
-  - `FUTURE_ENHANCEMENTS.md` - Future feature ideas
+- `CONTRIBUTING_CURSOR.md` - AI-assisted development workflow
+- `COMMIT_MESSAGE_ANALYSIS.md` - Commit message format analysis
+- `STRATEGIC_DOC_MIGRATION.md` - Strategic document handling guide
 
-- **User Guides** (`guides/`)
-  - User-facing documentation
-  - Example: `getting-started.md`
+### 📦 Archive (`archive/`)
 
-- **Reference** (`reference/`)
-  - API and command reference documentation
-  - Example: `cli.md` (auto-generated)
+**Historical, completed work (frozen):**
+
+- `registry-implementation-summary.md` - Registry implementation summary (superseded by spec/)
+
+## Other Directories
+
+- **`adr/`** - Architecture Decision Records
+- **`context-handoff/`** - Feature handoff documents for AI agents
+- **`features/`** - Feature documentation (generated)
+- **`guides/`** - User-facing guides
+- **`providers/`** - Provider implementation docs
+- **`reference/`** - API/reference documentation (auto-generated)
+- **`design/`** - Design documents
+- **`todo/`** - TODO items and planning
+
+## Documentation Lifecycle
+
+Documents use frontmatter to track lifecycle:
+
+```yaml
+---
+status: active | canonical | archived
+scope: v1 | v2 | meta
+feature: CLI_PLAN          # optional
+spec: ../spec/commands/plan.md  # optional
+superseded_by: ../Agent.md # optional
+---
+```
+
+- **active** - Still guiding current or near-future work
+- **canonical** - Stable, long-lived reference (e.g., architecture, governance)
+- **archived** - Work is done, content describes "how we did it" (historical)
 
 ## Documentation Workflow
 
-When working on a feature, follow this order:
+When working on a feature:
 
 1. **Read the spec** - `spec/<domain>/<feature>.md`
-2. **Check analysis** - `docs/analysis/<FEATURE_ID>.md` (if exists)
-3. **Review implementation outline** - `docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md` (if exists)
-4. **Check context-handoff** - `docs/context-handoff/INDEX.md` for handoff docs
-5. **Reference engine-index** - `docs/engine-index.md` for file location guidance
+2. **Check analysis** - `engine/analysis/<FEATURE_ID>_ANALYSIS.md` (if exists)
+3. **Review implementation outline** - `engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md` (if exists)
+4. **Check context-handoff** - `context-handoff/INDEX.md` for handoff docs
+5. **Reference engine-index** - `engine/engine-index.md` for file location guidance
 
 ## For AI Assistants
 
 When using Cursor or other AI tools:
 
-- See **[CONTRIBUTING_CURSOR.md](./CONTRIBUTING_CURSOR.md)** for workflow guidance
-- See **[engine-index.md](./engine-index.md)** for which files to open per feature type
+- See **[governance/CONTRIBUTING_CURSOR.md](governance/CONTRIBUTING_CURSOR.md)** for workflow guidance
+- See **[engine/engine-index.md](engine/engine-index.md)** for which files to open per feature type
 - Prefer opening "engine" docs over "narrative" docs during implementation work
 - Use context-handoff docs when transitioning between features
 
-## Directory Structure
+## Generated Documentation
 
-```
-docs/
-├── adr/                          # Architecture Decision Records
-├── analysis/                     # Implementation analysis documents
-├── context-handoff/              # Feature handoff documents
-├── features/                     # Feature documentation
-├── guides/                       # User-facing guides
-├── providers/                    # Provider implementation docs
-├── reference/                    # API/reference documentation
-├── architecture.md               # Architecture overview (narrative)
-├── CLI_*_ANALYSIS.md            # Command analysis (engine)
-├── CLI_*_IMPLEMENTATION_OUTLINE.md  # Implementation outlines (engine)
-├── CONTRIBUTING_CURSOR.md        # AI workflow guide
-├── engine-index.md               # Quick reference index
-├── FUTURE_ENHANCEMENTS.md        # Future plans (narrative)
-├── implementation-roadmap.md     # Roadmap (narrative)
-├── implementation-status.md      # Status tracking (engine)
-├── PROJECT_STRUCTURE_ANALYSIS.md # Structure analysis (engine)
-├── registry-implementation-summary.md  # Registry details (engine)
-└── stagecraft-spec.md            # Complete spec reference (engine)
-```
+Some documentation is auto-generated:
 
-## Notes
+- **`engine/status/implementation-status.md`** - Generated from `spec/features.yaml`
+  - Regenerate with: `./scripts/generate-implementation-status.sh`
+  - See `engine/status/README.md` for details
 
-- **Engine docs** = Technical implementation details, specs, analysis, outlines
-- **Narrative docs** = Planning, roadmaps, architecture overviews, user guides
-- All docs follow the spec-first, test-first, feature-bounded principles from [Agent.md](../Agent.md)
+- **`features/OVERVIEW.md`** - Generated from `spec/features.yaml`
+  - Regenerate with: `go run ./cmd/gen-features-overview`
 
-For questions or suggestions about documentation organization, see [PROJECT_STRUCTURE_ANALYSIS.md](./PROJECT_STRUCTURE_ANALYSIS.md).
+- **`reference/cli.md`** - Auto-generated CLI reference
 
+**Never edit generated files manually.** Update the source (usually `spec/features.yaml`) and regenerate.
+
+## Principles
+
+- **spec/ is source of truth** - All specifications live in `spec/`
+- **docs/ is implementation + process** - Strongly structured by purpose
+- **archive/ is history** - Completed work, frozen for reference
+- **No duplication** - Docs reference spec/, don't duplicate it
+- **Deterministic generation** - Status docs are generated, not manually maintained
+
+For questions or suggestions about documentation organization, see [engine/analysis/PROJECT_STRUCTURE_ANALYSIS.md](engine/analysis/PROJECT_STRUCTURE_ANALYSIS.md).
