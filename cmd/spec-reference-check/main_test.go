@@ -352,7 +352,7 @@ func TestRun_ValidReferences(t *testing.T) {
 func main() {
 }
 `)
-	if err := os.WriteFile(goFile, []byte(goContent), 0o600); err != nil {
+	if err := os.WriteFile(goFile, goContent, 0o600); err != nil {
 		t.Fatalf("failed to create go file: %v", err)
 	}
 
