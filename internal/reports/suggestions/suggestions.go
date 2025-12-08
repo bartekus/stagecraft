@@ -68,6 +68,46 @@ type Fix struct {
 	Details          map[string]any `json:"details,omitempty"`
 }
 
+// Report represents the complete suggestions report for JSON output.
+type Report struct {
+	SchemaVersion string       `json:"schema_version"`
+	Summary       Summary      `json:"summary"`
+	Suggestions   []Suggestion `json:"suggestions"`
+}
+
+// Summary contains aggregate statistics for suggestions.
+type Summary struct {
+	TotalSuggestions int            `json:"total_suggestions"`
+	BySeverity       map[string]int `json:"by_severity"`
+	ByType           map[string]int `json:"by_type"`
+}
+
+// BuildReport builds a structured report from suggestions for JSON output.
+// This mirrors the pattern used in commithealth and featuretrace packages.
+func BuildReport(sugs []Suggestion) Report {
+	summary := Summary{
+		TotalSuggestions: len(sugs),
+		BySeverity:       make(map[string]int),
+		ByType:           make(map[string]int),
+	}
+
+	for _, s := range sugs {
+		summary.BySeverity[string(s.Severity)]++
+		summary.ByType[string(s.Type)]++
+	}
+
+	// Ensure empty slice marshals as [] instead of null
+	if sugs == nil {
+		sugs = []Suggestion{}
+	}
+
+	return Report{
+		SchemaVersion: "1.0",
+		Summary:       summary,
+		Suggestions:   sugs,
+	}
+}
+
 // GenerateSuggestions converts commit health and feature traceability reports
 // into a slice of raw suggestions.
 //

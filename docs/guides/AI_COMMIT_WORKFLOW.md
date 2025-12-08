@@ -266,13 +266,52 @@ Scans repository for feature presence across spec, implementation, tests, and co
 - `features.<id>.problems`: Specific traceability issues
 - `features.<id>.status`: Feature lifecycle state
 
+#### Commit Suggestions
+
+```bash
+stagecraft commit suggest
+```
+
+Reads both `.stagecraft/reports/commit-health.json` and `.stagecraft/reports/feature-traceability.json` and generates actionable suggestions.
+
+**What it does:**
+- Aggregates commit message violations into human-readable guidance
+- Highlights missing or invalid Feature IDs
+- Surfaces summary formatting issues (length, punctuation, capitalization)
+- Prioritizes higher-severity issues first (errors → warnings → info)
+
+**Output formats:**
+- Text (default): grouped by severity with a final summary section
+- JSON: machine-readable report with suggestion objects and summary counts
+
+**Examples:**
+
+```bash
+# Human-readable output with defaults (severity >= info, up to 10 suggestions)
+stagecraft commit suggest
+
+# Only show high-priority issues, no limit
+stagecraft commit suggest --severity=warning --max-suggestions=0
+
+# JSON output, suitable for tooling and CI
+stagecraft commit suggest --format=json --severity=info --max-suggestions=50
+```
+
+**Interpretation:**
+- **Errors** – violations that MUST be fixed before merging
+- **Warnings** – issues that should be addressed to maintain commit discipline
+- **Info** – low-severity hygiene improvements and guidance
+
 ### Workflow Integration
 
 **Before PR:**
-1. Run `stagecraft commit report` to verify commit discipline
-2. Fix any violations (rewrite commits if needed)
-3. Run `stagecraft feature traceability` to verify feature completeness
-4. Address any missing components (tests, implementation, etc.)
+1. Run `stagecraft commit report` to verify commit discipline.
+2. Run `stagecraft feature traceability` to verify feature completeness.
+3. Run `stagecraft commit suggest` to get a prioritized list of actions.
+4. Address suggestions:
+   - Rewrite commits where necessary
+   - Add missing specs, implementation, or tests
+   - Re-run the reports until suggestions are either resolved or explicitly accepted
 
 **After Feature Completion:**
 1. Run `stagecraft feature traceability`

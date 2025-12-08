@@ -110,7 +110,7 @@ func runCommitSuggest(cmd *cobra.Command, args []string) error {
 
 	case "json":
 		// Build report structure for JSON output
-		report := buildSuggestionsReport(filtered)
+		report := suggestions.BuildReport(filtered)
 		jsonData, err := json.MarshalIndent(report, "", "  ")
 		if err != nil {
 			return fmt.Errorf("marshaling JSON: %w", err)
@@ -137,39 +137,5 @@ func parseSeverity(s string) (suggestions.Severity, error) {
 		return suggestions.SeverityInfo, nil
 	default:
 		return "", fmt.Errorf("unknown severity: %s (must be 'error', 'warning', or 'info')", s)
-	}
-}
-
-// SuggestionsReport represents the JSON output structure for suggestions.
-type SuggestionsReport struct {
-	SchemaVersion string                   `json:"schema_version"`
-	Summary       SuggestionsSummary       `json:"summary"`
-	Suggestions   []suggestions.Suggestion `json:"suggestions"`
-}
-
-// SuggestionsSummary contains aggregate statistics.
-type SuggestionsSummary struct {
-	TotalSuggestions int            `json:"total_suggestions"`
-	BySeverity       map[string]int `json:"by_severity"`
-	ByType           map[string]int `json:"by_type"`
-}
-
-// buildSuggestionsReport builds a structured report from suggestions for JSON output.
-func buildSuggestionsReport(sugs []suggestions.Suggestion) SuggestionsReport {
-	summary := SuggestionsSummary{
-		TotalSuggestions: len(sugs),
-		BySeverity:       make(map[string]int),
-		ByType:           make(map[string]int),
-	}
-
-	for _, s := range sugs {
-		summary.BySeverity[string(s.Severity)]++
-		summary.ByType[string(s.Type)]++
-	}
-
-	return SuggestionsReport{
-		SchemaVersion: "1.0",
-		Summary:       summary,
-		Suggestions:   sugs,
 	}
 }
