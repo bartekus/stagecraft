@@ -43,6 +43,7 @@ internal/providers/backend/generic/test_script.sh
 cli-introspect
 features-tool
 gen-features-overview
+gen-implementation-status
 spec-validate
 spec-vs-cli
 stagecraft
