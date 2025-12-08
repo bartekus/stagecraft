@@ -61,15 +61,30 @@ func collectCommands(cmd *cobra.Command, commands *[]CommandInfo, includeRoot bo
 		Flags: collectFlags(cmd),
 	}
 
-	// Collect subcommands
-	for _, subcmd := range cmd.Commands() {
-		if !subcmd.IsAvailableCommand() || subcmd.IsAdditionalHelpTopicCommand() {
+	// Collect subcommands (direct children only, they will recursively collect their own subcommands)
+	var subcommands []CommandInfo
+	allSubcmds := cmd.Commands()
+	for _, subcmd := range allSubcmds {
+		// Skip help topic commands (but only if they're actually help topics, not regular commands)
+		// A command is a help topic if it's marked as such AND has no parent (auto-generated)
+		// Commands explicitly added via AddCommand should have a parent set
+		if subcmd.IsAdditionalHelpTopicCommand() && subcmd.Parent() == nil {
 			continue
 		}
-		var subcommands []CommandInfo
-		collectCommands(subcmd, &subcommands, true)
-		info.Subcommands = subcommands
+		// Skip if command is hidden
+		if subcmd.Hidden {
+			continue
+		}
+		// Collect this subcommand and its descendants recursively
+		var subcmdInfos []CommandInfo
+		collectCommands(subcmd, &subcmdInfos, true)
+		// The first item in subcmdInfos is the subcommand itself (because includeRoot=true)
+		// Append it to subcommands
+		if len(subcmdInfos) > 0 {
+			subcommands = append(subcommands, subcmdInfos[0])
+		}
 	}
+	info.Subcommands = subcommands
 
 	*commands = append(*commands, info)
 }
@@ -80,12 +95,20 @@ func collectFlags(cmd *cobra.Command) []FlagInfo {
 	var flags []FlagInfo
 	flagMap := make(map[string]FlagInfo)
 
-	// Collect local flags
-	cmd.LocalFlags().VisitAll(func(flag *pflag.Flag) {
-		flagMap[flag.Name] = flagToInfo(flag, false)
+	// Collect persistent flags defined on this command first
+	cmd.PersistentFlags().VisitAll(func(flag *pflag.Flag) {
+		flagMap[flag.Name] = flagToInfo(flag, true)
 	})
 
-	// Collect persistent flags (but only if they're not already in local flags)
+	// Collect local (non-persistent) flags
+	cmd.LocalFlags().VisitAll(func(flag *pflag.Flag) {
+		// Only add if not already collected as persistent
+		if _, exists := flagMap[flag.Name]; !exists {
+			flagMap[flag.Name] = flagToInfo(flag, false)
+		}
+	})
+
+	// Collect inherited flags from parent commands (but only if they're not already collected)
 	cmd.InheritedFlags().VisitAll(func(flag *pflag.Flag) {
 		if _, exists := flagMap[flag.Name]; !exists {
 			flagMap[flag.Name] = flagToInfo(flag, true)
