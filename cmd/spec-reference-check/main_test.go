@@ -372,7 +372,7 @@ func main() {
 	}
 
 	// Run should succeed
-	if err := run("."); err != nil {
+	if err := run(); err != nil {
 		t.Errorf("run() = %v, want nil", err)
 	}
 }
@@ -411,7 +411,7 @@ func main() {
 	}
 
 	// Run should fail
-	if err := run("."); err == nil {
+	if err := run(); err == nil {
 		t.Error("run() = nil, want error")
 	} else if !strings.Contains(err.Error(), "spec reference validation failed") {
 		t.Errorf("run() = %v, want error about spec reference validation", err)
@@ -452,7 +452,7 @@ func main() {
 	}
 
 	// Run should fail with invalid path format error
-	if err := run("."); err == nil {
+	if err := run(); err == nil {
 		t.Error("run() = nil, want error")
 	} else if !strings.Contains(err.Error(), "spec reference validation failed") {
 		t.Errorf("run() = %v, want error about spec reference validation", err)
@@ -524,7 +524,7 @@ func test() {
 	// Run should succeed because:
 	// 1. main.go has a valid reference to an existing spec file
 	// 2. testdata files are ignored (even though they have invalid references)
-	if err := run("."); err != nil {
+	if err := run(); err != nil {
 		t.Errorf("run() = %v, want nil (testdata should be ignored)", err)
 	}
 }
