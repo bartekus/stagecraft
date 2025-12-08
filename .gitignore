@@ -45,6 +45,7 @@ features-tool
 gen-features-overview
 gen-implementation-status
 spec-validate
+spec-reference-check
 spec-vs-cli
 stagecraft
 coverage.out
