@@ -28,6 +28,7 @@ import (
 // FeatureStatus represents the lifecycle state of a feature.
 type FeatureStatus string
 
+// Feature status constants.
 const (
 	FeatureStatusTodo       FeatureStatus = "todo"
 	FeatureStatusWIP        FeatureStatus = "wip"

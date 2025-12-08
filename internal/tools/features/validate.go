@@ -23,6 +23,7 @@ import (
 // ValidationSeverity classifies an issue as a warning or error.
 type ValidationSeverity string
 
+// Validation severity constants.
 const (
 	SeverityWarning ValidationSeverity = "WARNING"
 	SeverityError   ValidationSeverity = "ERROR"
@@ -87,7 +88,7 @@ func ValidateFeatureIndex(index *FeatureIndex) ([]ValidationIssue, error) {
 						FeatureID: id,
 						File:      fs.Spec,
 						Line:      0,
-						Message:   fmt.Sprintf("todo feature has spec but no implementation or tests"),
+						Message:   "todo feature has spec but no implementation or tests",
 					})
 				}
 			}
@@ -100,7 +101,7 @@ func ValidateFeatureIndex(index *FeatureIndex) ([]ValidationIssue, error) {
 					FeatureID: id,
 					File:      "",
 					Line:      0,
-					Message:   fmt.Sprintf("wip feature must have a spec path"),
+					Message:   "wip feature must have a spec path",
 				})
 			} else {
 				// Check if spec file exists
@@ -111,7 +112,7 @@ func ValidateFeatureIndex(index *FeatureIndex) ([]ValidationIssue, error) {
 							FeatureID: id,
 							File:      fs.Spec,
 							Line:      0,
-							Message:   fmt.Sprintf("wip feature spec file does not exist"),
+							Message:   "wip feature spec file does not exist",
 						})
 					}
 				}
@@ -123,7 +124,7 @@ func ValidateFeatureIndex(index *FeatureIndex) ([]ValidationIssue, error) {
 					FeatureID: id,
 					File:      "",
 					Line:      0,
-					Message:   fmt.Sprintf("wip feature must have at least one implementation or test file"),
+					Message:   "wip feature must have at least one implementation or test file",
 				})
 			}
 
@@ -153,7 +154,7 @@ func ValidateFeatureIndex(index *FeatureIndex) ([]ValidationIssue, error) {
 					FeatureID: id,
 					File:      "",
 					Line:      0,
-					Message:   fmt.Sprintf("done feature must have a spec path"),
+					Message:   "done feature must have a spec path",
 				})
 			} else {
 				// Check if spec file exists
@@ -164,7 +165,7 @@ func ValidateFeatureIndex(index *FeatureIndex) ([]ValidationIssue, error) {
 							FeatureID: id,
 							File:      fs.Spec,
 							Line:      0,
-							Message:   fmt.Sprintf("done feature spec file does not exist"),
+							Message:   "done feature spec file does not exist",
 						})
 					}
 				}
@@ -176,7 +177,7 @@ func ValidateFeatureIndex(index *FeatureIndex) ([]ValidationIssue, error) {
 					FeatureID: id,
 					File:      "",
 					Line:      0,
-					Message:   fmt.Sprintf("done feature must have at least one implementation file with Feature header"),
+					Message:   "done feature must have at least one implementation file with Feature header",
 				})
 			}
 
@@ -186,7 +187,7 @@ func ValidateFeatureIndex(index *FeatureIndex) ([]ValidationIssue, error) {
 					FeatureID: id,
 					File:      "",
 					Line:      0,
-					Message:   fmt.Sprintf("done feature must have at least one test file with Feature header"),
+					Message:   "done feature must have at least one test file with Feature header",
 				})
 			}
 

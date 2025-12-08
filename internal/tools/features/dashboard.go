@@ -111,17 +111,17 @@ func BuildDashboard(idx *FeatureIndex, issues []ValidationIssue) Dashboard {
 }
 
 // PrintDashboard renders a human-readable governance summary.
-func PrintDashboard(w io.Writer, db Dashboard) {
-	fmt.Fprintf(w, "Feature Governance Dashboard\n")
-	fmt.Fprintf(w, "----------------------------\n")
-	fmt.Fprintf(w, "Total features: %d\n", db.Total)
+func PrintDashboard(w io.Writer, db *Dashboard) {
+	_, _ = fmt.Fprintf(w, "Feature Governance Dashboard\n")
+	_, _ = fmt.Fprintf(w, "----------------------------\n")
+	_, _ = fmt.Fprintf(w, "Total features: %d\n", db.Total)
 
 	// Stable status ordering for readability.
 	statusOrder := []string{"todo", "wip", "done", "deprecated", "removed"}
 
 	for _, st := range statusOrder {
 		if count, ok := db.ByStatus[st]; ok {
-			fmt.Fprintf(w, "- %-11s: %d\n", st, count)
+			_, _ = fmt.Fprintf(w, "- %-11s: %d\n", st, count)
 		}
 	}
 
@@ -129,9 +129,9 @@ func PrintDashboard(w io.Writer, db Dashboard) {
 		if len(ids) == 0 {
 			return
 		}
-		fmt.Fprintf(w, "\n%s (%d):\n", label, len(ids))
+		_, _ = fmt.Fprintf(w, "\n%s (%d):\n", label, len(ids))
 		for _, id := range ids {
-			fmt.Fprintf(w, "  - %s\n", id)
+			_, _ = fmt.Fprintf(w, "  - %s\n", id)
 		}
 	}
 
@@ -152,6 +152,7 @@ type GovernanceDashboardRunner struct {
 	Out          io.Writer
 }
 
+// Run executes the dashboard analysis and prints a governance summary.
 func (r *GovernanceDashboardRunner) Run(ctx context.Context) error {
 	if r.Out == nil {
 		r.Out = os.Stdout
@@ -180,7 +181,7 @@ func (r *GovernanceDashboardRunner) Run(ctx context.Context) error {
 	}
 
 	db := BuildDashboard(index, issues)
-	PrintDashboard(r.Out, db)
+	PrintDashboard(r.Out, &db)
 
 	return nil
 }
