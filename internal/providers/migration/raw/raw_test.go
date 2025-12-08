@@ -18,13 +18,14 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"stagecraft/pkg/providers/migration"
 )
 
-// Feature: MIGRATION_ENGINE_RAW
-// Spec: spec/providers/migration/raw.md
+// Feature: GOV_V1_CORE
+// Spec: spec/governance/GOV_V1_CORE.md
 
 func TestRawEngine_ID(t *testing.T) {
 	e := &Engine{}
@@ -143,7 +144,74 @@ func TestRawEngine_Plan_IgnoresNonSQLFiles(t *testing.T) {
 	}
 }
 
-func TestRawEngine_Run_NotImplemented(t *testing.T) {
+func TestRawEngine_Run_MissingMigrationPath(t *testing.T) {
+	t.Parallel()
+
+	e := &Engine{}
+
+	opts := migration.RunOptions{
+		MigrationPath: "",
+		ConnectionEnv: "DATABASE_URL",
+		WorkDir:       ".",
+		Direction:     "up",
+		Steps:         0,
+	}
+
+	err := e.Run(context.Background(), opts)
+	if err == nil {
+		t.Error("Run() error = nil, want error for missing migration path")
+	}
+
+	if err != nil && !strings.Contains(err.Error(), "migration path is required") {
+		t.Errorf("expected error to mention 'migration path is required', got: %v", err)
+	}
+}
+
+func TestRawEngine_Run_EmptyMigrations(t *testing.T) {
+	t.Parallel()
+
+	e := &Engine{}
+	tmpDir := t.TempDir()
+
+	// Note: This test can't fully exercise the "no migrations" path without a real DB
+	// because Run() connects to the DB before checking for migrations.
+	// We test the validation that happens before DB connection instead.
+	// The actual "no migrations" check happens after DB connection, which requires
+	// a real database or more sophisticated mocking than we want for Phase 2.
+
+	opts := migration.RunOptions{
+		MigrationPath: tmpDir,
+		ConnectionEnv: "DATABASE_URL",
+		WorkDir:       ".",
+		Direction:     "up",
+		Steps:         0,
+	}
+
+	// Ensure env var is not set to test the env validation path
+	originalEnv := os.Getenv(opts.ConnectionEnv)
+	defer func() {
+		if originalEnv != "" {
+			os.Setenv(opts.ConnectionEnv, originalEnv)
+		} else {
+			os.Unsetenv(opts.ConnectionEnv)
+		}
+	}()
+	os.Unsetenv(opts.ConnectionEnv)
+
+	err := e.Run(context.Background(), opts)
+	if err == nil {
+		t.Error("Run() error = nil, want error")
+	}
+
+	// Should fail at connection env check (before checking migrations)
+	if err != nil && !strings.Contains(err.Error(), "is not set") {
+		t.Errorf("expected error about connection env, got: %v", err)
+	}
+}
+
+func TestRawEngine_Run_MissingConnectionEnv(t *testing.T) {
+	t.Parallel()
+
 	e := &Engine{}
 	tmpDir := t.TempDir()
 
@@ -152,6 +220,17 @@ func TestRawEngine_Run_NotImplemented(t *testing.T) {
 	if err := os.WriteFile(sqlFile, []byte("CREATE TABLE test (id INT);"), 0o600); err != nil {
 		t.Fatalf("failed to create migration file: %v", err)
 	}
+
+	// Ensure env var is not set
+	originalEnv := os.Getenv("DATABASE_URL")
+	defer func() {
+		if originalEnv != "" {
+			os.Setenv("DATABASE_URL", originalEnv)
+		} else {
+			os.Unsetenv("DATABASE_URL")
+		}
+	}()
+	os.Unsetenv("DATABASE_URL")
 
 	opts := migration.RunOptions{
 		MigrationPath: tmpDir,
@@ -163,12 +242,121 @@ func TestRawEngine_Run_NotImplemented(t *testing.T) {
 
 	err := e.Run(context.Background(), opts)
 	if err == nil {
-		t.Error("Run() error = nil, want error (not yet implemented)")
+		t.Error("Run() error = nil, want error for missing connection env")
 	}
 
-	// Should mention that execution is not yet implemented
-	if err != nil && err.Error() == "" {
-		t.Error("expected error message, got empty")
+	if err != nil && !strings.Contains(err.Error(), "is not set") {
+		t.Errorf("expected error to mention connection env not set, got: %v", err)
+	}
+}
+
+func TestRawEngine_Plan_MissingMigrationPath(t *testing.T) {
+	t.Parallel()
+
+	e := &Engine{}
+
+	opts := migration.PlanOptions{
+		MigrationPath: "",
+		ConnectionEnv: "DATABASE_URL",
+		WorkDir:       ".",
+	}
+
+	_, err := e.Plan(context.Background(), opts)
+	if err == nil {
+		t.Error("Plan() error = nil, want error for missing migration path")
+	}
+
+	if err != nil && !strings.Contains(err.Error(), "migration path is required") {
+		t.Errorf("expected error to mention 'migration path is required', got: %v", err)
+	}
+}
+
+func TestRawEngine_Plan_Sorting(t *testing.T) {
+	t.Parallel()
+
+	e := &Engine{}
+	tmpDir := t.TempDir()
+
+	// Create migrations in non-lexicographic order
+	migrationFiles := []string{
+		"003_third.sql",
+		"001_first.sql",
+		"002_second.sql",
+	}
+
+	for _, name := range migrationFiles {
+		path := filepath.Join(tmpDir, name)
+		if err := os.WriteFile(path, []byte("-- migration: "+name), 0o600); err != nil {
+			t.Fatalf("failed to create migration file: %v", err)
+		}
+	}
+
+	opts := migration.PlanOptions{
+		MigrationPath: tmpDir,
+		ConnectionEnv: "DATABASE_URL",
+		WorkDir:       ".",
+	}
+
+	migrations, err := e.Plan(context.Background(), opts)
+	if err != nil {
+		t.Fatalf("Plan() error = %v, want nil", err)
+	}
+
+	if len(migrations) != 3 {
+		t.Fatalf("Plan() returned %d migrations, want 3", len(migrations))
+	}
+
+	// Verify migrations are sorted lexicographically
+	expectedOrder := []string{"001_first.sql", "002_second.sql", "003_third.sql"}
+	for i, expected := range expectedOrder {
+		if migrations[i].ID != expected {
+			t.Errorf("migrations[%d].ID = %q, want %q", i, migrations[i].ID, expected)
+		}
+	}
+}
+
+func TestRawEngine_Plan_IgnoresDirectories(t *testing.T) {
+	t.Parallel()
+
+	e := &Engine{}
+	tmpDir := t.TempDir()
+
+	// Create a subdirectory
+	subDir := filepath.Join(tmpDir, "subdir")
+	if err := os.MkdirAll(subDir, 0o750); err != nil {
+		t.Fatalf("failed to create subdirectory: %v", err)
+	}
+
+	// Create SQL file in subdirectory (should be ignored)
+	sqlFile := filepath.Join(subDir, "001_ignored.sql")
+	if err := os.WriteFile(sqlFile, []byte("-- ignored"), 0o600); err != nil {
+		t.Fatalf("failed to create SQL file in subdir: %v", err)
+	}
+
+	// Create SQL file in root (should be included)
+	rootFile := filepath.Join(tmpDir, "001_included.sql")
+	if err := os.WriteFile(rootFile, []byte("-- included"), 0o600); err != nil {
+		t.Fatalf("failed to create SQL file in root: %v", err)
+	}
+
+	opts := migration.PlanOptions{
+		MigrationPath: tmpDir,
+		ConnectionEnv: "DATABASE_URL",
+		WorkDir:       ".",
+	}
+
+	migrations, err := e.Plan(context.Background(), opts)
+	if err != nil {
+		t.Fatalf("Plan() error = %v, want nil", err)
+	}
+
+	// Should only include the root file, not the subdirectory file
+	if len(migrations) != 1 {
+		t.Errorf("Plan() returned %d migrations, want 1", len(migrations))
+	}
+
+	if len(migrations) > 0 && migrations[0].ID != "001_included.sql" {
+		t.Errorf("Plan() returned migration %q, want %q", migrations[0].ID, "001_included.sql")
 	}
 }
 
