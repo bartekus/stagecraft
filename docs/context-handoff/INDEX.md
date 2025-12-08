@@ -94,6 +94,11 @@ Context handoff documents ensure:
 - **To**: Phase 3.A (Commit report Go types & golden tests)
 - **Use when**: Starting work on Phase 3.A commit report data model implementation (types + golden roundtrip tests)
 
+#### `COMMIT_DISCIPLINE_PHASE3B.md`
+- **From**: Phase 3.A (Commit report Go types & golden tests)
+- **To**: Phase 3.B (Commit health generators & CLI integration)
+- **Use when**: Starting work on Phase 3.B generators and CLI integration after Phase 3.A types are complete
+
 ## Template
 
 For creating new handoff documents, use:
