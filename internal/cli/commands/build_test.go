@@ -103,20 +103,17 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
+
+	// Get absolute path to avoid working directory race conditions in parallel tests
+	absConfigPath, err := filepath.Abs(configPath)
+	if err != nil {
+		t.Fatalf("failed to get absolute config path: %v", err)
 	}
 
 	root := newTestRootCommand()
 	root.AddCommand(NewBuildCommand())
 
-	out, err := executeCommandForGolden(root, "build", "--env=dev", "--dry-run")
+	out, err := executeCommandForGolden(root, "build", "--env=dev", "--config", absConfigPath, "--dry-run")
 	if err != nil {
 		t.Fatalf("expected dry-run to succeed, got error: %v", err)
 	}
@@ -153,20 +150,17 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
+
+	// Get absolute path to avoid working directory race conditions in parallel tests
+	absConfigPath, err := filepath.Abs(configPath)
+	if err != nil {
+		t.Fatalf("failed to get absolute config path: %v", err)
 	}
 
 	root := newTestRootCommand()
 	root.AddCommand(NewBuildCommand())
 
-	out, err := executeCommandForGolden(root, "build", "--env=dev", "--services=api,worker", "--dry-run")
+	out, err := executeCommandForGolden(root, "build", "--env=dev", "--config", absConfigPath, "--services=api,worker", "--dry-run")
 	if err != nil {
 		t.Fatalf("expected dry-run subset build to succeed, got error: %v", err)
 	}
@@ -201,20 +195,17 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
+
+	// Get absolute path to avoid working directory race conditions in parallel tests
+	absConfigPath, err := filepath.Abs(configPath)
+	if err != nil {
+		t.Fatalf("failed to get absolute config path: %v", err)
 	}
 
 	root := newTestRootCommand()
 	root.AddCommand(NewBuildCommand())
 
-	out, err := executeCommandForGolden(root, "build", "--env=dev", "--version=v1.2.3", "--dry-run")
+	out, err := executeCommandForGolden(root, "build", "--env=dev", "--config", absConfigPath, "--version=v1.2.3", "--dry-run")
 	if err != nil {
 		t.Fatalf("expected dry-run with explicit version to succeed, got error: %v", err)
 	}
