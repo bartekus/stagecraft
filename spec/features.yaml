@@ -616,3 +616,13 @@ features:
     depends_on:
       - "CORE_STATE"
       - "CLI_PHASE_EXECUTION_COMMON"
+
+  - id: CLI_COMMIT_SUGGEST
+    title: "stagecraft commit suggest command"
+    status: done
+    spec: "commands/commit-suggest.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/commit_suggest_test.go"
+    depends_on:
+      - "GOV_V1_CORE"

@@ -151,6 +151,24 @@ if [ $missing_specs -gt 0 ]; then
 fi
 info "All spec file references are valid"
 
+info "Checking for orphan Analysis/Outline files..."
+if [ -x ./scripts/check-orphan-docs.sh ]; then
+    ./scripts/check-orphan-docs.sh
+    info "Orphan docs check passed"
+else
+    error "scripts/check-orphan-docs.sh not found"
+    exit 1
+fi
+
+info "Checking for orphan spec files..."
+if [ -x ./scripts/check-orphan-specs.sh ]; then
+    ./scripts/check-orphan-specs.sh
+    info "Orphan specs check passed"
+else
+    error "scripts/check-orphan-specs.sh not found"
+    exit 1
+fi
+
 # === Governance Checks (GOV_V1_CORE) ===
 section "Governance Checks"
 

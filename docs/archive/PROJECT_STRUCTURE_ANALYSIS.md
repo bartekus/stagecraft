@@ -12,12 +12,20 @@ See https://www.gnu.org/licenses/ for license details.
 
 -->
 
+---
+status: archived
+scope: v1
+superseded_by: ../adr/0001-architecture.md
+---
+
 # Project Structure Analysis & Improvement Recommendations
 
 This document analyzes the current Stagecraft project structure and provides recommendations for improvements, alignments, and cleanups.
 
 **Date**: 2025-12-07  
-**Status**: Analysis Complete
+**Status**: Analysis Complete (Archived)
+
+> **Note**: This analysis document has been superseded by [ADR 0001 - Architecture](../adr/0001-architecture.md), which formalizes the project structure decisions. This document is retained for historical reference.
 
 ---
 

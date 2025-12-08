@@ -32,6 +32,8 @@ This directory contains utility scripts for development, testing, and maintenanc
 | `spec-sync-check.sh` | Verify spec/CLI alignment | Before committing |
 | `validate-spec.sh` | Validate spec files | When editing specs |
 | `validate-feature-integrity.sh` | Validate feature metadata | When editing features.yaml |
+| `check-orphan-docs.sh` | Find orphan Analysis/Outline files | Periodically, before PR |
+| `check-orphan-specs.sh` | Find orphan spec files | Periodically, before PR |
 
 ## Essential Scripts
 
@@ -272,6 +274,59 @@ This directory contains utility scripts for development, testing, and maintenanc
 - Verifies feature IDs and status values
 
 **When to use**: When editing `spec/features.yaml`.
+
+---
+
+### `check-orphan-docs.sh`
+
+**Purpose**: Find Analysis and Outline files that don't have a matching feature entry in `spec/features.yaml`.
+
+**Usage**:
+```bash
+./scripts/check-orphan-docs.sh
+```
+
+**What it does**:
+- Scans `docs/engine/analysis/` for analysis files
+- Scans `docs/engine/outlines/` for outline files
+- Checks each file's Feature ID against `spec/features.yaml`
+- Reports any files without matching entries
+
+**When to use**: 
+- Periodically to catch orphaned documentation
+- Before creating a PR
+- After removing features from `spec/features.yaml`
+
+**What to do with orphans**:
+- Remove if feature was cancelled
+- Move to `docs/archive/` if feature is historical
+- Add Feature ID to `spec/features.yaml` if feature is active
+
+---
+
+### `check-orphan-specs.sh`
+
+**Purpose**: Find spec files that don't have a corresponding entry in `spec/features.yaml`.
+
+**Usage**:
+```bash
+./scripts/check-orphan-specs.sh
+```
+
+**What it does**:
+- Scans `spec/` directory for `.md` files
+- Checks each spec file against `spec/features.yaml` entries
+- Reports any spec files without matching entries
+
+**When to use**:
+- Periodically to catch orphaned specifications
+- Before creating a PR
+- After removing features from `spec/features.yaml`
+
+**What to do with orphans**:
+- Remove if feature was cancelled
+- Move to `docs/archive/` if spec is historical
+- Add entry to `spec/features.yaml` if feature is active
 
 ---
 
