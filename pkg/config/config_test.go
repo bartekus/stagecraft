@@ -739,7 +739,7 @@ func TestLoad_ReadError(t *testing.T) {
 	path := filepath.Join(tmpDir, "stagecraft.yml")
 
 	// Create a directory with the same name as the file
-	if err := os.Mkdir(path, 0o755); err != nil {
+	if err := os.Mkdir(path, 0o750); err != nil {
 		t.Fatalf("failed to create directory: %v", err)
 	}
 
@@ -758,7 +758,7 @@ func TestExists_Directory(t *testing.T) {
 	tmpDir := t.TempDir()
 	dirPath := filepath.Join(tmpDir, "adir")
 
-	if err := os.Mkdir(dirPath, 0o755); err != nil {
+	if err := os.Mkdir(dirPath, 0o750); err != nil {
 		t.Fatalf("failed to create directory: %v", err)
 	}
 
