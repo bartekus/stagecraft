@@ -169,3 +169,85 @@ The following commits were rewritten to follow the correct format:
 3. **Add pre-commit check**: Verify hook is installed before allowing commits
 4. **AI reminder**: Always validate commit message format before executing `git commit`
 
+## Phase 3.C – CLI Wiring
+
+Phase 3.C completes the commit discipline reporting system by exposing it as first-class Stagecraft CLI commands.
+
+### Commands
+
+#### `stagecraft commit report`
+
+Generates a commit health report analyzing commit message discipline.
+
+**Usage:**
+```bash
+stagecraft commit report [--from=origin/main] [--to=HEAD]
+```
+
+**Output:**
+- Path: `.stagecraft/reports/commit-health.json`
+- Format: JSON report with schema version 1.0
+- Contents:
+  - Repository metadata
+  - Commit range analyzed
+  - Summary statistics (total, valid, invalid commits)
+  - Per-commit validation results
+  - Violation details with severity levels
+
+**Input Sources:**
+- Git commit history (via `git log`)
+- Feature registry from `spec/features.yaml`
+- Repository metadata (name, default branch)
+
+#### `stagecraft feature traceability`
+
+Generates a feature traceability report analyzing feature presence across spec, implementation, tests, and commits.
+
+**Usage:**
+```bash
+stagecraft feature traceability
+```
+
+**Output:**
+- Path: `.stagecraft/reports/feature-traceability.json`
+- Format: JSON report with schema version 1.0
+- Contents:
+  - Summary statistics (total features, status breakdown)
+  - Per-feature traceability:
+    - Spec file presence and path
+    - Implementation files (sorted)
+    - Test files (sorted)
+    - Commit SHAs referencing the feature
+    - Detected problems (missing spec, missing tests, etc.)
+
+**Input Sources:**
+- Repository tree scan (deterministic lexicographical walk)
+- Feature ID extraction from file headers (`// Feature: <ID>`)
+- File classification (spec, implementation, test)
+
+### Report Locations
+
+All reports are written atomically to `.stagecraft/reports/`:
+
+- `commit-health.json` – Commit message discipline analysis
+- `feature-traceability.json` – Feature presence and traceability analysis
+
+Reports use atomic writes (temporary file + rename) to ensure they are either fully written or not present at all.
+
+### Deterministic Guarantees
+
+Both commands provide deterministic output:
+
+- **Commit report**: Deterministic git log parsing, sorted by SHA
+- **Feature traceability**: Deterministic tree traversal (lexicographical), sorted file lists
+- **JSON output**: Consistent formatting, no timestamps or random values
+- **Atomic writes**: Reports are either complete or absent (no partial files)
+
+### Integration with Phase 3.A and 3.B
+
+- **Phase 3.A**: Defined report types and schemas
+- **Phase 3.B**: Implemented pure generators (no I/O)
+- **Phase 3.C**: Wired generators into CLI commands with deterministic I/O
+
+This completes the commit discipline reporting pipeline: **spec → types → generators → CLI → reports**.
+

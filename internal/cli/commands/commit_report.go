@@ -29,6 +29,8 @@ import (
 // Feature: PROVIDER_FRONTEND_GENERIC
 // Spec: docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md
 
+var newHistorySource = git.NewHistorySource
+
 // NewCommitReportCommand returns the `stagecraft commit report` command.
 func NewCommitReportCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -64,7 +66,7 @@ func runCommitReport(cmd *cobra.Command, args []string) error {
 	}
 
 	// 4. Get commit history via git adapter
-	historySource := git.NewHistorySource(repoPath)
+	historySource := newHistorySource(repoPath)
 	commits, err := historySource.Commits()
 	if err != nil {
 		return fmt.Errorf("retrieving commit history: %w", err)

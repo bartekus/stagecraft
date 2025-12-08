@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"stagecraft/internal/reports"
 	"stagecraft/internal/reports/commithealth"
 )
 
@@ -64,9 +65,47 @@ func TestRunCommitReport_GeneratesReport(t *testing.T) {
 		t.Fatalf("failed to change to temp directory: %v", err)
 	}
 
-	// TODO: Use fake HistorySource instead of real git
-	// For now, skip if git is not available
-	t.Skip("requires fake git implementation or isolated test repo")
+	// Synthesize a small commit history in memory
+	commits := []commithealth.CommitMetadata{
+		{
+			SHA:     "abc123",
+			Message: "feat(CLI_DEPLOY): add deploy support",
+		},
+	}
+
+	knownFeatures := map[string]bool{
+		"CLI_DEPLOY": true,
+	}
+
+	repoInfo := commithealth.RepoInfo{
+		Name:          "stagecraft",
+		DefaultBranch: "main",
+	}
+
+	rangeInfo := commithealth.CommitRange{
+		From:        "origin/main",
+		To:          "HEAD",
+		Description: "origin/main..HEAD",
+	}
+
+	report, err := commithealth.GenerateCommitHealthReport(commits, knownFeatures, repoInfo, rangeInfo)
+	if err != nil {
+		t.Fatalf("GenerateCommitHealthReport failed: %v", err)
+	}
+
+	reportPath := filepath.Join(reportsDir, "commit-health.json")
+	if err := reports.WriteJSONAtomic(reportPath, report); err != nil {
+		t.Fatalf("WriteJSONAtomic failed: %v", err)
+	}
+
+	info, err := os.Stat(reportPath)
+	if err != nil {
+		t.Fatalf("failed to stat report file: %v", err)
+	}
+
+	if info.Size() == 0 {
+		t.Fatalf("expected non-empty commit-health.json report")
+	}
 }
 
 func TestRunCommitReport_ReportStructure(t *testing.T) {
@@ -152,5 +191,170 @@ func TestLoadFeatureRegistry(t *testing.T) {
 	}
 	if !registry["CLI_PLAN"] {
 		t.Error("CLI_PLAN not found in registry")
+	}
+}
+
+func TestRunCommitReport_CLIEndToEnd(t *testing.T) {
+	// Not parallel: uses os.Chdir which is global process state
+
+	// Override history source with a deterministic fake
+	oldNewHistorySource := newHistorySource
+	defer func() {
+		newHistorySource = oldNewHistorySource
+	}()
+
+	fakeCommits := []commithealth.CommitMetadata{
+		{
+			SHA:     "abc123",
+			Message: "feat(CLI_DEPLOY): add deploy support",
+		},
+		{
+			SHA:     "def456",
+			Message: "chore: update docs",
+		},
+	}
+
+	newHistorySource = func(rootDir string) commithealth.HistorySource {
+		return fakeHistorySource{commits: fakeCommits}
+	}
+
+	// Create temporary repository structure
+	tmpDir := t.TempDir()
+
+	// Create .stagecraft/reports directory (expected output location)
+	reportsDir := filepath.Join(tmpDir, ".stagecraft", "reports")
+	if err := os.MkdirAll(reportsDir, 0o755); err != nil {
+		t.Fatalf("failed to create reports directory: %v", err)
+	}
+
+	// Create minimal spec/features.yaml so the CLI can load known features
+	specDir := filepath.Join(tmpDir, "spec")
+	if err := os.MkdirAll(specDir, 0o755); err != nil {
+		t.Fatalf("failed to create spec directory: %v", err)
+	}
+
+	featuresYAML := `features:
+  - id: CLI_DEPLOY
+    title: "Deploy command"
+    status: done
+`
+	if err := os.WriteFile(filepath.Join(specDir, "features.yaml"), []byte(featuresYAML), 0o644); err != nil {
+		t.Fatalf("failed to write features.yaml: %v", err)
+	}
+
+	// Change to temp directory so the CLI uses it as repo root
+	oldWd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	defer func() {
+		_ = os.Chdir(oldWd)
+	}()
+
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change to temp directory: %v", err)
+	}
+
+	// Run the real CLI command end-to-end
+	// Note: We rely on WriteJSONAtomic to create the reports directory
+	// The spec/features.yaml was created before chdir, so it should exist
+	cmd := NewCommitReportCommand()
+
+	// Re-verify we're in the correct directory right before CLI call
+	// This minimizes race conditions with parallel tests that also use chdir
+	currentWd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	if currentWd != tmpDir {
+		if err := os.Chdir(tmpDir); err != nil {
+			t.Fatalf("directory changed by parallel test, failed to restore: %v", err)
+		}
+	}
+
+	if err := runCommitReport(cmd, nil); err != nil {
+		t.Fatalf("runCommitReport failed: %v", err)
+	}
+
+	// Verify the report file was created
+	reportPath := filepath.Join(tmpDir, ".stagecraft", "reports", "commit-health.json")
+	data, err := os.ReadFile(reportPath)
+	if err != nil {
+		t.Fatalf("failed to read report file: %v", err)
+	}
+
+	// Unmarshal into the concrete report type to ensure the JSON matches the schema
+	var report commithealth.Report
+	if err := json.Unmarshal(data, &report); err != nil {
+		t.Fatalf("failed to unmarshal report JSON: %v", err)
+	}
+
+	// Basic structural assertions for determinism and correctness
+	if report.SchemaVersion != "1.0" {
+		t.Errorf("expected schema_version=1.0, got %s", report.SchemaVersion)
+	}
+
+	if report.Repo.Name != "stagecraft" {
+		t.Errorf("expected repo.name=stagecraft, got %s", report.Repo.Name)
+	}
+}
+
+type fakeHistorySource struct {
+	commits []commithealth.CommitMetadata
+}
+
+func (f fakeHistorySource) Commits() ([]commithealth.CommitMetadata, error) {
+	return f.commits, nil
+}
+
+func TestRunCommitReport_GoldenFile(t *testing.T) {
+	t.Parallel()
+
+	commits := []commithealth.CommitMetadata{
+		{
+			SHA:     "abc123",
+			Message: "feat(CLI_DEPLOY): add deploy support",
+		},
+		{
+			SHA:     "def456",
+			Message: "chore: update docs",
+		},
+	}
+
+	knownFeatures := map[string]bool{
+		"CLI_DEPLOY": true,
+	}
+
+	repoInfo := commithealth.RepoInfo{
+		Name:          "stagecraft",
+		DefaultBranch: "main",
+	}
+
+	rangeInfo := commithealth.CommitRange{
+		From:        "origin/main",
+		To:          "HEAD",
+		Description: "origin/main..HEAD",
+	}
+
+	report, err := commithealth.GenerateCommitHealthReport(commits, knownFeatures, repoInfo, rangeInfo)
+	if err != nil {
+		t.Fatalf("GenerateCommitHealthReport failed: %v", err)
+	}
+
+	formatted, err := json.MarshalIndent(report, "", "  ")
+	if err != nil {
+		t.Fatalf("failed to marshal report: %v", err)
+	}
+	formatted = append(formatted, '\n')
+
+	expected := readGoldenFile(t, "commit_report")
+
+	if *updateGolden {
+		writeGoldenFile(t, "commit_report", string(formatted))
+		expected = string(formatted)
+	}
+
+	if string(formatted) != expected {
+		t.Errorf("report mismatch:\nGot:\n%s\nExpected:\n%s", string(formatted), expected)
 	}
 }

@@ -25,7 +25,7 @@ import (
 )
 
 func TestRunFeatureTraceability_GeneratesReport(t *testing.T) {
-	t.Parallel()
+	// Not parallel: uses os.Chdir which is global process state
 
 	// Create temporary repository structure
 	tmpDir := t.TempDir()
@@ -146,7 +146,7 @@ func TestRunFeatureTraceability_ReportStructure(t *testing.T) {
 }
 
 func TestRunFeatureTraceability_GoldenFile(t *testing.T) {
-	t.Parallel()
+	// Not parallel: uses os.Chdir which is global process state
 
 	// Create temporary repository structure
 	tmpDir := t.TempDir()

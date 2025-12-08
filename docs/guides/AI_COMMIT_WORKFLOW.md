@@ -204,3 +204,97 @@ COMMIT ✓
 
 **Remember:** Commit messages are deterministic artifacts. Every commit maintains the traceability chain: **spec → tests → code → docs → commit → PR**
 
+⸻
+
+## 📊 Run the Reports
+
+Stagecraft provides two CLI commands for analyzing commit discipline and feature traceability.
+
+### When to Run
+
+Run these reports:
+
+- **Before creating a PR**: Verify commit message discipline and feature completeness
+- **After merging a feature**: Check feature traceability (spec, implementation, tests, commits)
+- **Periodically**: Monitor commit health trends and feature gaps
+- **In CI/CD**: Integrate into automated quality checks
+
+### Commands
+
+#### Commit Health Report
+
+```bash
+stagecraft commit report
+```
+
+Analyzes commit messages in the current branch (default: `origin/main..HEAD`).
+
+**What it checks:**
+- Commit message format compliance
+- Feature ID presence and validity
+- Feature ID matches spec registry
+- Summary length and formatting rules
+
+**Output:** `.stagecraft/reports/commit-health.json`
+
+**Interpretation:**
+- `summary.valid_commits` / `summary.invalid_commits`: Overall discipline
+- `commits.<sha>.is_valid`: Per-commit status
+- `commits.<sha>.violations`: Specific rule violations
+- `summary.violations_by_code`: Violation frequency
+
+#### Feature Traceability Report
+
+```bash
+stagecraft feature traceability
+```
+
+Scans repository for feature presence across spec, implementation, tests, and commits.
+
+**What it checks:**
+- Feature spec files exist
+- Implementation files present
+- Test files present
+- Commits reference feature IDs
+- Status consistency (e.g., "done" features have tests)
+
+**Output:** `.stagecraft/reports/feature-traceability.json`
+
+**Interpretation:**
+- `summary.total_features`: Total features found
+- `summary.features_with_gaps`: Features missing components
+- `features.<id>.problems`: Specific traceability issues
+- `features.<id>.status`: Feature lifecycle state
+
+### Workflow Integration
+
+**Before PR:**
+1. Run `stagecraft commit report` to verify commit discipline
+2. Fix any violations (rewrite commits if needed)
+3. Run `stagecraft feature traceability` to verify feature completeness
+4. Address any missing components (tests, implementation, etc.)
+
+**After Feature Completion:**
+1. Run `stagecraft feature traceability`
+2. Verify feature status matches reality (spec + impl + tests = "done")
+3. Ensure commits reference the feature ID
+
+**In CI/CD:**
+- Add `stagecraft commit report` to PR checks
+- Fail on high violation rates or missing feature IDs
+- Use `stagecraft feature traceability` to enforce test coverage
+
+### Report Schema
+
+Both reports follow deterministic JSON schemas (version 1.0):
+
+- **No timestamps**: Reports are deterministic and comparable across runs
+- **Sorted lists**: All arrays are sorted for consistency
+- **Atomic writes**: Reports are written atomically (no partial files)
+
+See Phase 3.A/3.B documentation for detailed schema definitions.
+
+⸻
+
+**Remember:** Commit messages are deterministic artifacts. Every commit maintains the traceability chain: **spec → tests → code → docs → commit → PR**
+
