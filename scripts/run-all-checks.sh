@@ -126,27 +126,8 @@ else
 fi
 
 info "Checking for missing spec files..."
-# Basic check: ensure referenced spec files exist
-missing_specs=0
-
-# Look for lines like:
-#   // Spec: spec/core/logging.md
-# in Go source files.
-while IFS= read -r line; do
-    # Match "Spec:" or "spec:" followed by a path (no quotes required)
-    if [[ $line =~ [Ss]pec:[[:space:]]+([^[:space:]]+) ]]; then
-        SPEC_FILE="${BASH_REMATCH[1]}"
-
-        # Normalize: if path is already under spec/, also check bare path
-        if [ ! -f "$SPEC_FILE" ] && [ ! -f "spec/$SPEC_FILE" ]; then
-            echo "WARNING: Referenced spec file not found: $SPEC_FILE"
-            ((missing_specs++)) || true
-        fi
-    fi
-done < <(grep -r "Spec:" --include="*.go" . 2>/dev/null || true)
-
-if [ $missing_specs -gt 0 ]; then
-    error "Found $missing_specs missing spec file reference(s)"
+if ! go run ./cmd/spec-reference-check; then
+    error "Spec reference validation failed"
     exit 1
 fi
 info "All spec file references are valid"
