@@ -78,20 +78,17 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
+
+	// Get absolute path to avoid working directory race conditions in parallel tests
+	absConfigPath, err := filepath.Abs(configPath)
+	if err != nil {
+		t.Fatalf("failed to get absolute config path: %v", err)
 	}
 
 	root := newTestRootCommand()
 	root.AddCommand(NewBuildCommand())
 
-	_, err := executeCommandForGolden(root, "build", "--env=does-not-exist")
+	_, err = executeCommandForGolden(root, "build", "--env=does-not-exist", "--config", absConfigPath)
 	if err == nil {
 		t.Fatalf("expected error for invalid environment")
 	}
