@@ -66,8 +66,8 @@ jobs:
             exit 1
           fi
 
-          # Fail if old outline pattern is referenced (excluding the pattern itself in documentation)
-          if rg -n "docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE" docs spec scripts Agent.md .github 2>/dev/null || false; then
+          # Fail if old outline pattern is referenced (excluding this workflow file itself)
+          if rg -n "docs/<FEATURE_ID>_IMPLEMENTATION_OUTLINE" docs spec scripts Agent.md .github 2>/dev/null | grep -v ".github/workflows/docs-governance.yml" | grep -q .; then
             echo "::error ::Found references to deprecated outline path. Use docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md instead."
             exit 1
           fi

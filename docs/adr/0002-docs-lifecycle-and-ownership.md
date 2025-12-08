@@ -33,8 +33,8 @@ We adopt a structured documentation model with explicit lifecycle states and aut
 ```
 docs/
 ├── engine/              # Implementation-aligned, AI-critical
-│   ├── analysis/       # Feature analysis briefs
-│   ├── outlines/        # Implementation outlines
+│   ├── analysis/       # Feature analysis briefs (docs/engine/analysis/<FEATURE_ID>.md)
+│   ├── outlines/        # Implementation outlines (docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md)
 │   ├── status/          # Generated status tracking
 │   └── engine-index.md  # File location guide
 ├── narrative/           # Human-facing planning and overview
