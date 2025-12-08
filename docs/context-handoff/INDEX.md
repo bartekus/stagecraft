@@ -99,6 +99,11 @@ Context handoff documents ensure:
 - **To**: Phase 3.B (Commit health generators & CLI integration)
 - **Use when**: Starting work on Phase 3.B generators and CLI integration after Phase 3.A types are complete
 
+#### `COMMIT_DISCIPLINE_PHASE3C.md`
+- **From**: Phase 3.B (Commit health generators & CLI integration)
+- **To**: Phase 3.C (CLI wiring for commit discipline reports)
+- **Use when**: Starting work on Phase 3.C CLI commands after Phase 3.B generators are complete
+
 ## Template
 
 For creating new handoff documents, use:
