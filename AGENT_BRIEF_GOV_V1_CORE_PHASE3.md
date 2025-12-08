@@ -4,6 +4,8 @@
 **Spec**: `spec/governance/GOV_V1_CORE.md`  
 **Context**: Hardening governance tooling to eliminate false positives in spec reference validation. See `COVERAGE_COMPLIANCE_PLAN_PHASE2.md` Phase 3 section.
 
+**Status**: ✅ Phase 3 implemented and merged. `Spec:` is now reserved for `spec/*.md` files and enforced by `cmd/spec-reference-check`. All non-spec references converted to `Docs:` comments.
+
 ---
 
 ## Mission
