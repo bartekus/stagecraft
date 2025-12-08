@@ -68,7 +68,7 @@ func TestWriteJSONAtomic_ValidJSON(t *testing.T) {
 	}
 
 	// Read and verify JSON
-	data, err := os.ReadFile(targetPath)
+	data, err := os.ReadFile(targetPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("failed to read written file: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestWriteJSONAtomic_AtomicWrite(t *testing.T) {
 	}
 
 	// Verify first version
-	data1, _ := os.ReadFile(targetPath)
+	data1, _ := os.ReadFile(targetPath) //nolint:gosec // G304: test file path
 	var v1 map[string]string
 	_ = json.Unmarshal(data1, &v1)
 	if v1["version"] != "1" {
@@ -133,7 +133,7 @@ func TestWriteJSONAtomic_AtomicWrite(t *testing.T) {
 	}
 
 	// Verify second version (should be complete, not partial)
-	data2, _ := os.ReadFile(targetPath)
+	data2, _ := os.ReadFile(targetPath) //nolint:gosec // G304: test file path
 	var v2 map[string]string
 	_ = json.Unmarshal(data2, &v2)
 	if v2["version"] != "2" {

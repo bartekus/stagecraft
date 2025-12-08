@@ -45,8 +45,7 @@ services:
     image: myapp:latest
 `
 
-	//nolint:gosec // G306: 0644 is acceptable for test fixtures
-	if err := os.WriteFile(composePath, []byte(composeContent), 0o644); err != nil {
+	if err := os.WriteFile(composePath, []byte(composeContent), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to create compose file: %v", err)
 	}
 

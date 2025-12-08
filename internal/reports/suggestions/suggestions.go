@@ -119,8 +119,8 @@ func BuildReport(sugs []Suggestion) Report {
 // The caller is expected to pass the result through PrioritizeSuggestions and
 // FilterSuggestions before rendering.
 func GenerateSuggestions(
-	commitReport commithealth.Report,
-	featureReport featuretrace.Report,
+	commitReport *commithealth.Report,
+	featureReport *featuretrace.Report,
 ) ([]Suggestion, error) {
 	var out []Suggestion
 
@@ -161,8 +161,8 @@ func GenerateSuggestions(
 //	}
 //
 // If the actual shapes differ, adjust this helper accordingly.
-func suggestionsFromCommitHealth(report commithealth.Report) []Suggestion {
-	if report.Commits == nil || len(report.Commits) == 0 {
+func suggestionsFromCommitHealth(report *commithealth.Report) []Suggestion {
+	if len(report.Commits) == 0 {
 		return nil
 	}
 
@@ -202,7 +202,7 @@ func suggestionsFromCommitHealth(report commithealth.Report) []Suggestion {
 //
 // For now it returns an empty slice to keep behaviour well-defined and
 // deterministic; commit-based suggestions are the only source.
-func suggestionsFromFeatureTrace(_ featuretrace.Report) []Suggestion {
+func suggestionsFromFeatureTrace(_ *featuretrace.Report) []Suggestion {
 	// TODO (Phase 3.D+):
 	//  - Expose feature-level problems (or iterate FeaturePresence entries)
 	//  - Derive suggestions for:
@@ -302,7 +302,8 @@ func FormatSuggestionsText(suggestions []Suggestion) string {
 		buf.WriteString(strings.Repeat("-", len(heading)+len(fmt.Sprintf(" (%d)", len(items)))) + "\n")
 
 		// Deterministic per-suggestion output.
-		for _, s := range items {
+		for i := range items {
+			s := &items[i]
 			fmt.Fprintf(&buf, "[%s] %s\n", suggestionCode(s), s.Message)
 
 			// Stable details: walk keys in lexicographic order.
@@ -361,7 +362,7 @@ func severityHeading(sev Severity) string {
 //   - error   -> "E"
 //   - warning -> "W"
 //   - info    -> "I"
-func suggestionCode(s Suggestion) string {
+func suggestionCode(s *Suggestion) string {
 	switch s.Severity {
 	case SeverityError:
 		return "E"

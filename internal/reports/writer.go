@@ -31,7 +31,7 @@ import (
 func WriteJSONAtomic(path string, v any) error {
 	// Create parent directory if it doesn't exist
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil { //nolint:gosec // G301: output directory needs write permissions
 		return fmt.Errorf("creating directory: %w", err)
 	}
 
@@ -51,7 +51,7 @@ func WriteJSONAtomic(path string, v any) error {
 
 	// Write to temporary file
 	tmpPath := path + ".tmp"
-	if err := os.WriteFile(tmpPath, buf, 0o644); err != nil {
+	if err := os.WriteFile(tmpPath, buf, 0o600); err != nil { //nolint:gosec // G306: output file needs read permissions
 		return fmt.Errorf("writing temporary file: %w", err)
 	}
 

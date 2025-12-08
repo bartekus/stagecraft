@@ -60,7 +60,7 @@ func TestGenerateSuggestions_CommitHealthViolations(t *testing.T) {
 	}
 
 	// Generate suggestions
-	suggestions, err := GenerateSuggestions(report, featureReport)
+	suggestions, err := GenerateSuggestions(&report, &featureReport)
 	if err != nil {
 		t.Fatalf("GenerateSuggestions failed: %v", err)
 	}
@@ -136,7 +136,7 @@ func TestGenerateSuggestions_ValidCommitsProduceNoSuggestions(t *testing.T) {
 		Features:      make(map[string]featuretrace.Feature),
 	}
 
-	suggestions, err := GenerateSuggestions(report, featureReport)
+	suggestions, err := GenerateSuggestions(&report, &featureReport)
 	if err != nil {
 		t.Fatalf("GenerateSuggestions failed: %v", err)
 	}

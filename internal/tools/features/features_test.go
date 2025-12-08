@@ -102,7 +102,7 @@ func TestLoadGraph_ValidYAML(t *testing.T) {
       - FEATURE1
 `
 
-	if err := os.WriteFile(featuresPath, []byte(content), 0o644); err != nil { //nolint:gosec // test file
+	if err := os.WriteFile(featuresPath, []byte(content), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write features.yaml: %v", err)
 	}
 
@@ -147,7 +147,7 @@ func TestLoadGraph_UnknownDependency(t *testing.T) {
       - UNKNOWN_FEATURE
 `
 
-	if err := os.WriteFile(featuresPath, []byte(content), 0o644); err != nil { //nolint:gosec // test file
+	if err := os.WriteFile(featuresPath, []byte(content), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write features.yaml: %v", err)
 	}
 

@@ -44,16 +44,16 @@ func TestCommitSuggest_JSONGolden(t *testing.T) {
 	goldenPath := filepath.Join("testdata", "commit_suggest_json.golden")
 
 	if *updateCommitSuggestGoldens {
-		if err := os.MkdirAll(filepath.Dir(goldenPath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(goldenPath), 0o750); err != nil { //nolint:gosec // G301: test directory
 			t.Fatalf("creating testdata dir: %v", err)
 		}
-		if err := os.WriteFile(goldenPath, []byte(output), 0o644); err != nil {
+		if err := os.WriteFile(goldenPath, []byte(output), 0o600); err != nil { //nolint:gosec // G306: test file
 			t.Fatalf("writing golden file: %v", err)
 		}
 		return
 	}
 
-	want, err := os.ReadFile(goldenPath)
+	want, err := os.ReadFile(goldenPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("reading golden file %s: %v", goldenPath, err)
 	}
@@ -77,16 +77,16 @@ func TestCommitSuggest_TextGolden(t *testing.T) {
 	goldenPath := filepath.Join("testdata", "commit_suggest_text.golden")
 
 	if *updateCommitSuggestGoldens {
-		if err := os.MkdirAll(filepath.Dir(goldenPath), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(goldenPath), 0o750); err != nil { //nolint:gosec // G301: test directory
 			t.Fatalf("creating testdata dir: %v", err)
 		}
-		if err := os.WriteFile(goldenPath, []byte(output), 0o644); err != nil {
+		if err := os.WriteFile(goldenPath, []byte(output), 0o600); err != nil { //nolint:gosec // G306: test file
 			t.Fatalf("writing golden file: %v", err)
 		}
 		return
 	}
 
-	want, err := os.ReadFile(goldenPath)
+	want, err := os.ReadFile(goldenPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("reading golden file %s: %v", goldenPath, err)
 	}
@@ -116,7 +116,7 @@ func runCommitSuggestCLI(t *testing.T, format string) string {
 
 	// Prepare .stagecraft/reports with minimal, valid JSON fixtures.
 	reportsDir := filepath.Join(repoDir, ".stagecraft", "reports")
-	if err := os.MkdirAll(reportsDir, 0o755); err != nil {
+	if err := os.MkdirAll(reportsDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("creating reports dir: %v", err)
 	}
 
@@ -162,11 +162,11 @@ func runCommitSuggestCLI(t *testing.T, format string) string {
 }
 `
 
-	if err := os.WriteFile(commitHealthPath, []byte(commitHealthFixture), 0o644); err != nil {
+	if err := os.WriteFile(commitHealthPath, []byte(commitHealthFixture), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("writing commit-health fixture: %v", err)
 	}
 
-	if err := os.WriteFile(featureTracePath, []byte(featureTraceFixture), 0o644); err != nil {
+	if err := os.WriteFile(featureTracePath, []byte(featureTraceFixture), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("writing feature-traceability fixture: %v", err)
 	}
 

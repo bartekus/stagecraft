@@ -28,12 +28,12 @@ func TestScanFeaturePresence_DeterministicOrdering(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create nested directory structure to test OS-independent ordering
-	err := os.MkdirAll(filepath.Join(tmpDir, "spec", "commands"), 0o755)
+	err := os.MkdirAll(filepath.Join(tmpDir, "spec", "commands"), 0o750) //nolint:gosec // G301: test directory
 	if err != nil {
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 
-	err = os.MkdirAll(filepath.Join(tmpDir, "internal", "core"), 0o755)
+	err = os.MkdirAll(filepath.Join(tmpDir, "internal", "core"), 0o750) //nolint:gosec // G301: test directory
 	if err != nil {
 		t.Fatalf("failed to create internal dir: %v", err)
 	}
@@ -44,7 +44,7 @@ func TestScanFeaturePresence_DeterministicOrdering(t *testing.T) {
 
 # Deploy Command
 `
-	err = os.WriteFile(filepath.Join(tmpDir, "spec", "commands", "deploy.md"), []byte(specContent), 0o644)
+	err = os.WriteFile(filepath.Join(tmpDir, "spec", "commands", "deploy.md"), []byte(specContent), 0o600) //nolint:gosec // G306: test file
 	if err != nil {
 		t.Fatalf("failed to write spec file: %v", err)
 	}
@@ -55,7 +55,7 @@ func TestScanFeaturePresence_DeterministicOrdering(t *testing.T) {
 
 package core
 `
-	err = os.WriteFile(filepath.Join(tmpDir, "internal", "core", "deploy.go"), []byte(implContent), 0o644)
+	err = os.WriteFile(filepath.Join(tmpDir, "internal", "core", "deploy.go"), []byte(implContent), 0o600) //nolint:gosec // G306: test file
 	if err != nil {
 		t.Fatalf("failed to write impl file: %v", err)
 	}
@@ -66,7 +66,7 @@ package core
 
 package core
 `
-	err = os.WriteFile(filepath.Join(tmpDir, "internal", "core", "deploy_test.go"), []byte(testContent), 0o644)
+	err = os.WriteFile(filepath.Join(tmpDir, "internal", "core", "deploy_test.go"), []byte(testContent), 0o600) //nolint:gosec // G306: test file
 	if err != nil {
 		t.Fatalf("failed to write test file: %v", err)
 	}
@@ -77,7 +77,7 @@ package core
 
 # Plan Command
 `
-	err = os.WriteFile(filepath.Join(tmpDir, "spec", "commands", "plan.md"), []byte(anotherSpecContent), 0o644)
+	err = os.WriteFile(filepath.Join(tmpDir, "spec", "commands", "plan.md"), []byte(anotherSpecContent), 0o600) //nolint:gosec // G306: test file
 	if err != nil {
 		t.Fatalf("failed to write another spec file: %v", err)
 	}
@@ -133,7 +133,7 @@ func TestScanFeaturePresence_NoFeatureHeader(t *testing.T) {
 
 func main() {}
 `
-	err := os.WriteFile(filepath.Join(tmpDir, "main.go"), []byte(content), 0o644)
+	err := os.WriteFile(filepath.Join(tmpDir, "main.go"), []byte(content), 0o600) //nolint:gosec // G306: test file
 	if err != nil {
 		t.Fatalf("failed to write file: %v", err)
 	}
@@ -180,7 +180,7 @@ func TestExtractFeatureIDFromFile(t *testing.T) {
 			t.Parallel()
 
 			tmpFile := filepath.Join(t.TempDir(), "test.go")
-			err := os.WriteFile(tmpFile, []byte(tt.content), 0o644)
+			err := os.WriteFile(tmpFile, []byte(tt.content), 0o600) //nolint:gosec // G306: test file
 			if err != nil {
 				t.Fatalf("failed to write test file: %v", err)
 			}

@@ -33,13 +33,13 @@ func TestRunCommitReport_GeneratesReport(t *testing.T) {
 
 	// Create .stagecraft/reports directory
 	reportsDir := filepath.Join(tmpDir, ".stagecraft", "reports")
-	if err := os.MkdirAll(reportsDir, 0o755); err != nil {
+	if err := os.MkdirAll(reportsDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create reports directory: %v", err)
 	}
 
 	// Create minimal spec/features.yaml
 	specDir := filepath.Join(tmpDir, "spec")
-	if err := os.MkdirAll(specDir, 0o755); err != nil {
+	if err := os.MkdirAll(specDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create spec directory: %v", err)
 	}
 
@@ -48,7 +48,7 @@ func TestRunCommitReport_GeneratesReport(t *testing.T) {
     title: "Deploy command"
     status: done
 `
-	if err := os.WriteFile(filepath.Join(specDir, "features.yaml"), []byte(featuresYAML), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(specDir, "features.yaml"), []byte(featuresYAML), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write features.yaml: %v", err)
 	}
 
@@ -164,7 +164,7 @@ func TestLoadFeatureRegistry(t *testing.T) {
 
 	// Create spec/features.yaml
 	specDir := filepath.Join(tmpDir, "spec")
-	if err := os.MkdirAll(specDir, 0o755); err != nil {
+	if err := os.MkdirAll(specDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create spec directory: %v", err)
 	}
 
@@ -176,7 +176,7 @@ func TestLoadFeatureRegistry(t *testing.T) {
     title: "Plan command"
     status: done
 `
-	if err := os.WriteFile(filepath.Join(specDir, "features.yaml"), []byte(featuresYAML), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(specDir, "features.yaml"), []byte(featuresYAML), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write features.yaml: %v", err)
 	}
 
@@ -223,13 +223,13 @@ func TestRunCommitReport_CLIEndToEnd(t *testing.T) {
 
 	// Create .stagecraft/reports directory (expected output location)
 	reportsDir := filepath.Join(tmpDir, ".stagecraft", "reports")
-	if err := os.MkdirAll(reportsDir, 0o755); err != nil {
+	if err := os.MkdirAll(reportsDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create reports directory: %v", err)
 	}
 
 	// Create minimal spec/features.yaml so the CLI can load known features
 	specDir := filepath.Join(tmpDir, "spec")
-	if err := os.MkdirAll(specDir, 0o755); err != nil {
+	if err := os.MkdirAll(specDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create spec directory: %v", err)
 	}
 
@@ -238,7 +238,7 @@ func TestRunCommitReport_CLIEndToEnd(t *testing.T) {
     title: "Deploy command"
     status: done
 `
-	if err := os.WriteFile(filepath.Join(specDir, "features.yaml"), []byte(featuresYAML), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(specDir, "features.yaml"), []byte(featuresYAML), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write features.yaml: %v", err)
 	}
 
@@ -278,7 +278,7 @@ func TestRunCommitReport_CLIEndToEnd(t *testing.T) {
 
 	// Verify the report file was created
 	reportPath := filepath.Join(tmpDir, ".stagecraft", "reports", "commit-health.json")
-	data, err := os.ReadFile(reportPath)
+	data, err := os.ReadFile(reportPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("failed to read report file: %v", err)
 	}

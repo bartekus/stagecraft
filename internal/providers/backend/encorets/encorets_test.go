@@ -561,8 +561,7 @@ func TestEncoreTsProvider_Dev_Success(t *testing.T) {
 
 	// Create env file
 	envFile := filepath.Join(tmpDir, ".env.test")
-	//nolint:gosec // G306: 0644 is acceptable for test fixtures
-	if err := os.WriteFile(envFile, []byte("TEST_VAR=test_value\n"), 0o644); err != nil {
+	if err := os.WriteFile(envFile, []byte("TEST_VAR=test_value\n"), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to create env file: %v", err)
 	}
 
@@ -816,8 +815,7 @@ func TestEncoreTsProvider_Dev_EnvFileLoading(t *testing.T) {
 NUMBER_VAR=123
 QUOTED_VAR="quoted value"
 `
-	//nolint:gosec // G306: 0644 is acceptable for test fixtures
-	if err := os.WriteFile(envFile, []byte(envContent), 0o644); err != nil {
+	if err := os.WriteFile(envFile, []byte(envContent), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to create env file: %v", err)
 	}
 
@@ -854,8 +852,7 @@ func TestEncoreTsProvider_Dev_TelemetryAndCACerts(t *testing.T) {
 
 	// Create CA cert file
 	caCertFile := filepath.Join(tmpDir, "ca.pem")
-	//nolint:gosec // G306: 0644 is acceptable for test fixtures
-	if err := os.WriteFile(caCertFile, []byte("fake CA cert"), 0o644); err != nil {
+	if err := os.WriteFile(caCertFile, []byte("fake CA cert"), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to create CA cert file: %v", err)
 	}
 

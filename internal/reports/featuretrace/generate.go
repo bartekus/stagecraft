@@ -49,7 +49,8 @@ func GenerateFeatureTraceabilityReport(features []FeaturePresence) (Report, erro
 	}
 
 	// Process each feature
-	for _, fp := range features {
+	for i := range features {
+		fp := &features[i]
 		feature := Feature{
 			Status: fp.Status,
 			Spec: SpecInfo{
@@ -72,7 +73,7 @@ func GenerateFeatureTraceabilityReport(features []FeaturePresence) (Report, erro
 		}
 
 		// Detect problems
-		problems := detectProblems(fp, feature)
+		problems := detectProblems(fp, &feature)
 		feature.Problems = problems
 
 		// Update summary counts
@@ -101,7 +102,7 @@ func GenerateFeatureTraceabilityReport(features []FeaturePresence) (Report, erro
 }
 
 // detectProblems detects traceability problems for a feature.
-func detectProblems(fp FeaturePresence, feature Feature) []Problem {
+func detectProblems(fp *FeaturePresence, feature *Feature) []Problem {
 	var problems []Problem
 
 	// Missing spec

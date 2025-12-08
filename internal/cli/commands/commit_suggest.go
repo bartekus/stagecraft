@@ -56,7 +56,7 @@ func runCommitSuggest(cmd *cobra.Command, args []string) error {
 
 	// 2. Read commit health report
 	commitReportPath := filepath.Join(repoPath, ".stagecraft", "reports", "commit-health.json")
-	commitReportData, err := os.ReadFile(commitReportPath)
+	commitReportData, err := os.ReadFile(commitReportPath) //nolint:gosec // G304: path is validated from user input
 	if err != nil {
 		return fmt.Errorf("reading commit health report: %w", err)
 	}
@@ -68,7 +68,7 @@ func runCommitSuggest(cmd *cobra.Command, args []string) error {
 
 	// 3. Read feature traceability report
 	featureReportPath := filepath.Join(repoPath, ".stagecraft", "reports", "feature-traceability.json")
-	featureReportData, err := os.ReadFile(featureReportPath)
+	featureReportData, err := os.ReadFile(featureReportPath) //nolint:gosec // G304: path is validated from user input
 	if err != nil {
 		return fmt.Errorf("reading feature traceability report: %w", err)
 	}
@@ -79,7 +79,7 @@ func runCommitSuggest(cmd *cobra.Command, args []string) error {
 	}
 
 	// 4. Generate suggestions
-	rawSuggestions, err := suggestions.GenerateSuggestions(commitReport, featureReport)
+	rawSuggestions, err := suggestions.GenerateSuggestions(&commitReport, &featureReport)
 	if err != nil {
 		return fmt.Errorf("generating suggestions: %w", err)
 	}

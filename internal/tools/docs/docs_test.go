@@ -42,7 +42,7 @@ func TestGenerateFeatureOverview_CreatesFile(t *testing.T) {
     tests: []
 `
 
-	if err := os.WriteFile(featuresPath, []byte(content), 0o644); err != nil { //nolint:gosec // test file
+	if err := os.WriteFile(featuresPath, []byte(content), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write features.yaml: %v", err)
 	}
 
@@ -75,7 +75,7 @@ func TestGenerateFeatureOverview_WithSpecFrontmatter(t *testing.T) {
 	tmpDir := t.TempDir()
 	featuresPath := filepath.Join(tmpDir, "features.yaml")
 	specDir := filepath.Join(tmpDir, "spec")
-	if err := os.MkdirAll(specDir, 0o755); err != nil { //nolint:gosec // test file
+	if err := os.MkdirAll(specDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 	outPath := filepath.Join(tmpDir, "OVERVIEW.md")
@@ -96,7 +96,7 @@ func TestGenerateFeatureOverview_WithSpecFrontmatter(t *testing.T) {
 
 	// Create spec with frontmatter
 	specSubDir := filepath.Join(specDir, "test")
-	if err := os.MkdirAll(specSubDir, 0o755); err != nil { //nolint:gosec // test file
+	if err := os.MkdirAll(specSubDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create spec subdir: %v", err)
 	}
 	specPath := filepath.Join(specSubDir, "FEATURE1.md")

@@ -32,13 +32,13 @@ func TestRunFeatureTraceability_GeneratesReport(t *testing.T) {
 
 	// Create .stagecraft/reports directory
 	reportsDir := filepath.Join(tmpDir, ".stagecraft", "reports")
-	if err := os.MkdirAll(reportsDir, 0o755); err != nil {
+	if err := os.MkdirAll(reportsDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create reports directory: %v", err)
 	}
 
 	// Create spec file with Feature header
 	specDir := filepath.Join(tmpDir, "spec", "commands")
-	if err := os.MkdirAll(specDir, 0o755); err != nil {
+	if err := os.MkdirAll(specDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create spec directory: %v", err)
 	}
 
@@ -47,13 +47,13 @@ func TestRunFeatureTraceability_GeneratesReport(t *testing.T) {
 
 # Deploy Command
 `
-	if err := os.WriteFile(filepath.Join(specDir, "deploy.md"), []byte(specContent), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(specDir, "deploy.md"), []byte(specContent), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write spec file: %v", err)
 	}
 
 	// Create implementation file
 	implDir := filepath.Join(tmpDir, "internal", "core")
-	if err := os.MkdirAll(implDir, 0o755); err != nil {
+	if err := os.MkdirAll(implDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create internal directory: %v", err)
 	}
 
@@ -62,7 +62,7 @@ func TestRunFeatureTraceability_GeneratesReport(t *testing.T) {
 
 package core
 `
-	if err := os.WriteFile(filepath.Join(implDir, "deploy.go"), []byte(implContent), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(implDir, "deploy.go"), []byte(implContent), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write impl file: %v", err)
 	}
 
@@ -87,7 +87,7 @@ package core
 
 	// Verify the report file was created
 	reportPath := filepath.Join(tmpDir, ".stagecraft", "reports", "feature-traceability.json")
-	data, err := os.ReadFile(reportPath)
+	data, err := os.ReadFile(reportPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("failed to read report file: %v", err)
 	}
@@ -153,13 +153,13 @@ func TestRunFeatureTraceability_GoldenFile(t *testing.T) {
 
 	// Create .stagecraft/reports directory
 	reportsDir := filepath.Join(tmpDir, ".stagecraft", "reports")
-	if err := os.MkdirAll(reportsDir, 0o755); err != nil {
+	if err := os.MkdirAll(reportsDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create reports directory: %v", err)
 	}
 
 	// Create spec file with Feature header
 	specDir := filepath.Join(tmpDir, "spec", "commands")
-	if err := os.MkdirAll(specDir, 0o755); err != nil {
+	if err := os.MkdirAll(specDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create spec directory: %v", err)
 	}
 
@@ -168,13 +168,13 @@ func TestRunFeatureTraceability_GoldenFile(t *testing.T) {
 
 # Deploy Command
 `
-	if err := os.WriteFile(filepath.Join(specDir, "deploy.md"), []byte(specContent), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(specDir, "deploy.md"), []byte(specContent), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write spec file: %v", err)
 	}
 
 	// Create implementation file
 	implDir := filepath.Join(tmpDir, "internal", "core")
-	if err := os.MkdirAll(implDir, 0o755); err != nil {
+	if err := os.MkdirAll(implDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create internal directory: %v", err)
 	}
 
@@ -183,7 +183,7 @@ func TestRunFeatureTraceability_GoldenFile(t *testing.T) {
 
 package core
 `
-	if err := os.WriteFile(filepath.Join(implDir, "deploy.go"), []byte(implContent), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(implDir, "deploy.go"), []byte(implContent), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write impl file: %v", err)
 	}
 
@@ -208,7 +208,7 @@ package core
 
 	// Read the generated report file
 	reportPath := filepath.Join(tmpDir, ".stagecraft", "reports", "feature-traceability.json")
-	data, err := os.ReadFile(reportPath)
+	data, err := os.ReadFile(reportPath) //nolint:gosec // G304: test file path
 	if err != nil {
 		t.Fatalf("failed to read report file: %v", err)
 	}

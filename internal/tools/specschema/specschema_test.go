@@ -152,7 +152,7 @@ domain: test
 # Test Feature
 `
 
-	if err := os.WriteFile(specPath, []byte(content), 0o644); err != nil { //nolint:gosec // test file
+	if err := os.WriteFile(specPath, []byte(content), 0o600); err != nil { //nolint:gosec // G306: test file
 		t.Fatalf("failed to write spec file: %v", err)
 	}
 
@@ -179,7 +179,7 @@ func TestLoadSpec_FileNotFound(t *testing.T) {
 func TestLoadAllSpecs_WalksDirectory(t *testing.T) {
 	tmpDir := t.TempDir()
 	specDir := filepath.Join(tmpDir, "spec")
-	if err := os.MkdirAll(specDir, 0o755); err != nil { //nolint:gosec // test file
+	if err := os.MkdirAll(specDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create spec dir: %v", err)
 	}
 
@@ -198,7 +198,7 @@ domain: test
 
 	// Create another valid spec in subdirectory
 	subDir := filepath.Join(specDir, "sub")
-	if err := os.MkdirAll(subDir, 0o755); err != nil { //nolint:gosec // test file
+	if err := os.MkdirAll(subDir, 0o750); err != nil { //nolint:gosec // G301: test directory
 		t.Fatalf("failed to create subdir: %v", err)
 	}
 	spec2 := filepath.Join(subDir, "FEATURE2.md")
