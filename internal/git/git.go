@@ -20,6 +20,10 @@ package git
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/exec"
+	"sort"
+	"strings"
 
 	"stagecraft/internal/reports/commithealth"
 )
@@ -55,22 +59,57 @@ func (h *HistorySourceImpl) Commits() ([]commithealth.CommitMetadata, error) {
 // runGitLog executes git log and returns the raw output.
 // This function shells out to git with explicit environment variables.
 func runGitLog(ctx context.Context, repoPath string) (string, error) {
-	// TODO: Implement git log execution
-	// - Use exec.CommandContext
-	// - Set explicit environment variables (no inheritance)
-	// - Format: git log --format="%H|%s|%an|%ae" --reverse
-	// - Return raw output string
-	return "", fmt.Errorf("not implemented")
+	cmd := exec.CommandContext(ctx, "git", "log", `--format=%H|%s|%an|%ae`, "--reverse")
+	cmd.Dir = repoPath
+	// Explicit, minimal environment - no implicit inheritance.
+	cmd.Env = []string{
+		"PATH=" + os.Getenv("PATH"),
+		"LANG=C",
+		"LC_ALL=C",
+	}
+
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("running git log: %w", err)
+	}
+
+	return string(out), nil
 }
 
 // parseGitLogOutput parses git log output into CommitMetadata slices.
 // This is a pure function that can be tested without shelling out to git.
 func parseGitLogOutput(output string) ([]commithealth.CommitMetadata, error) {
-	// TODO: Implement parsing logic
-	// - Split by newlines
-	// - Parse format: SHA|subject|author_name|author_email
-	// - Handle edge cases (empty lines, malformed lines)
-	// - Sort deterministically (by SHA or commit time as per spec)
-	// - Return sorted slice
-	return nil, fmt.Errorf("not implemented")
+	trimmed := strings.TrimSpace(output)
+	if trimmed == "" {
+		return nil, nil
+	}
+
+	lines := strings.Split(trimmed, "\n")
+	commits := make([]commithealth.CommitMetadata, 0, len(lines))
+
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		parts := strings.SplitN(line, "|", 4)
+		if len(parts) != 4 {
+			return nil, fmt.Errorf("malformed git log line: %q", line)
+		}
+
+		commits = append(commits, commithealth.CommitMetadata{
+			SHA:         parts[0],
+			Message:     parts[1],
+			AuthorName:  parts[2],
+			AuthorEmail: parts[3],
+		})
+	}
+
+	// Deterministic ordering regardless of git log ordering
+	sort.Slice(commits, func(i, j int) bool {
+		return commits[i].SHA < commits[j].SHA
+	})
+
+	return commits, nil
 }

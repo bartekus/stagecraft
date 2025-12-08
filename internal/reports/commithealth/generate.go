@@ -20,7 +20,6 @@ package commithealth
 import (
 	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 )
 
@@ -177,7 +176,7 @@ func validateCommitMessage(subject string, knownFeatures map[string]bool) []Viol
 	}
 
 	// Check if summary starts with uppercase (after colon)
-	if len(summary) > 0 && summary[0] >= 'A' && summary[0] <= 'Z' {
+	if summary != "" && summary[0] >= 'A' && summary[0] <= 'Z' {
 		violations = append(violations, Violation{
 			Code:     ViolationCodeSummaryStartsWithUppercase,
 			Severity: SeverityWarning,
@@ -254,16 +253,4 @@ func getAllRules() []Rule {
 			Severity:    SeverityError,
 		},
 	}
-}
-
-// sortViolationCodes returns sorted violation codes for deterministic iteration.
-func sortViolationCodes(m map[ViolationCode]int) []ViolationCode {
-	codes := make([]ViolationCode, 0, len(m))
-	for code := range m {
-		codes = append(codes, code)
-	}
-	sort.Slice(codes, func(i, j int) bool {
-		return string(codes[i]) < string(codes[j])
-	})
-	return codes
 }

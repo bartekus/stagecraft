@@ -18,6 +18,7 @@ See https://www.gnu.org/licenses/ for license details.
 package featuretrace
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -30,37 +31,86 @@ type ScanConfig struct {
 	RootDir string
 }
 
+// walkDir walks the directory tree from root, calling fn for each file.
+// Directories are traversed in lexicographical order to ensure determinism.
+func walkDir(root string, fn func(path string, info os.FileInfo) error) error {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return fmt.Errorf("reading directory %s: %w", root, err)
+	}
+
+	// Sort entries lexicographically by name
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Name() < entries[j].Name()
+	})
+
+	for _, entry := range entries {
+		name := entry.Name()
+		fullPath := filepath.Join(root, name)
+
+		info, err := entry.Info()
+		if err != nil {
+			return fmt.Errorf("getting info for %s: %w", fullPath, err)
+		}
+
+		if info.IsDir() {
+			// Skip hidden dirs, .git, and testdata
+			if strings.HasPrefix(name, ".") || name == "testdata" || name == ".git" {
+				continue
+			}
+			if err := walkDir(fullPath, fn); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if err := fn(fullPath, info); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // ScanFeaturePresence scans the repository tree and returns feature presence information.
 // The result is sorted lexicographically by FeatureID.
 func ScanFeaturePresence(cfg ScanConfig) ([]FeaturePresence, error) {
-	// TODO: Implement deterministic repository traversal
-	// - Walk directory tree starting at cfg.RootDir
-	// - Use os.ReadDir with explicit sort (never raw FS order)
-	// - Extract Feature IDs from:
-	//   - Spec headers: // Feature: FEATURE_ID
-	//   - Implementation headers: // Feature: FEATURE_ID
-	//   - Test headers: // Feature: FEATURE_ID
-	// - Build FeaturePresence structs
-	// - Sort by FeatureID lexicographically
-	// - Return sorted slice
-
 	presenceMap := make(map[string]*FeaturePresence)
 
-	err := filepath.Walk(cfg.RootDir, func(path string, info os.FileInfo, err error) error {
+	err := walkDir(cfg.RootDir, func(path string, info os.FileInfo) error {
+		featureID, err := extractFeatureIDFromFile(path)
 		if err != nil {
-			return err
+			return fmt.Errorf("extracting feature ID from %s: %w", path, err)
+		}
+		if featureID == "" {
+			return nil
 		}
 
-		// Skip hidden directories and .git
-		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") || info.Name() == "testdata") {
-			return filepath.SkipDir
+		rel, err := filepath.Rel(cfg.RootDir, path)
+		if err != nil {
+			return fmt.Errorf("making relative path for %s: %w", path, err)
+		}
+		rel = filepath.ToSlash(rel)
+
+		fp, ok := presenceMap[featureID]
+		if !ok {
+			fp = &FeaturePresence{
+				FeatureID: featureID,
+			}
+			presenceMap[featureID] = fp
 		}
 
-		// TODO: Process files to extract Feature IDs
-		// - Read file content
-		// - Look for "// Feature: FEATURE_ID" pattern
-		// - Determine file type (spec, implementation, test)
-		// - Update presenceMap
+		switch {
+		case isSpecFile(rel):
+			fp.HasSpec = true
+			if fp.SpecPath == "" {
+				fp.SpecPath = rel
+			}
+		case isTestFile(rel):
+			fp.TestFiles = append(fp.TestFiles, rel)
+		case isImplementationFile(rel):
+			fp.ImplementationFiles = append(fp.ImplementationFiles, rel)
+		}
 
 		return nil
 	})
@@ -68,13 +118,14 @@ func ScanFeaturePresence(cfg ScanConfig) ([]FeaturePresence, error) {
 		return nil, fmt.Errorf("scanning repository: %w", err)
 	}
 
-	// Convert map to sorted slice
+	// Normalize lists and convert to sorted slice
 	result := make([]FeaturePresence, 0, len(presenceMap))
 	for _, fp := range presenceMap {
+		sort.Strings(fp.ImplementationFiles)
+		sort.Strings(fp.TestFiles)
 		result = append(result, *fp)
 	}
 
-	// Sort by FeatureID lexicographically
 	sort.Slice(result, func(i, j int) bool {
 		return result[i].FeatureID < result[j].FeatureID
 	})
@@ -85,33 +136,61 @@ func ScanFeaturePresence(cfg ScanConfig) ([]FeaturePresence, error) {
 // extractFeatureIDFromFile extracts Feature ID from a file's header comment.
 // Returns empty string if no Feature ID is found.
 func extractFeatureIDFromFile(filePath string) (string, error) {
-	// TODO: Implement feature ID extraction
-	// - Read file (first N lines or until non-comment line)
-	// - Look for pattern: // Feature: FEATURE_ID
-	// - Return FEATURE_ID or empty string
-	return "", fmt.Errorf("not implemented")
+	f, err := os.Open(filePath) //nolint:gosec // G304: file path is from repository scan, not user input
+	if err != nil {
+		return "", fmt.Errorf("opening file %s: %w", filePath, err)
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		trimmed := strings.TrimSpace(line)
+
+		// Stop when we hit a non-comment line - only header comments count.
+		if !strings.HasPrefix(trimmed, "//") {
+			break
+		}
+
+		if strings.HasPrefix(trimmed, "// Feature:") {
+			rest := strings.TrimPrefix(trimmed, "// Feature:")
+			id := strings.TrimSpace(rest)
+			return id, nil
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("scanning file %s: %w", filePath, err)
+	}
+
+	return "", nil
 }
 
 // isSpecFile determines if a file path represents a spec file.
 func isSpecFile(path string) bool {
-	// TODO: Implement spec file detection
-	// - Check if path is under spec/ directory
-	// - Check file extension (.md)
-	return false
+	if filepath.Ext(path) != ".md" {
+		return false
+	}
+	p := filepath.ToSlash(path)
+	return strings.HasPrefix(p, "spec/") || strings.Contains(p, "/spec/")
 }
 
 // isTestFile determines if a file path represents a test file.
 func isTestFile(path string) bool {
-	// TODO: Implement test file detection
-	// - Check if filename ends with _test.go
-	return false
+	base := filepath.Base(path)
+	return strings.HasSuffix(base, "_test.go")
 }
 
 // isImplementationFile determines if a file path represents an implementation file.
 func isImplementationFile(path string) bool {
-	// TODO: Implement implementation file detection
-	// - Check if it's a .go file
-	// - Check if it's NOT a test file
-	// - Check if it's NOT under testdata/
-	return false
+	if filepath.Ext(path) != ".go" {
+		return false
+	}
+	if isTestFile(path) {
+		return false
+	}
+	p := filepath.ToSlash(path)
+	return !strings.Contains(p, "/testdata/")
 }

@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -97,14 +98,40 @@ func runCommitReport(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// loadFeatureRegistry loads the feature registry from spec/features.yaml.
-func loadFeatureRegistry(repoPath string) (map[string]bool, error) {
-	// TODO: Implement feature registry loading
-	// - Read spec/features.yaml
-	// - Parse YAML
-	// - Extract feature IDs
-	// - Return map[string]bool where key is feature ID
-	return nil, fmt.Errorf("not implemented")
+// loadFeatureRegistry reads spec/features.yaml under rootDir and returns a simple
+// registry of known Feature IDs. It only needs to support the minimal YAML shape
+// used in tests and spec/features.yaml (lines containing "id: <FEATURE_ID>").
+func loadFeatureRegistry(rootDir string) (map[string]bool, error) {
+	path := filepath.Join(rootDir, "spec", "features.yaml")
+
+	data, err := os.ReadFile(path) //nolint:gosec // G304: path is constructed from repo root + spec/features.yaml
+	if err != nil {
+		return nil, fmt.Errorf("loading feature registry: %w", err)
+	}
+
+	registry := make(map[string]bool)
+
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+			continue
+		}
+
+		// Handle `- id: CLI_DEPLOY` and `id: CLI_DEPLOY`
+		if strings.HasPrefix(trimmed, "-") {
+			trimmed = strings.TrimSpace(strings.TrimPrefix(trimmed, "-"))
+		}
+
+		if strings.HasPrefix(trimmed, "id:") {
+			id := strings.TrimSpace(strings.TrimPrefix(trimmed, "id:"))
+			if id != "" {
+				registry[id] = true
+			}
+		}
+	}
+
+	return registry, nil
 }
 
 // determineRepoName determines the repository name from the path.
