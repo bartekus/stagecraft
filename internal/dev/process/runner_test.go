@@ -88,6 +88,7 @@ func TestRunner_DetachedBuildsExpectedCommand(t *testing.T) {
 	tmpDir := t.TempDir()
 	composePath := filepath.Join(tmpDir, "compose.yaml")
 
+	// #nosec G306 -- test file permissions
 	if err := os.WriteFile(composePath, []byte("version: '3.8'\n"), 0o644); err != nil {
 		t.Fatalf("write compose file: %v", err)
 	}
@@ -139,6 +140,7 @@ func TestRunner_ForegroundBuildsExpectedCommand(t *testing.T) {
 	tmpDir := t.TempDir()
 	composePath := filepath.Join(tmpDir, "compose.yaml")
 
+	// #nosec G306 -- test file permissions
 	if err := os.WriteFile(composePath, []byte("version: '3.8'\n"), 0o644); err != nil {
 		t.Fatalf("write compose file: %v", err)
 	}

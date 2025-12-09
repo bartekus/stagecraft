@@ -3,11 +3,13 @@
 package dev
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
 
 	devcompose "stagecraft/internal/dev/compose"
+	devmkcert "stagecraft/internal/dev/mkcert"
 	devtraefik "stagecraft/internal/dev/traefik"
 
 	corecompose "stagecraft/internal/compose"
@@ -26,7 +28,14 @@ func TestWriteFiles_WritesAllArtifacts(t *testing.T) {
 	frontend := &devcompose.ServiceDefinition{Name: "frontend"}
 	traefikSvc := &devcompose.ServiceDefinition{Name: "traefik"}
 
-	builder := NewBuilder(nil, nil)
+	builder := NewDefaultBuilder()
+
+	certCfg := &devmkcert.CertConfig{
+		Enabled:  true,
+		CertFile: ".stagecraft/dev/certs/dev-local.pem",
+		KeyFile:  ".stagecraft/dev/certs/dev-local-key.pem",
+		Domains:  []string{"app.localdev.test", "api.localdev.test"},
+	}
 
 	topo, err := builder.Build(
 		cfg,
@@ -37,8 +46,7 @@ func TestWriteFiles_WritesAllArtifacts(t *testing.T) {
 		backend,
 		frontend,
 		traefikSvc,
-		true,
-		"",
+		certCfg,
 	)
 	if err != nil {
 		t.Fatalf("Build() error = %v, want nil", err)
@@ -83,7 +91,14 @@ func TestWriteFiles_DeterministicOutput(t *testing.T) {
 	frontend := &devcompose.ServiceDefinition{Name: "frontend"}
 	traefikSvc := &devcompose.ServiceDefinition{Name: "traefik"}
 
-	builder := NewBuilder(nil, nil)
+	builder := NewDefaultBuilder()
+
+	certCfg := &devmkcert.CertConfig{
+		Enabled:  true,
+		CertFile: ".stagecraft/dev/certs/dev-local.pem",
+		KeyFile:  ".stagecraft/dev/certs/dev-local-key.pem",
+		Domains:  []string{"app.localdev.test", "api.localdev.test"},
+	}
 
 	topo, err := builder.Build(
 		cfg,
@@ -94,8 +109,7 @@ func TestWriteFiles_DeterministicOutput(t *testing.T) {
 		backend,
 		frontend,
 		traefikSvc,
-		true,
-		"",
+		certCfg,
 	)
 	if err != nil {
 		t.Fatalf("Build() error = %v, want nil", err)
@@ -111,15 +125,17 @@ func TestWriteFiles_DeterministicOutput(t *testing.T) {
 	}
 
 	compare := func(p1, p2 string) {
+		// #nosec G304 -- test file paths are controlled
 		b1, err := os.ReadFile(p1)
 		if err != nil {
 			t.Fatalf("ReadFile(%q) error = %v", p1, err)
 		}
+		// #nosec G304 -- test file paths are controlled
 		b2, err := os.ReadFile(p2)
 		if err != nil {
 			t.Fatalf("ReadFile(%q) error = %v", p2, err)
 		}
-		if string(b1) != string(b2) {
+		if !bytes.Equal(b1, b2) {
 			t.Errorf("files %q and %q differ", p1, p2)
 		}
 	}
@@ -161,7 +177,7 @@ func TestWriteFiles_ValidatesComposeExists(t *testing.T) {
 	}
 }
 
-func TestWriteFiles_ValidatesTraefikExists(t *testing.T) {
+func TestWriteFiles_HandlesNilTraefik(t *testing.T) {
 	t.Helper()
 
 	tmpDir := t.TempDir()
@@ -169,11 +185,24 @@ func TestWriteFiles_ValidatesTraefikExists(t *testing.T) {
 
 	topo := &Topology{
 		Compose: corecompose.NewComposeFile(map[string]any{}),
-		Traefik: nil,
+		Traefik: nil, // nil Traefik is valid when --no-traefik is used
 	}
 
-	_, err := WriteFiles(devDir, topo)
-	if err == nil {
-		t.Fatalf("WriteFiles(topology with nil Traefik) error = nil, want non-nil")
+	files, err := WriteFiles(devDir, topo)
+	if err != nil {
+		t.Fatalf("WriteFiles(topology with nil Traefik) error = %v, want nil", err)
+	}
+
+	// Compose should be written
+	if files.ComposePath == "" {
+		t.Errorf("WriteFiles() ComposePath = empty, want non-empty")
+	}
+
+	// Traefik paths should be empty when Traefik is nil
+	if files.TraefikStaticPath != "" {
+		t.Errorf("WriteFiles() TraefikStaticPath = %q, want empty when Traefik is nil", files.TraefikStaticPath)
+	}
+	if files.TraefikDynamicPath != "" {
+		t.Errorf("WriteFiles() TraefikDynamicPath = %q, want empty when Traefik is nil", files.TraefikDynamicPath)
 	}
 }

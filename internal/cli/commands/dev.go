@@ -9,6 +9,7 @@ import (
 
 	dev "stagecraft/internal/dev"
 	devcompose "stagecraft/internal/dev/compose"
+	devmkcert "stagecraft/internal/dev/mkcert"
 	devprocess "stagecraft/internal/dev/process"
 
 	"github.com/spf13/cobra"
@@ -137,24 +138,47 @@ func runDevWithOptions(ctx context.Context, opts devOptions) error {
 		return fmt.Errorf("dev: load config: %w", err)
 	}
 
-	// 2. Compute dev domains (placeholder defaults for now)
-	domains := dev.Domains{
-		Frontend: "app.localdev.test",
-		Backend:  "api.localdev.test",
+	// 2. Compute dev domains (config-driven with defaults).
+	domains, err := dev.ComputeDomains(cfg, opts.Env)
+	if err != nil {
+		return fmt.Errorf("dev: compute domains: %w", err)
 	}
 
-	// 3. Construct minimal service definitions
-	backendSvc := &devcompose.ServiceDefinition{
-		Name: "backend",
-	}
-	frontendSvc := &devcompose.ServiceDefinition{
-		Name: "frontend",
-	}
-	traefikSvc := &devcompose.ServiceDefinition{
-		Name: "traefik",
+	// 3. DEV_MKCERT: ensure certificates when HTTPS is enabled.
+	devDir := ".stagecraft/dev" // relative to project root.
+	certGen := devmkcert.NewGenerator()
+
+	certCfg, err := certGen.EnsureCertificates(ctx, cfg, devmkcert.Options{
+		DevDir:      devDir,
+		Domains:     []string{domains.Frontend, domains.Backend},
+		EnableHTTPS: !opts.NoHTTPS,
+		Verbose:     opts.Verbose,
+		// MkcertBinary: "", // use default "mkcert"
+	})
+	if err != nil {
+		return fmt.Errorf("dev: ensure HTTPS certificates: %w", err)
 	}
 
-	builder := dev.NewBuilder(nil, nil)
+	// 4. Resolve providers and extract service definitions
+	builder := dev.NewDefaultBuilder()
+
+	backendSvc, frontendSvc, err := builder.ResolveServiceDefinitions(cfg, opts.Env)
+	if err != nil {
+		return fmt.Errorf("dev: resolve service definitions: %w", err)
+	}
+
+	// Backend is required for v1
+	if backendSvc == nil {
+		return fmt.Errorf("dev: backend provider is required")
+	}
+
+	// 5. Conditionally include Traefik based on --no-traefik flag
+	var traefikSvc *devcompose.ServiceDefinition
+	if !opts.NoTraefik {
+		traefikSvc = &devcompose.ServiceDefinition{
+			Name: "traefik",
+		}
+	}
 
 	topology, err := builder.Build(
 		cfg,
@@ -162,21 +186,19 @@ func runDevWithOptions(ctx context.Context, opts devOptions) error {
 		backendSvc,
 		frontendSvc,
 		traefikSvc,
-		!opts.NoHTTPS,
-		"", // certDir - to be wired from DEV_MKCERT in a later slice
+		certCfg, // CertConfig from DEV_MKCERT
 	)
 	if err != nil {
 		return fmt.Errorf("dev: build topology: %w", err)
 	}
 
-	// 4. Persist dev config files.
-	devDir := ".stagecraft/dev" // relative to project root.
+	// 6. Persist dev config files.
 
 	if _, err := dev.WriteFiles(devDir, topology); err != nil {
 		return fmt.Errorf("dev: write dev files: %w", err)
 	}
 
-	// 5. Start processes via DEV_PROCESS_MGMT.
+	// 7. Start processes via DEV_PROCESS_MGMT.
 	procOpts := devprocess.Options{
 		DevDir:    devDir,
 		NoTraefik: opts.NoTraefik,
