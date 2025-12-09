@@ -94,25 +94,39 @@ Stagecraft enforces a **Feature Mapping Invariant** to keep specs, code, and tes
 **Run:**
 
 ```bash
-go run ./cmd/feature-map-check --root . --features spec/features.yaml
+stagecraft gov feature-mapping
+```
+
+Or with JSON output:
+
+```bash
+stagecraft gov feature-mapping --format=json
 ```
 
 **You will see output like:**
 
 ```
-ERROR [CLI_DEPLOY] internal/cli/commands/deploy.go:42: missing Spec header
-WARNING [CLI_DEV] internal/cli/commands/dev.go:37: todo feature has spec but no implementation
+Feature mapping: 42 features, 3 violations
+
+Violations:
+  [MISSING_TESTS] CLI_DEPLOY (): done feature CLI_DEPLOY has no tests
+  [SPEC_PATH_MISMATCH] CLI_DEV (internal/cli/commands/dev.go): file declares Spec "spec/commands/dev-basic.md" but canonical spec path is "spec/commands/dev.md"
+  [FEATURE_NOT_LISTED] FEATURE_UNKNOWN (cmd/ghost.go): feature FEATURE_UNKNOWN referenced in cmd/ghost.go but not listed in feature set
 ```
 
 **How to read this:**
 
-- **Severity**
-  - `ERROR` — breaks governance; CI will fail.
-  - `WARNING` — advisory for `todo` / partially-implemented features.
+- **Violation Codes**
+  - `MISSING_SPEC` — Feature has no spec file
+  - `MISSING_IMPL` — Feature has no implementation files
+  - `MISSING_TESTS` — Feature has no test files
+  - `SPEC_PATH_MISMATCH` — Spec header in code doesn't match canonical path
+  - `FEATURE_NOT_LISTED` — Feature ID used in code but not in features.yaml
+  - `ORPHAN_SPEC` — Spec file exists but no feature references it
 - **Feature ID**
-  - The `[...]` block indicates the Feature ID from `spec/features.yaml`.
+  - The feature ID from `spec/features.yaml` (or empty if not listed)
 - **Location**
-  - `file:line` points at the header or code line causing the issue.
+  - File path where the violation was detected
 
 **Common fixes:**
 

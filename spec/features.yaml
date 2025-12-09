@@ -604,13 +604,14 @@ features:
   # Governance
   - id: GOV_V1_CORE
     title: "Governance Core for v1"
-    status: wip
+    status: done
     spec: "governance/GOV_V1_CORE.md"
     owner: bart
     tests:
       - "internal/tools/specschema/specschema_test.go"
       - "internal/tools/cliintrospect/cliintrospect_test.go"
       - "internal/tools/features/features_test.go"
+      - "internal/governance/mapping/mapping_test.go"
       - "internal/tools/docs/docs_test.go"
       - "internal/tools/specvscli/diff_test.go"
     depends_on:

@@ -287,13 +287,54 @@ This feature is considered **done** when:
 
 Phase 4 is enforced by:
 
-- `internal/tools/features` — feature mapping index, validation, and reporting.
+- `internal/governance/mapping` — feature mapping analysis and validation.
 
-- `cmd/feature-map-check` — CLI wrapper used by CI and local workflows.
+- `stagecraft gov feature-mapping` — CLI command that validates the Feature Mapping Invariant.
 
-- `scripts/run-all-checks.sh` — invokes `feature-map-check` as part of governance validation.
+- `scripts/run-all-checks.sh` — invokes `stagecraft gov feature-mapping` as part of governance validation.
+
+#### CLI Command: `stagecraft gov feature-mapping`
+
+The command validates the Feature Mapping Invariant and reports violations.
+
+**Usage:**
+```bash
+stagecraft gov feature-mapping [--format=text|json]
+```
+
+**Flags:**
+- `--format` (default: `text`): Output format. Use `json` for machine-readable output.
+
+**Exit Codes:**
+- `0`: No violations detected, invariant holds.
+- `1`: One or more violations detected.
+- `2`: Internal error (I/O issue, parse error preventing analysis).
+
+**Output:**
+- Text format: Human-readable summary with features and violations grouped by type.
+- JSON format: Deterministic JSON report with sorted features and violations.
 
 Violations for `wip` and `done` features are treated as hard errors in CI.
 
 Violations for `todo` features are emitted as warnings only.
+
+#### CLI Exit Codes (Feature Mapping)
+
+The `stagecraft gov feature-mapping` command MUST use explicit exit codes so CI and local scripts can distinguish between validation failures and internal errors.
+
+Exit codes:
+
+- `0` — Success. The Feature Mapping Invariant holds and no violations were found.
+
+- `1` — Validation failed. The command completed successfully, but one or more mapping violations were detected (for example: missing spec, missing implementation, missing tests, mismatched headers).
+
+- `2` — Internal error. The command could not complete due to an internal failure (for example: I/O error, parsing error, unexpected panic, or rendering failure).
+
+**Rules:**
+
+- CI MUST treat exit code `1` as a governance failure and mark the workflow as failed.
+
+- CI MUST treat exit code `2` as a tooling failure and also fail the workflow, with additional follow-up required to fix the tool itself.
+
+- Local scripts (such as `scripts/run-all-checks.sh`) MUST use these exit codes without reinterpretation. Validation decisions belong inside the governance tool, not the shell script.
 

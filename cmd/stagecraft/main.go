@@ -26,8 +26,13 @@ func main() {
 	rootCmd := cli.NewRootCommand()
 
 	if err := rootCmd.Execute(); err != nil {
-		// We deliberately avoid printing Cobra's default error twice
-		// and centralize exit code handling here.
+		// Prefer explicit exit codes when available (e.g. governance commands).
+		type exitCoder interface {
+			ExitCode() int
+		}
+		if ec, ok := err.(exitCoder); ok {
+			os.Exit(ec.ExitCode())
+		}
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

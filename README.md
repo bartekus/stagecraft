@@ -2,6 +2,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-AGPL_v3%2B-blue.svg" alt="AGPL-3.0-or-later" />
+  <a href="https://github.com/bartekus/stagecraft/actions/workflows/governance.yml"><img src="https://github.com/bartekus/stagecraft/actions/workflows/governance.yml/badge.svg" alt="Governance Status" /></a>
 </p>
 
 Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.

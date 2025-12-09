@@ -73,6 +73,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(commands.NewDeployCommand())
 	cmd.AddCommand(commands.NewDevCommand())
 	cmd.AddCommand(commands.NewFeatureTraceabilityCommand())
+	cmd.AddCommand(commands.NewGovCommand())
 	cmd.AddCommand(commands.NewInitCommand())
 	cmd.AddCommand(commands.NewMigrateCommand())
 	cmd.AddCommand(commands.NewPlanCommand())

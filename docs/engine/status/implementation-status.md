@@ -168,6 +168,7 @@ This document tracks the implementation status of Stagecraft features. It should
 ### In Progress
 
 - **GOV_V1_CORE**: Governance Core for v1
+  - Phase 4 (Feature Mapping Invariant) is CI-enforced via the **Governance** GitHub Actions workflow, which runs `scripts/run-all-checks.sh` (including `stagecraft gov feature-mapping`). Governance status is visible via the Governance badge in the root `README.md`.
 
 ## Coverage Status
 
