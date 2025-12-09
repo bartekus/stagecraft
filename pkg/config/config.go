@@ -33,6 +33,9 @@ import (
 	migrationengines "stagecraft/pkg/providers/migration"
 )
 
+// Feature: CORE_BACKEND_PROVIDER_CONFIG_SCHEMA
+// Spec: spec/core/backend-provider-config.md
+
 // Feature: CORE_CONFIG
 // Spec: spec/core/config.md
 

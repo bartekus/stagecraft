@@ -25,6 +25,9 @@ import (
 	"time"
 )
 
+// Feature: CORE_STATE_CONSISTENCY
+// Spec: spec/core/state-consistency.md
+
 // Feature: CORE_STATE
 // Spec: spec/core/state.md
 

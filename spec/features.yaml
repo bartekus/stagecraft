@@ -19,7 +19,7 @@ features:
 
   - id: DOCS_ADR
     title: "ADR process and initial decisions"
-    status: done
+    status: todo
     spec: "adr/0001-architecture.md"
     owner: bart
     tests: []
