@@ -24,8 +24,7 @@ import (
 	"stagecraft/pkg/providers/migration"
 )
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: MIGRATION_ENGINE_RAW
 
 func TestRawEngine_ID(t *testing.T) {
 	e := &Engine{}

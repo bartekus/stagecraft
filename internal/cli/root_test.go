@@ -27,6 +27,9 @@ import (
 	"stagecraft/pkg/config"
 )
 
+// Feature: CLI_GLOBAL_FLAGS
+// Spec: spec/core/global-flags.md
+
 // Feature: ARCH_OVERVIEW
 // Spec: spec/overview.md
 func TestNewRootCommand_HasExpectedBasics(t *testing.T) {
@@ -70,9 +73,6 @@ func TestVersionCommand_PrintsVersion(t *testing.T) {
 		t.Fatalf("expected output to contain 'Stagecraft version', got: %q", out)
 	}
 }
-
-// Feature: CLI_GLOBAL_FLAGS
-// Spec: spec/core/global-flags.md
 
 // parseFlagsForTesting parses flags for a command in tests.
 func parseFlagsForTesting(cmd *cobra.Command, args []string) error {

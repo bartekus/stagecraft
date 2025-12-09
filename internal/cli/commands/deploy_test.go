@@ -32,6 +32,9 @@ import (
 // Ensure cobra is used (via newTestRootCommand and executeCommandForGolden)
 var _ = cobra.Command{}
 
+// Feature: CORE_STATE_TEST_ISOLATION
+// Spec: spec/core/state-test-isolation.md
+
 // Feature: CLI_DEPLOY
 // Spec: spec/commands/deploy.md
 
