@@ -1,73 +1,58 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-/*
-
-Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
-
-Copyright (C) 2025  Bartek Kus
-
-This program is free software licensed under the terms of the GNU AGPL v3 or later.
-
-See https://www.gnu.org/licenses/ for license details.
-
-*/
-
 package commands
 
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
-
-	"github.com/spf13/cobra"
 )
 
-// Feature: CLI_DEV_BASIC
-// Spec: spec/commands/dev-basic.md
+// Feature: CLI_DEV
+// Spec: spec/commands/dev.md
 
-func TestNewDevCommand_HasExpectedMetadata(t *testing.T) {
+func TestNewDevCommand_HasExpectedFlags(t *testing.T) {
+	t.Helper()
+
 	cmd := NewDevCommand()
 
-	if cmd.Use != "dev" {
-		t.Fatalf("expected Use to be 'dev', got %q", cmd.Use)
+	flags := cmd.Flags()
+
+	tests := []struct {
+		name         string
+		flagName     string
+		expectedType string
+	}{
+		{name: "env string flag", flagName: devFlagEnv, expectedType: "string"},
+		{name: "config string flag", flagName: devFlagConfig, expectedType: "string"},
+		{name: "no-https bool flag", flagName: devFlagNoHTTPS, expectedType: "bool"},
+		{name: "no-hosts bool flag", flagName: devFlagNoHosts, expectedType: "bool"},
+		{name: "no-traefik bool flag", flagName: devFlagNoTraefik, expectedType: "bool"},
+		{name: "detach bool flag", flagName: devFlagDetach, expectedType: "bool"},
+		{name: "verbose bool flag", flagName: devFlagVerbose, expectedType: "bool"},
 	}
 
-	if cmd.Short == "" {
-		t.Fatalf("expected Short description to be non-empty")
-	}
-}
-
-func TestDevCommand_ConfigNotFound(t *testing.T) {
-	tmpDir := t.TempDir()
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	root := &cobra.Command{Use: "stagecraft"}
-	root.AddCommand(NewDevCommand())
-
-	_, err := executeCommandForGolden(root, "dev")
-	if err == nil {
-		t.Fatalf("expected error when config file is missing")
-	}
-
-	if !strings.Contains(err.Error(), "stagecraft config not found") {
-		t.Fatalf("expected config not found error, got: %v", err)
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			f := flags.Lookup(tt.flagName)
+			if f == nil {
+				t.Fatalf("expected flag %q to be defined", tt.flagName)
+			}
+			if f.Value.Type() != tt.expectedType {
+				t.Errorf("flag %q type = %q, want %q", tt.flagName, f.Value.Type(), tt.expectedType)
+			}
+		})
 	}
 }
 
-func TestDevCommand_NoBackendConfig(t *testing.T) {
+func TestNewDevCommand_DefaultsAndRun(t *testing.T) {
+	t.Helper()
+
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "stagecraft.yml")
 
-	// Write config without backend section
+	// Write a minimal valid config with the dev environment
 	configContent := `project:
   name: test-app
 environments:
@@ -77,41 +62,51 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
 
-	root := &cobra.Command{Use: "stagecraft"}
-	root.AddCommand(NewDevCommand())
+	cmd := NewDevCommand()
 
-	_, err := executeCommandForGolden(root, "dev")
-	if err == nil {
-		t.Fatalf("expected error when backend config is missing")
-	}
+	// Set config path explicitly; defaults should work otherwise
+	cmd.SetArgs([]string{"--" + devFlagConfig, configPath})
 
-	if !strings.Contains(err.Error(), "no backend configuration") {
-		t.Fatalf("expected no backend config error, got: %v", err)
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v, want nil", err)
 	}
 }
 
-func TestDevCommand_UnknownProvider(t *testing.T) {
+func TestNewDevCommand_EmptyEnvFails(t *testing.T) {
+	t.Helper()
+
+	cmd := NewDevCommand()
+
+	// Explicitly set --env to the empty string, which should be rejected.
+	cmd.SetArgs([]string{"--" + devFlagEnv, ""})
+
+	if err := cmd.Execute(); err == nil {
+		t.Fatalf("Execute() error = nil, want non-nil error for empty env")
+	}
+}
+
+func TestRunDevWithOptions_EmptyEnvFails(t *testing.T) {
+	t.Helper()
+
+	opts := devOptions{
+		Env: "",
+	}
+
+	if err := runDevWithOptions(opts); err == nil {
+		t.Fatalf("runDevWithOptions() error = nil, want non-nil for empty env")
+	}
+}
+
+func TestRunDevWithOptions_BuildsTopology(t *testing.T) {
+	t.Helper()
+
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "stagecraft.yml")
 
+	// Write a minimal valid config with the dev environment
 	configContent := `project:
   name: test-app
-backend:
-  provider: unknown-provider
-  providers:
-    unknown-provider:
-      dev:
-        command: ["echo", "test"]
 environments:
   dev:
     driver: local
@@ -119,134 +114,40 @@ environments:
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
+
+	opts := devOptions{
+		Env:    "dev",
+		Config: configPath,
 	}
 
-	root := &cobra.Command{Use: "stagecraft"}
-	root.AddCommand(NewDevCommand())
-
-	_, err := executeCommandForGolden(root, "dev")
-	if err == nil {
-		t.Fatalf("expected error for unknown provider")
-	}
-
-	if !strings.Contains(err.Error(), "unknown backend provider") {
-		t.Fatalf("expected unknown provider error, got: %v", err)
+	if err := runDevWithOptions(opts); err != nil {
+		t.Fatalf("runDevWithOptions() error = %v, want nil", err)
 	}
 }
 
-func TestDevCommand_UnknownFrontendProvider(t *testing.T) {
+func TestRunDevWithOptions_InvalidEnvFails(t *testing.T) {
+	t.Helper()
+
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "stagecraft.yml")
 
+	// Write a config with only "prod" environment
 	configContent := `project:
   name: test-app
-backend:
-  provider: generic
-  providers:
-    generic:
-      dev:
-        command: ["echo", "backend"]
-frontend:
-  provider: unknown-frontend-provider
-  providers:
-    unknown-frontend-provider:
-      dev:
-        command: ["echo", "frontend"]
 environments:
-  dev:
+  prod:
     driver: local
 `
 	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
 		t.Fatalf("failed to write config file: %v", err)
 	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
+
+	opts := devOptions{
+		Env:    "dev",
+		Config: configPath,
 	}
 
-	root := &cobra.Command{Use: "stagecraft"}
-	root.AddCommand(NewDevCommand())
-
-	_, err := executeCommandForGolden(root, "dev")
-	if err == nil {
-		t.Fatalf("expected error for unknown frontend provider")
-	}
-
-	if !strings.Contains(err.Error(), "unknown frontend provider") {
-		t.Fatalf("expected unknown frontend provider error, got: %v", err)
-	}
-}
-
-func TestDevCommand_FrontendConfigValidated(t *testing.T) {
-	tmpDir := t.TempDir()
-	configPath := filepath.Join(tmpDir, "stagecraft.yml")
-
-	// Config with frontend but missing provider config
-	configContent := `project:
-  name: test-app
-backend:
-  provider: generic
-  providers:
-    generic:
-      dev:
-        command: ["echo", "backend"]
-frontend:
-  provider: generic
-  providers: {}
-environments:
-  dev:
-    driver: local
-`
-	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
-		t.Fatalf("failed to write config file: %v", err)
-	}
-	originalDir, _ := os.Getwd()
-	defer func() {
-		if err := os.Chdir(originalDir); err != nil {
-			t.Logf("failed to restore directory: %v", err)
-		}
-	}()
-	if err := os.Chdir(tmpDir); err != nil {
-		t.Fatalf("failed to change directory: %v", err)
-	}
-
-	root := &cobra.Command{Use: "stagecraft"}
-	root.AddCommand(NewDevCommand())
-
-	_, err := executeCommandForGolden(root, "dev")
-	if err == nil {
-		t.Fatalf("expected error for missing frontend provider config")
-	}
-
-	// Should fail during config validation or when getting provider config
-	if !strings.Contains(err.Error(), "frontend.providers") && !strings.Contains(err.Error(), "frontend") {
-		t.Fatalf("expected frontend config error, got: %v", err)
-	}
-}
-
-func TestDevCommand_Help(t *testing.T) {
-	root := &cobra.Command{Use: "stagecraft"}
-	root.AddCommand(NewDevCommand())
-
-	out, err := executeCommandForGolden(root, "dev", "--help")
-	if err != nil {
-		t.Fatalf("help command should not error, got: %v", err)
-	}
-
-	if !strings.Contains(out, "Loads stagecraft.yml") && !strings.Contains(out, "dev") {
-		t.Fatalf("expected help text, got: %q", out)
+	if err := runDevWithOptions(opts); err == nil {
+		t.Fatalf("runDevWithOptions() error = nil, want non-nil for invalid env")
 	}
 }

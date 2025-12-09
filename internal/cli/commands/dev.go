@@ -1,162 +1,210 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-/*
-
-Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
-
-Copyright (C) 2025  Bartek Kus
-
-This program is free software licensed under the terms of the GNU AGPL v3 or later.
-
-See https://www.gnu.org/licenses/ for license details.
-
-*/
-
-// Package commands contains Cobra subcommands for the Stagecraft CLI.
+// Package commands contains the CLI command constructors.
 package commands
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+
+	dev "stagecraft/internal/dev"
+	devcompose "stagecraft/internal/dev/compose"
 
 	"github.com/spf13/cobra"
 
 	"stagecraft/pkg/config"
-	"stagecraft/pkg/logging"
-	backendproviders "stagecraft/pkg/providers/backend"
-	frontendproviders "stagecraft/pkg/providers/frontend"
 )
 
-// Feature: CLI_DEV_BASIC
-// Spec: spec/commands/dev-basic.md
+// Feature: CLI_DEV
+// Spec: spec/commands/dev.md
+
+const (
+	devFlagEnv       = "env"
+	devFlagConfig    = "config"
+	devFlagNoHTTPS   = "no-https"
+	devFlagNoHosts   = "no-hosts"
+	devFlagNoTraefik = "no-traefik"
+	devFlagDetach    = "detach"
+	devFlagVerbose   = "verbose"
+)
 
 // NewDevCommand returns the `stagecraft dev` command.
+//
+// v1 skeleton responsibilities:
+//   - Define flags and help text
+//   - Validate basic flag semantics
+//   - Delegate real work to a topology runner in a later slice
 func NewDevCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dev",
-		Short: "Start development environment",
-		Long:  "Loads stagecraft.yml, resolves backend provider, and runs dev mode",
-		RunE:  runDev,
+		Short: "Run a complete local dev stack (backend, frontend, infra)",
+		Long: `Run a complete local development environment for Stagecraft projects.
+
+This command orchestrates backend and frontend services plus development
+infrastructure such as Traefik, mkcert, and hosts file management. For v1,
+the implementation is added in incremental slices; this command currently
+validates flags and prepares the execution context.`,
+		RunE: runDevCommand,
 	}
 
-	// Global flags (--config, --env, --verbose, --dry-run) are inherited from root
+	// Flags must stay lexicographically sorted by flag name.
+	cmd.Flags().String(devFlagEnv, "dev", "Environment name to use")
+	cmd.Flags().String(devFlagConfig, "", "Path to the Stagecraft config file (optional)")
+	cmd.Flags().Bool(devFlagNoHTTPS, false, "Disable mkcert and HTTPS integration")
+	cmd.Flags().Bool(devFlagNoHosts, false, "Do not modify /etc/hosts (manual DNS management)")
+	cmd.Flags().Bool(devFlagNoTraefik, false, "Skip Traefik setup (providers must expose ports directly)")
+	cmd.Flags().Bool(devFlagDetach, false, "Run dev stack in the background and return immediately")
+	cmd.Flags().Bool(devFlagVerbose, false, "Enable verbose output for debugging")
 
 	return cmd
 }
 
-func runDev(cmd *cobra.Command, args []string) error {
-	ctx := cmd.Context()
+// devOptions holds parsed flag values for stagecraft dev.
+//
+// This type is intentionally small and focused on CLI flags only.
+// Topology and provider details live in internal/dev.
+type devOptions struct {
+	Env       string
+	Config    string
+	NoHTTPS   bool
+	NoHosts   bool
+	NoTraefik bool
+	Detach    bool
+	Verbose   bool
+}
 
-	// Resolve global flags
-	flags, err := ResolveFlags(cmd, nil)
+// runDevCommand is the Cobra entry point. It parses flags and delegates
+// to runDevWithOptions, which contains the implementation logic.
+func runDevCommand(cmd *cobra.Command, _ []string) error {
+	env, err := cmd.Flags().GetString(devFlagEnv)
 	if err != nil {
-		return fmt.Errorf("resolving flags: %w", err)
+		return fmt.Errorf("dev: get %s flag: %w", devFlagEnv, err)
 	}
 
-	// Load config to validate environment if needed
-	cfg, err := config.Load(flags.Config)
+	configPath, err := cmd.Flags().GetString(devFlagConfig)
+	if err != nil {
+		return fmt.Errorf("dev: get %s flag: %w", devFlagConfig, err)
+	}
+
+	noHTTPS, err := cmd.Flags().GetBool(devFlagNoHTTPS)
+	if err != nil {
+		return fmt.Errorf("dev: get %s flag: %w", devFlagNoHTTPS, err)
+	}
+
+	noHosts, err := cmd.Flags().GetBool(devFlagNoHosts)
+	if err != nil {
+		return fmt.Errorf("dev: get %s flag: %w", devFlagNoHosts, err)
+	}
+
+	noTraefik, err := cmd.Flags().GetBool(devFlagNoTraefik)
+	if err != nil {
+		return fmt.Errorf("dev: get %s flag: %w", devFlagNoTraefik, err)
+	}
+
+	detach, err := cmd.Flags().GetBool(devFlagDetach)
+	if err != nil {
+		return fmt.Errorf("dev: get %s flag: %w", devFlagDetach, err)
+	}
+
+	verbose, err := cmd.Flags().GetBool(devFlagVerbose)
+	if err != nil {
+		return fmt.Errorf("dev: get %s flag: %w", devFlagVerbose, err)
+	}
+
+	opts := devOptions{
+		Env:       env,
+		Config:    configPath,
+		NoHTTPS:   noHTTPS,
+		NoHosts:   noHosts,
+		NoTraefik: noTraefik,
+		Detach:    detach,
+		Verbose:   verbose,
+	}
+
+	return runDevWithOptions(opts)
+}
+
+// runDevWithOptions is the core CLI_DEV implementation for v1 slices.
+//
+// For this slice, it:
+//   - Validates options
+//   - Loads config
+//   - Builds a dev.Topology using the dev.Builder
+//   - Returns success if topology builds successfully
+//
+// It does NOT start any processes yet.
+func runDevWithOptions(opts devOptions) error {
+	if opts.Env == "" {
+		return fmt.Errorf("dev: --%s must not be empty", devFlagEnv)
+	}
+
+	// 1. Load config
+	cfg, err := loadConfigForEnv(opts.Config, opts.Env)
+	if err != nil {
+		return fmt.Errorf("dev: load config: %w", err)
+	}
+
+	// 2. Compute dev domains (placeholder defaults for now)
+	domains := dev.Domains{
+		Frontend: "app.localdev.test",
+		Backend:  "api.localdev.test",
+	}
+
+	// 3. Construct minimal service definitions
+	backendSvc := &devcompose.ServiceDefinition{
+		Name: "backend",
+	}
+	frontendSvc := &devcompose.ServiceDefinition{
+		Name: "frontend",
+	}
+	traefikSvc := &devcompose.ServiceDefinition{
+		Name: "traefik",
+	}
+
+	builder := dev.NewBuilder(nil, nil)
+
+	topology, err := builder.Build(
+		cfg,
+		domains,
+		backendSvc,
+		frontendSvc,
+		traefikSvc,
+		!opts.NoHTTPS,
+		"", // certDir - to be wired from DEV_MKCERT in a later slice
+	)
+	if err != nil {
+		return fmt.Errorf("dev: build topology: %w", err)
+	}
+
+	// For this slice we compute topology and persist dev config files.
+	devDir := ".stagecraft/dev" // relative to project root; Stagecraft devs run the CLI at project root.
+
+	if _, err := dev.WriteFiles(devDir, topology); err != nil {
+		return fmt.Errorf("dev: write dev files: %w", err)
+	}
+
+	return nil
+}
+
+// loadConfigForEnv loads the Stagecraft config for the given env.
+//
+// This is intentionally thin and will be refined as CORE_CONFIG dictates.
+func loadConfigForEnv(path, env string) (*config.Config, error) {
+	cfg, err := config.Load(path)
 	if err != nil {
 		if err == config.ErrConfigNotFound {
-			return fmt.Errorf("stagecraft config not found at %s", flags.Config)
+			return nil, fmt.Errorf("stagecraft config not found at %s", path)
 		}
-		return fmt.Errorf("loading config: %w", err)
+		return nil, fmt.Errorf("loading config: %w", err)
 	}
 
-	// Re-resolve flags with config for environment validation
-	flags, err = ResolveFlags(cmd, cfg)
-	if err != nil {
-		return fmt.Errorf("resolving flags: %w", err)
+	// Validate that the environment exists
+	if cfg.Environments == nil {
+		return nil, fmt.Errorf("no environments defined in config")
 	}
 
-	// Check for dry-run mode
-	if flags.DryRun {
-		logger := logging.NewLogger(flags.Verbose)
-		logger.Info("Dry-run mode: would start development environment",
-			logging.NewField("env", flags.Env),
-			logging.NewField("config", flags.Config),
-		)
-		return nil
+	if _, ok := cfg.Environments[env]; !ok {
+		return nil, fmt.Errorf("environment %q not found in config", env)
 	}
 
-	if cfg.Backend == nil {
-		return fmt.Errorf("no backend configuration found in %s", flags.Config)
-	}
-
-	// Resolve backend provider
-	backendID := cfg.Backend.Provider
-	provider, err := backendproviders.Get(backendID)
-	if err != nil {
-		// Enhance error message with available providers
-		available := backendproviders.DefaultRegistry.IDs()
-		return fmt.Errorf("unknown backend provider %q; available providers: %v", backendID, available)
-	}
-
-	// Get provider-specific config
-	providerCfg, err := cfg.Backend.GetProviderConfig()
-	if err != nil {
-		return fmt.Errorf("getting provider config: %w", err)
-	}
-
-	// Determine workdir (project root)
-	workDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("getting working directory: %w", err)
-	}
-
-	absPath, err := filepath.Abs(flags.Config)
-	if err != nil {
-		return fmt.Errorf("resolving config path: %w", err)
-	}
-
-	// Initialize logger
-	logger := logging.NewLogger(flags.Verbose)
-	logger.Info("Starting development environment",
-		logging.NewField("provider", backendID),
-		logging.NewField("config", absPath),
-		logging.NewField("env", flags.Env),
-	)
-	logger.Debug("Working directory", logging.NewField("workdir", workDir))
-
-	// Call backend provider
-	backendOpts := backendproviders.DevOptions{
-		Config:  providerCfg,
-		WorkDir: workDir,
-		Env:     make(map[string]string), // Future: load from env files
-	}
-
-	// If frontend is configured, start it as well
-	if cfg.Frontend != nil {
-		frontendID := cfg.Frontend.Provider
-		frontendProvider, err := frontendproviders.Get(frontendID)
-		if err != nil {
-			available := frontendproviders.DefaultRegistry.IDs()
-			return fmt.Errorf("unknown frontend provider %q; available providers: %v", frontendID, available)
-		}
-
-		frontendProviderCfg, err := cfg.Frontend.GetProviderConfig()
-		if err != nil {
-			return fmt.Errorf("getting frontend provider config: %w", err)
-		}
-
-		logger.Info("Starting frontend",
-			logging.NewField("provider", frontendID),
-		)
-
-		frontendOpts := frontendproviders.DevOptions{
-			Config:  frontendProviderCfg,
-			WorkDir: workDir,
-			Env:     make(map[string]string), // Future: load from env files
-		}
-
-		// For now, run frontend in a goroutine (simple parallel execution)
-		// TODO: Replace with proper process management (DEV_PROCESS_MGMT)
-		go func() {
-			if err := frontendProvider.Dev(ctx, frontendOpts); err != nil {
-				logger.Error("Frontend exited with error", logging.NewField("error", err))
-			}
-		}()
-	}
-
-	return provider.Dev(ctx, backendOpts)
+	return cfg, nil
 }
