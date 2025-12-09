@@ -1,3 +1,13 @@
+---
+feature: DOCS_ADR
+version: v1
+status: todo
+domain: adr
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
 # 0001 – Stagecraft Architecture and Project Structure
 
 - Status: Accepted

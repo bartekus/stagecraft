@@ -12,7 +12,7 @@ features:
   # Architecture & Documentation
   - id: ARCH_OVERVIEW
     title: "Architecture documentation and project overview"
-    status: done
+    status: todo
     spec: "overview.md"
     owner: bart
     tests: []

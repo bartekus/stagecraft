@@ -11,11 +11,12 @@ go run ./cmd/gen-features-overview
 
 | ID | Domain | Status | Title | Dependencies |
 |----|--------|--------|-------|---------------|
-| DOCS_ADR | adr | done | ADR process and initial decisions | - |
+| DOCS_ADR | adr | todo | ADR process and initial decisions | - |
 | CLI_ATTACH | commands | todo | stagecraft attach for existing projects | - |
 | CLI_BUILD | commands | done | stagecraft build command | - |
 | CLI_CI_INIT | commands | todo | stagecraft ci init command | - |
 | CLI_CI_RUN | commands | todo | stagecraft ci run command | - |
+| CLI_COMMIT_SUGGEST | commands | done | stagecraft commit suggest command | GOV_V1_CORE |
 | CLI_DEPLOY | commands | done | Deploy command | - |
 | CLI_DEV | commands | todo | stagecraft dev command (full feature set) | - |
 | CLI_DEV_BASIC | commands | done | Basic stagecraft dev command that delegates to backend provider | - |
@@ -56,7 +57,7 @@ go run ./cmd/gen-features-overview
 | DEV_PROCESS_MGMT | dev | todo | Process lifecycle management | - |
 | DEV_TRAEFIK | dev | todo | Traefik dev config generation | - |
 | DRIVER_DO | drivers | todo | DigitalOcean driver | - |
-| GOV_V1_CORE | governance | wip | Governance Core for v1 | CORE_STATE, CLI_PHASE_EXECUTION_COMMON |
+| GOV_V1_CORE | governance | done | Governance Core for v1 | CORE_STATE, CLI_PHASE_EXECUTION_COMMON |
 | INFRA_FIREWALL | infra | todo | Firewall configuration | - |
 | INFRA_HOST_BOOTSTRAP | infra | todo | Host bootstrap (Docker, Tailscale, etc.) | - |
 | INFRA_VOLUME_MGMT | infra | todo | Volume management | - |
@@ -65,7 +66,7 @@ go run ./cmd/gen-features-overview
 | MIGRATION_INTERFACE | migrations | todo | Migrator interface | - |
 | MIGRATION_POST_DEPLOY | migrations | todo | Post-deploy migration execution | - |
 | MIGRATION_PRE_DEPLOY | migrations | todo | Pre-deploy migration execution | - |
-| ARCH_OVERVIEW | overview | done | Architecture documentation and project overview | - |
+| ARCH_OVERVIEW | overview | todo | Architecture documentation and project overview | - |
 | MIGRATION_ENGINE_RAW | providers | done | Raw SQL migration engine implementation | - |
 | PROVIDER_BACKEND_ENCORE | providers | done | Encore.ts BackendProvider implementation | - |
 | PROVIDER_BACKEND_GENERIC | providers | done | Generic command-based BackendProvider implementation | - |
@@ -73,7 +74,7 @@ go run ./cmd/gen-features-overview
 | PROVIDER_CI_INTERFACE | providers | done | CIProvider interface definition | - |
 | PROVIDER_CLOUD_DO | providers | todo | DigitalOcean CloudProvider implementation | - |
 | PROVIDER_CLOUD_INTERFACE | providers | done | CloudProvider interface definition | - |
-| PROVIDER_FRONTEND_GENERIC | providers | todo | Generic dev command FrontendProvider | - |
+| PROVIDER_FRONTEND_GENERIC | providers | done | Generic dev command FrontendProvider | - |
 | PROVIDER_FRONTEND_INTERFACE | providers | done | FrontendProvider interface definition | - |
 | PROVIDER_NETWORK_INTERFACE | providers | done | NetworkProvider interface definition | - |
 | PROVIDER_NETWORK_TAILSCALE | providers | todo | Tailscale NetworkProvider implementation | - |
@@ -93,79 +94,81 @@ digraph feature_dependencies {
   rankdir=LR;
   node [shape=box];
 
-  "ARCH_OVERVIEW" [label="ARCH_OVERVIEW\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_ATTACH" [label="CLI_ATTACH\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_BUILD" [label="CLI_BUILD\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_CI_INIT" [label="CLI_CI_INIT\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_CI_RUN" [label="CLI_CI_RUN\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_DEPLOY" [label="CLI_DEPLOY\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_DEV" [label="CLI_DEV\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_DEV_BASIC" [label="CLI_DEV_BASIC\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_GLOBAL_FLAGS" [label="CLI_GLOBAL_FLAGS\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_INFRA_DOWN" [label="CLI_INFRA_DOWN\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_INFRA_UP" [label="CLI_INFRA_UP\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_INIT" [label="CLI_INIT\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_INIT_TEMPLATE" [label="CLI_INIT_TEMPLATE\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_LOGS" [label="CLI_LOGS\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_MIGRATE_BASIC" [label="CLI_MIGRATE_BASIC\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_MIGRATE_PLAN" [label="CLI_MIGRATE_PLAN\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_MIGRATE_RUN" [label="CLI_MIGRATE_RUN\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_NEW" [label="CLI_NEW\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_PHASE_EXECUTION_COMMON" [label="CLI_PHASE_EXECUTION_COMMON\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_PLAN" [label="CLI_PLAN\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_RELEASES" [label="CLI_RELEASES\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_ROLLBACK" [label="CLI_ROLLBACK\n[done]" fillcolor="lightgreen" style=filled];
-  "CLI_SECRETS_SYNC" [label="CLI_SECRETS_SYNC\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_SSH" [label="CLI_SSH\n[todo]" fillcolor="lightgray" style=filled];
-  "CLI_STATUS" [label="CLI_STATUS\n[todo]" fillcolor="lightgray" style=filled];
-  "CORE_BACKEND_PROVIDER_CONFIG_SCHEMA" [label="CORE_BACKEND_PROVIDER_CONFIG_SCHEMA\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_BACKEND_REGISTRY" [label="CORE_BACKEND_REGISTRY\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_COMPOSE" [label="CORE_COMPOSE\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_CONFIG" [label="CORE_CONFIG\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_ENV_RESOLUTION" [label="CORE_ENV_RESOLUTION\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_EXECUTIL" [label="CORE_EXECUTIL\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_LOGGING" [label="CORE_LOGGING\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_MIGRATION_REGISTRY" [label="CORE_MIGRATION_REGISTRY\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_PLAN" [label="CORE_PLAN\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_STATE" [label="CORE_STATE\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_STATE_CONSISTENCY" [label="CORE_STATE_CONSISTENCY\n[done]" fillcolor="lightgreen" style=filled];
-  "CORE_STATE_TEST_ISOLATION" [label="CORE_STATE_TEST_ISOLATION\n[done]" fillcolor="lightgreen" style=filled];
-  "DEPLOY_COMPOSE_GEN" [label="DEPLOY_COMPOSE_GEN\n[todo]" fillcolor="lightgray" style=filled];
-  "DEPLOY_ROLLOUT" [label="DEPLOY_ROLLOUT\n[todo]" fillcolor="lightgray" style=filled];
-  "DEV_COMPOSE_INFRA" [label="DEV_COMPOSE_INFRA\n[todo]" fillcolor="lightgray" style=filled];
-  "DEV_HOSTS" [label="DEV_HOSTS\n[todo]" fillcolor="lightgray" style=filled];
-  "DEV_MKCERT" [label="DEV_MKCERT\n[todo]" fillcolor="lightgray" style=filled];
-  "DEV_PROCESS_MGMT" [label="DEV_PROCESS_MGMT\n[todo]" fillcolor="lightgray" style=filled];
-  "DEV_TRAEFIK" [label="DEV_TRAEFIK\n[todo]" fillcolor="lightgray" style=filled];
-  "DOCS_ADR" [label="DOCS_ADR\n[done]" fillcolor="lightgreen" style=filled];
-  "DRIVER_DO" [label="DRIVER_DO\n[todo]" fillcolor="lightgray" style=filled];
-  "GOV_V1_CORE" [label="GOV_V1_CORE\n[wip]" fillcolor="lightyellow" style=filled];
-  "INFRA_FIREWALL" [label="INFRA_FIREWALL\n[todo]" fillcolor="lightgray" style=filled];
-  "INFRA_HOST_BOOTSTRAP" [label="INFRA_HOST_BOOTSTRAP\n[todo]" fillcolor="lightgray" style=filled];
-  "INFRA_VOLUME_MGMT" [label="INFRA_VOLUME_MGMT\n[todo]" fillcolor="lightgray" style=filled];
-  "MIGRATION_CONFIG" [label="MIGRATION_CONFIG\n[todo]" fillcolor="lightgray" style=filled];
-  "MIGRATION_CONTAINER_RUNNER" [label="MIGRATION_CONTAINER_RUNNER\n[todo]" fillcolor="lightgray" style=filled];
-  "MIGRATION_ENGINE_RAW" [label="MIGRATION_ENGINE_RAW\n[done]" fillcolor="lightgreen" style=filled];
-  "MIGRATION_INTERFACE" [label="MIGRATION_INTERFACE\n[todo]" fillcolor="lightgray" style=filled];
-  "MIGRATION_POST_DEPLOY" [label="MIGRATION_POST_DEPLOY\n[todo]" fillcolor="lightgray" style=filled];
-  "MIGRATION_PRE_DEPLOY" [label="MIGRATION_PRE_DEPLOY\n[todo]" fillcolor="lightgray" style=filled];
-  "PROVIDER_BACKEND_ENCORE" [label="PROVIDER_BACKEND_ENCORE\n[done]" fillcolor="lightgreen" style=filled];
-  "PROVIDER_BACKEND_GENERIC" [label="PROVIDER_BACKEND_GENERIC\n[done]" fillcolor="lightgreen" style=filled];
-  "PROVIDER_BACKEND_INTERFACE" [label="PROVIDER_BACKEND_INTERFACE\n[done]" fillcolor="lightgreen" style=filled];
-  "PROVIDER_CI_GITHUB" [label="PROVIDER_CI_GITHUB\n[todo]" fillcolor="lightgray" style=filled];
-  "PROVIDER_CI_INTERFACE" [label="PROVIDER_CI_INTERFACE\n[done]" fillcolor="lightgreen" style=filled];
-  "PROVIDER_CLOUD_DO" [label="PROVIDER_CLOUD_DO\n[todo]" fillcolor="lightgray" style=filled];
-  "PROVIDER_CLOUD_INTERFACE" [label="PROVIDER_CLOUD_INTERFACE\n[done]" fillcolor="lightgreen" style=filled];
-  "PROVIDER_FRONTEND_GENERIC" [label="PROVIDER_FRONTEND_GENERIC\n[todo]" fillcolor="lightgray" style=filled];
-  "PROVIDER_FRONTEND_INTERFACE" [label="PROVIDER_FRONTEND_INTERFACE\n[done]" fillcolor="lightgreen" style=filled];
-  "PROVIDER_NETWORK_INTERFACE" [label="PROVIDER_NETWORK_INTERFACE\n[done]" fillcolor="lightgreen" style=filled];
-  "PROVIDER_NETWORK_TAILSCALE" [label="PROVIDER_NETWORK_TAILSCALE\n[todo]" fillcolor="lightgray" style=filled];
-  "PROVIDER_SECRETS_ENCORE" [label="PROVIDER_SECRETS_ENCORE\n[todo]" fillcolor="lightgray" style=filled];
-  "PROVIDER_SECRETS_ENVFILE" [label="PROVIDER_SECRETS_ENVFILE\n[todo]" fillcolor="lightgray" style=filled];
-  "PROVIDER_SECRETS_INTERFACE" [label="PROVIDER_SECRETS_INTERFACE\n[done]" fillcolor="lightgreen" style=filled];
-  "SCAFFOLD_STAGECRAFT_DIR" [label="SCAFFOLD_STAGECRAFT_DIR\n[todo]" fillcolor="lightgray" style=filled];
-  "TEMPLATE_PLATFORM" [label="TEMPLATE_PLATFORM\n[todo]" fillcolor="lightgray" style=filled];
+  "ARCH_OVERVIEW" [label="ARCH_OVERVIEW\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_ATTACH" [label="CLI_ATTACH\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_BUILD" [label="CLI_BUILD\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_CI_INIT" [label="CLI_CI_INIT\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_CI_RUN" [label="CLI_CI_RUN\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_COMMIT_SUGGEST" [label="CLI_COMMIT_SUGGEST\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_DEPLOY" [label="CLI_DEPLOY\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_DEV" [label="CLI_DEV\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_DEV_BASIC" [label="CLI_DEV_BASIC\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_GLOBAL_FLAGS" [label="CLI_GLOBAL_FLAGS\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_INFRA_DOWN" [label="CLI_INFRA_DOWN\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_INFRA_UP" [label="CLI_INFRA_UP\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_INIT" [label="CLI_INIT\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_INIT_TEMPLATE" [label="CLI_INIT_TEMPLATE\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_LOGS" [label="CLI_LOGS\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_MIGRATE_BASIC" [label="CLI_MIGRATE_BASIC\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_MIGRATE_PLAN" [label="CLI_MIGRATE_PLAN\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_MIGRATE_RUN" [label="CLI_MIGRATE_RUN\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_NEW" [label="CLI_NEW\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_PHASE_EXECUTION_COMMON" [label="CLI_PHASE_EXECUTION_COMMON\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_PLAN" [label="CLI_PLAN\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_RELEASES" [label="CLI_RELEASES\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_ROLLBACK" [label="CLI_ROLLBACK\\n[done]" fillcolor="lightgreen" style=filled];
+  "CLI_SECRETS_SYNC" [label="CLI_SECRETS_SYNC\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_SSH" [label="CLI_SSH\\n[todo]" fillcolor="lightgray" style=filled];
+  "CLI_STATUS" [label="CLI_STATUS\\n[todo]" fillcolor="lightgray" style=filled];
+  "CORE_BACKEND_PROVIDER_CONFIG_SCHEMA" [label="CORE_BACKEND_PROVIDER_CONFIG_SCHEMA\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_BACKEND_REGISTRY" [label="CORE_BACKEND_REGISTRY\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_COMPOSE" [label="CORE_COMPOSE\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_CONFIG" [label="CORE_CONFIG\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_ENV_RESOLUTION" [label="CORE_ENV_RESOLUTION\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_EXECUTIL" [label="CORE_EXECUTIL\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_LOGGING" [label="CORE_LOGGING\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_MIGRATION_REGISTRY" [label="CORE_MIGRATION_REGISTRY\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_PLAN" [label="CORE_PLAN\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_STATE" [label="CORE_STATE\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_STATE_CONSISTENCY" [label="CORE_STATE_CONSISTENCY\\n[done]" fillcolor="lightgreen" style=filled];
+  "CORE_STATE_TEST_ISOLATION" [label="CORE_STATE_TEST_ISOLATION\\n[done]" fillcolor="lightgreen" style=filled];
+  "DEPLOY_COMPOSE_GEN" [label="DEPLOY_COMPOSE_GEN\\n[todo]" fillcolor="lightgray" style=filled];
+  "DEPLOY_ROLLOUT" [label="DEPLOY_ROLLOUT\\n[todo]" fillcolor="lightgray" style=filled];
+  "DEV_COMPOSE_INFRA" [label="DEV_COMPOSE_INFRA\\n[todo]" fillcolor="lightgray" style=filled];
+  "DEV_HOSTS" [label="DEV_HOSTS\\n[todo]" fillcolor="lightgray" style=filled];
+  "DEV_MKCERT" [label="DEV_MKCERT\\n[todo]" fillcolor="lightgray" style=filled];
+  "DEV_PROCESS_MGMT" [label="DEV_PROCESS_MGMT\\n[todo]" fillcolor="lightgray" style=filled];
+  "DEV_TRAEFIK" [label="DEV_TRAEFIK\\n[todo]" fillcolor="lightgray" style=filled];
+  "DOCS_ADR" [label="DOCS_ADR\\n[todo]" fillcolor="lightgray" style=filled];
+  "DRIVER_DO" [label="DRIVER_DO\\n[todo]" fillcolor="lightgray" style=filled];
+  "GOV_V1_CORE" [label="GOV_V1_CORE\\n[done]" fillcolor="lightgreen" style=filled];
+  "INFRA_FIREWALL" [label="INFRA_FIREWALL\\n[todo]" fillcolor="lightgray" style=filled];
+  "INFRA_HOST_BOOTSTRAP" [label="INFRA_HOST_BOOTSTRAP\\n[todo]" fillcolor="lightgray" style=filled];
+  "INFRA_VOLUME_MGMT" [label="INFRA_VOLUME_MGMT\\n[todo]" fillcolor="lightgray" style=filled];
+  "MIGRATION_CONFIG" [label="MIGRATION_CONFIG\\n[todo]" fillcolor="lightgray" style=filled];
+  "MIGRATION_CONTAINER_RUNNER" [label="MIGRATION_CONTAINER_RUNNER\\n[todo]" fillcolor="lightgray" style=filled];
+  "MIGRATION_ENGINE_RAW" [label="MIGRATION_ENGINE_RAW\\n[done]" fillcolor="lightgreen" style=filled];
+  "MIGRATION_INTERFACE" [label="MIGRATION_INTERFACE\\n[todo]" fillcolor="lightgray" style=filled];
+  "MIGRATION_POST_DEPLOY" [label="MIGRATION_POST_DEPLOY\\n[todo]" fillcolor="lightgray" style=filled];
+  "MIGRATION_PRE_DEPLOY" [label="MIGRATION_PRE_DEPLOY\\n[todo]" fillcolor="lightgray" style=filled];
+  "PROVIDER_BACKEND_ENCORE" [label="PROVIDER_BACKEND_ENCORE\\n[done]" fillcolor="lightgreen" style=filled];
+  "PROVIDER_BACKEND_GENERIC" [label="PROVIDER_BACKEND_GENERIC\\n[done]" fillcolor="lightgreen" style=filled];
+  "PROVIDER_BACKEND_INTERFACE" [label="PROVIDER_BACKEND_INTERFACE\\n[done]" fillcolor="lightgreen" style=filled];
+  "PROVIDER_CI_GITHUB" [label="PROVIDER_CI_GITHUB\\n[todo]" fillcolor="lightgray" style=filled];
+  "PROVIDER_CI_INTERFACE" [label="PROVIDER_CI_INTERFACE\\n[done]" fillcolor="lightgreen" style=filled];
+  "PROVIDER_CLOUD_DO" [label="PROVIDER_CLOUD_DO\\n[todo]" fillcolor="lightgray" style=filled];
+  "PROVIDER_CLOUD_INTERFACE" [label="PROVIDER_CLOUD_INTERFACE\\n[done]" fillcolor="lightgreen" style=filled];
+  "PROVIDER_FRONTEND_GENERIC" [label="PROVIDER_FRONTEND_GENERIC\\n[done]" fillcolor="lightgreen" style=filled];
+  "PROVIDER_FRONTEND_INTERFACE" [label="PROVIDER_FRONTEND_INTERFACE\\n[done]" fillcolor="lightgreen" style=filled];
+  "PROVIDER_NETWORK_INTERFACE" [label="PROVIDER_NETWORK_INTERFACE\\n[done]" fillcolor="lightgreen" style=filled];
+  "PROVIDER_NETWORK_TAILSCALE" [label="PROVIDER_NETWORK_TAILSCALE\\n[todo]" fillcolor="lightgray" style=filled];
+  "PROVIDER_SECRETS_ENCORE" [label="PROVIDER_SECRETS_ENCORE\\n[todo]" fillcolor="lightgray" style=filled];
+  "PROVIDER_SECRETS_ENVFILE" [label="PROVIDER_SECRETS_ENVFILE\\n[todo]" fillcolor="lightgray" style=filled];
+  "PROVIDER_SECRETS_INTERFACE" [label="PROVIDER_SECRETS_INTERFACE\\n[done]" fillcolor="lightgreen" style=filled];
+  "SCAFFOLD_STAGECRAFT_DIR" [label="SCAFFOLD_STAGECRAFT_DIR\\n[todo]" fillcolor="lightgray" style=filled];
+  "TEMPLATE_PLATFORM" [label="TEMPLATE_PLATFORM\\n[todo]" fillcolor="lightgray" style=filled];
 
+  "GOV_V1_CORE" -> "CLI_COMMIT_SUGGEST";
   "CLI_BUILD" -> "CLI_PLAN";
   "CLI_DEPLOY" -> "CLI_PLAN";
   "CORE_CONFIG" -> "CLI_PLAN";
@@ -179,6 +182,6 @@ digraph feature_dependencies {
 
 | Status | Count |
 |--------|-------|
-| done | 33 |
-| wip | 1 |
-| todo | 38 |
+| done | 34 |
+| wip | 0 |
+| todo | 39 |

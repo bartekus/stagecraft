@@ -6,7 +6,7 @@ Repository Stabilization and Governance Golden Tests
 
 ## 1. Summary and v1 Scope
 
-**Feature ID:** `GOV_V1_CORE`  
+**Feature ID:** `GOV_V1_CORE` (Phase 5 is part of GOV_V1_CORE, not a separate feature)
 
 **Phase:** 5 - Repository stabilization and governance golden tests  
 
