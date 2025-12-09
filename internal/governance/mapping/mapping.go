@@ -64,12 +64,19 @@ const (
 type FeatureStatus string
 
 const (
-	FeatureStatusOK                 FeatureStatus = "ok"
-	FeatureStatusMissingImpl        FeatureStatus = "missing_impl"
-	FeatureStatusMissingTests       FeatureStatus = "missing_tests"
-	FeatureStatusIncomplete         FeatureStatus = "incomplete"
-	FeatureStatusUnmapped           FeatureStatus = "unmapped"
-	FeatureStatusSpecOnly           FeatureStatus = "spec_only"
+	// FeatureStatusOK indicates the feature has spec, implementation, and tests.
+	FeatureStatusOK FeatureStatus = "ok"
+	// FeatureStatusMissingImpl indicates the feature is missing implementation files.
+	FeatureStatusMissingImpl FeatureStatus = "missing_impl"
+	// FeatureStatusMissingTests indicates the feature is missing test files.
+	FeatureStatusMissingTests FeatureStatus = "missing_tests"
+	// FeatureStatusIncomplete indicates the feature is partially implemented.
+	FeatureStatusIncomplete FeatureStatus = "incomplete"
+	// FeatureStatusUnmapped indicates the feature has no spec, impl, or tests.
+	FeatureStatusUnmapped FeatureStatus = "unmapped"
+	// FeatureStatusSpecOnly indicates the feature has only a spec file.
+	FeatureStatusSpecOnly FeatureStatus = "spec_only"
+	// FeatureStatusImplementationOnly indicates the feature has implementation but no spec.
 	FeatureStatusImplementationOnly FeatureStatus = "implementation_only"
 )
 
@@ -464,11 +471,16 @@ func pathClean(p string) string {
 //
 // The match is case-insensitive on the keys.
 func parseHeaders(path string) (featureID, specPath string, err error) {
-	f, err := os.Open(path)
+	f, err := os.Open(path) //nolint:gosec // path is from filepath.WalkDir, safe
 	if err != nil {
 		return "", "", err
 	}
-	defer f.Close()
+	defer func() {
+		if closeErr := f.Close(); closeErr != nil {
+			// Log close error but don't fail parsing if file was already read
+			_ = closeErr
+		}
+	}()
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
