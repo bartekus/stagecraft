@@ -1,7 +1,7 @@
 ---
 feature: GOV_V1_CORE
 version: v1
-status: wip
+status: done
 domain: governance
 inputs:
   flags: []   # No direct CLI flags; this is a governance / tooling feature

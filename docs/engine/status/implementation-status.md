@@ -166,6 +166,22 @@ This document tracks the implementation status of Stagecraft features. It should
 - **PROVIDER_NETWORK_INTERFACE**: NetworkProvider interface definition
 - **PROVIDER_SECRETS_INTERFACE**: SecretsProvider interface definition
 
+### GOV_V1_CORE — Governance Core for v1 (DONE)
+
+Status: **Done**
+
+Notes:
+
+- Phases 1–4 implemented and CI-enforced via `stagecraft gov feature-mapping` and `scripts/run-all-checks.sh`.
+
+- Phase 5 repository stabilization complete:
+
+  - Zero feature-mapping violations reported by `internal/governance/mapping`.
+
+  - Golden mapping report test in place: `internal/governance/mapping/mapping_golden_test.go`.
+
+  - Phase 5 agent brief and implementation outline applied (Workstreams A–D completed).
+
 ## Coverage Status
 
 Current test coverage targets:
