@@ -277,11 +277,11 @@ features:
 
   - id: DEV_PROCESS_MGMT
     title: "Process lifecycle management"
-    status: todo
+    status: done
     spec: "dev/process-mgmt.md"
     owner: bart
     tests:
-      - "internal/dev/process_test.go"
+      - "internal/dev/process/runner_test.go"
 
   # Phase 4: Provider Implementations
   - id: PROVIDER_NETWORK_TAILSCALE

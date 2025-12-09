@@ -4,10 +4,12 @@
 package commands
 
 import (
+	"context"
 	"fmt"
 
 	dev "stagecraft/internal/dev"
 	devcompose "stagecraft/internal/dev/compose"
+	devprocess "stagecraft/internal/dev/process"
 
 	"github.com/spf13/cobra"
 
@@ -120,19 +122,11 @@ func runDevCommand(cmd *cobra.Command, _ []string) error {
 		Verbose:   verbose,
 	}
 
-	return runDevWithOptions(opts)
+	return runDevWithOptions(cmd.Context(), opts)
 }
 
 // runDevWithOptions is the core CLI_DEV implementation for v1 slices.
-//
-// For this slice, it:
-//   - Validates options
-//   - Loads config
-//   - Builds a dev.Topology using the dev.Builder
-//   - Returns success if topology builds successfully
-//
-// It does NOT start any processes yet.
-func runDevWithOptions(opts devOptions) error {
+func runDevWithOptions(ctx context.Context, opts devOptions) error {
 	if opts.Env == "" {
 		return fmt.Errorf("dev: --%s must not be empty", devFlagEnv)
 	}
@@ -175,11 +169,25 @@ func runDevWithOptions(opts devOptions) error {
 		return fmt.Errorf("dev: build topology: %w", err)
 	}
 
-	// For this slice we compute topology and persist dev config files.
-	devDir := ".stagecraft/dev" // relative to project root; Stagecraft devs run the CLI at project root.
+	// 4. Persist dev config files.
+	devDir := ".stagecraft/dev" // relative to project root.
 
 	if _, err := dev.WriteFiles(devDir, topology); err != nil {
 		return fmt.Errorf("dev: write dev files: %w", err)
+	}
+
+	// 5. Start processes via DEV_PROCESS_MGMT.
+	procOpts := devprocess.Options{
+		DevDir:    devDir,
+		NoTraefik: opts.NoTraefik,
+		Detach:    opts.Detach,
+		Verbose:   opts.Verbose,
+	}
+
+	runner := devprocess.NewRunner()
+
+	if err := runner.Run(ctx, procOpts); err != nil {
+		return fmt.Errorf("dev: start processes: %w", err)
 	}
 
 	return nil
