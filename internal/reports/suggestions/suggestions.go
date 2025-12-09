@@ -14,7 +14,7 @@ See https://www.gnu.org/licenses/ for license details.
 // Package suggestions converts commit health and feature traceability reports
 // into actionable suggestions.
 //
-// Feature: GOV_V1_CORE
+// Feature: CLI_COMMIT_SUGGEST
 // Spec: spec/commands/commit-suggest.md
 package suggestions
 

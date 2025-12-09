@@ -18,7 +18,7 @@ package migration
 import "context"
 
 // Feature: MIGRATION_INTERFACE
-// Spec: spec/core/migration-registry.md
+// Spec: spec/migrations/interface.md
 
 // Migration represents a single migration step.
 type Migration struct {

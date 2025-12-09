@@ -12,6 +12,7 @@ See https://www.gnu.org/licenses/ for license details.
 */
 
 // Feature: PROVIDER_FRONTEND_GENERIC
+// Spec: spec/providers/frontend/generic.md
 // Docs: docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md
 package commands
 

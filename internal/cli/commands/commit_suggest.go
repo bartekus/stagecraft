@@ -26,7 +26,7 @@ import (
 	"stagecraft/internal/reports/suggestions"
 )
 
-// Feature: GOV_V1_CORE
+// Feature: CLI_COMMIT_SUGGEST
 // Spec: spec/commands/commit-suggest.md
 
 // NewCommitSuggestCommand returns the `stagecraft commit suggest` command.

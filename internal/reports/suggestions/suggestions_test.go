@@ -11,7 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
-// Feature: GOV_V1_CORE
+// Feature: CLI_COMMIT_SUGGEST
 // Spec: spec/commands/commit-suggest.md
 package suggestions
 

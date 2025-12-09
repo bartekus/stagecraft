@@ -13,7 +13,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 package commands
 
-// Feature: GOV_V1_CORE
+// Feature: CLI_COMMIT_SUGGEST
 // Spec: spec/commands/commit-suggest.md
 
 import (
