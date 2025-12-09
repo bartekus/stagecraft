@@ -99,7 +99,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | DEV_MKCERT | mkcert integration for local HTTPS | todo | bart | [mkcert.md](../../../spec/dev/mkcert.md) | [mkcert_test.go](../../../internal/dev/mkcert_test.go) |
 | DEV_PROCESS_MGMT | Process lifecycle management | todo | bart | [process-mgmt.md](../../../spec/dev/process-mgmt.md) | [process_test.go](../../../internal/dev/process_test.go) |
 | DEV_TRAEFIK | Traefik dev config generation | todo | bart | [traefik.md](../../../spec/dev/traefik.md) | [traefik_test.go](../../../internal/dev/traefik_test.go) |
-| GOV_V1_CORE | Governance Core for v1 | wip | bart | [GOV_V1_CORE.md](../../../spec/governance/GOV_V1_CORE.md) | [specschema_test.go](../../../internal/tools/specschema/specschema_test.go), [cliintrospect_test.go](../../../internal/tools/cliintrospect/cliintrospect_test.go), [features_test.go](../../../internal/tools/features/features_test.go), [docs_test.go](../../../internal/tools/docs/docs_test.go), [diff_test.go](../../../internal/tools/specvscli/diff_test.go) |
+| GOV_V1_CORE | Governance Core for v1 | done | bart | [GOV_V1_CORE.md](../../../spec/governance/GOV_V1_CORE.md) | [specschema_test.go](../../../internal/tools/specschema/specschema_test.go), [cliintrospect_test.go](../../../internal/tools/cliintrospect/cliintrospect_test.go), [features_test.go](../../../internal/tools/features/features_test.go), [mapping_test.go](../../../internal/governance/mapping/mapping_test.go), [docs_test.go](../../../internal/tools/docs/docs_test.go), [diff_test.go](../../../internal/tools/specvscli/diff_test.go) |
 | INFRA_FIREWALL | Firewall configuration | todo | bart | [firewall.md](../../../spec/infra/firewall.md) | [firewall_test.go](../../../internal/infra/firewall_test.go) |
 | INFRA_HOST_BOOTSTRAP | Host bootstrap (Docker, Tailscale, etc.) | todo | bart | [bootstrap.md](../../../spec/infra/bootstrap.md) | [bootstrap_test.go](../../../internal/infra/bootstrap_test.go) |
 | INFRA_VOLUME_MGMT | Volume management | todo | bart | [volumes.md](../../../spec/infra/volumes.md) | [volumes_test.go](../../../internal/infra/volumes_test.go) |
@@ -154,6 +154,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **CORE_STATE_CONSISTENCY**: State durability and read-after-write guarantees
 - **CORE_STATE_TEST_ISOLATION**: State test isolation for CLI commands
 - **DOCS_ADR**: ADR process and initial decisions
+- **GOV_V1_CORE**: Governance Core for v1
 - **MIGRATION_ENGINE_RAW**: Raw SQL migration engine implementation
 - **PROVIDER_BACKEND_ENCORE**: Encore.ts BackendProvider implementation
 - **PROVIDER_BACKEND_GENERIC**: Generic command-based BackendProvider implementation
@@ -164,10 +165,6 @@ This document tracks the implementation status of Stagecraft features. It should
 - **PROVIDER_FRONTEND_INTERFACE**: FrontendProvider interface definition
 - **PROVIDER_NETWORK_INTERFACE**: NetworkProvider interface definition
 - **PROVIDER_SECRETS_INTERFACE**: SecretsProvider interface definition
-
-### In Progress
-
-- **GOV_V1_CORE**: Governance Core for v1
 
 ## Coverage Status
 

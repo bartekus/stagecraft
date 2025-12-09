@@ -175,8 +175,9 @@ fi
 info "CLI vs Spec alignment check passed"
 
 info "Running feature mapping validation..."
-if ! go run ./cmd/feature-map-check --root . --features spec/features.yaml; then
+if ! ./bin/stagecraft gov feature-mapping --format=json >/dev/null 2>&1; then
     error "Feature mapping validation failed"
+    error "Run './bin/stagecraft gov feature-mapping' to see details"
     exit 1
 fi
 info "Feature mapping validation passed"
