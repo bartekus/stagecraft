@@ -1,7 +1,7 @@
 ---
 feature: CLI_DEV
 version: v1
-status: wip
+status: done
 domain: commands
 ---
 
@@ -87,7 +87,7 @@ All flags must be documented in `internal/cli/commands/dev.go` help text and kep
    - DEV_COMPOSE_INFRA for compose files
    - DEV_TRAEFIK for router configuration
    - DEV_MKCERT for certificates
-   - DEV_HOSTS for host name mapping (future slice; `--no-hosts` currently no-op)
+   - DEV_HOSTS for host name mapping
    - DEV_PROCESS_MGMT for running and monitoring processes
 5. Start processes in a deterministic order:
    1. Infrastructure (Traefik, certificates, etc.)
@@ -132,15 +132,18 @@ A future slice may introduce environment-specific domains (e.g., `environments[e
 
 ### Hosts File Management
 
-**v1 Behavior (Current Implementation):**
+**v1 Behavior:**
 
-The `--no-hosts` flag is parsed and respected by the CLI, but hosts file management is not yet implemented. This flag currently has no effect.
+DEV_HOSTS manages hosts file entries for dev domains:
 
-**Future Enhancement:**
+- When `--no-hosts` is not set:
+  - DEV_HOSTS automatically adds dev domain entries to `/etc/hosts` (or platform-equivalent)
+  - Entries point to `127.0.0.1` and are marked as Stagecraft-managed
+  - Entries are automatically removed when `stagecraft dev` exits
 
-A future DEV_HOSTS slice will implement hosts file management:
-- When `--no-hosts` is not set, automatically add dev domain entries to `/etc/hosts`
-- When `--no-hosts` is set, skip hosts file modification (user manages DNS manually)
+- When `--no-hosts` is set:
+  - Hosts file modification is skipped (user manages DNS manually)
+  - No entries are added or removed
 
 ## Exit Codes
 
