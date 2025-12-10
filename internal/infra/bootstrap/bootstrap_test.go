@@ -10,6 +10,9 @@ This program is free software licensed under the terms of the GNU AGPL v3 or lat
 See https://www.gnu.org/licenses/ for license details.
 */
 
+// Feature: INFRA_HOST_BOOTSTRAP
+// Spec: spec/infra/bootstrap.md
+
 package bootstrap
 
 import (
@@ -37,6 +40,7 @@ type fakeExecutor struct {
 	behavior func(host Host, cmd string) (stdout, stderr string, err error)
 }
 
+//nolint:gocritic // hugeParam: host matches CommandExecutor interface signature
 func (f *fakeExecutor) Run(ctx context.Context, host Host, command string) (string, string, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -50,7 +54,6 @@ func (f *fakeExecutor) Run(ctx context.Context, host Host, command string) (stri
 		return f.behavior(host, command)
 	}
 
-	// Default: return success
 	return "", "", nil
 }
 

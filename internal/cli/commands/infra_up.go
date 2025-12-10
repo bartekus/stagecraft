@@ -33,9 +33,7 @@ import (
 
 // newBootstrapService is a function variable that can be overridden in tests
 // to inject a fake bootstrap service.
-var newBootstrapService = func(exec bootstrap.CommandExecutor, np network.NetworkProvider) bootstrap.Service {
-	return bootstrap.NewService(exec, np)
-}
+var newBootstrapService = bootstrap.NewService
 
 // bootstrapPartialFailureError represents a partial bootstrap failure (exit code 10).
 type bootstrapPartialFailureError struct {
@@ -221,7 +219,7 @@ func printBootstrapResults(result *bootstrap.Result) {
 	}
 
 	// Print header
-	fmt.Fprintf(os.Stdout, "Bootstrap results:\n")
+	_, _ = fmt.Fprintf(os.Stdout, "Bootstrap results:\n")
 
 	// Print per-host results
 	for _, hr := range result.Hosts {
@@ -237,9 +235,9 @@ func printBootstrapResults(result *bootstrap.Result) {
 		}
 
 		if hr.Success {
-			fmt.Fprintf(os.Stdout, "  %s %s (%s)\n", status, hostID, hr.Host.Name)
+			_, _ = fmt.Fprintf(os.Stdout, "  %s %s (%s)\n", status, hostID, hr.Host.Name)
 		} else {
-			fmt.Fprintf(os.Stdout, "  %s %s (%s): %s\n", status, hostID, hr.Host.Name, hr.Error)
+			_, _ = fmt.Fprintf(os.Stdout, "  %s %s (%s): %s\n", status, hostID, hr.Host.Name, hr.Error)
 		}
 	}
 
@@ -248,11 +246,11 @@ func printBootstrapResults(result *bootstrap.Result) {
 	failureCount := result.FailureCount()
 	totalCount := len(result.Hosts)
 
-	fmt.Fprintf(os.Stdout, "\nSummary: %d/%d hosts bootstrapped successfully", successCount, totalCount)
+	_, _ = fmt.Fprintf(os.Stdout, "\nSummary: %d/%d hosts bootstrapped successfully", successCount, totalCount)
 	if failureCount > 0 {
-		fmt.Fprintf(os.Stdout, ", %d failed", failureCount)
+		_, _ = fmt.Fprintf(os.Stdout, ", %d failed", failureCount)
 	}
-	fmt.Fprintf(os.Stdout, "\n")
+	_, _ = fmt.Fprintf(os.Stdout, "\n")
 }
 
 // mapCloudHostsToBootstrapHosts converts provider-specific cloud.Host values

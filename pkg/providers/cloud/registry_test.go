@@ -48,6 +48,10 @@ func (m *mockProvider) Apply(ctx context.Context, opts ApplyOptions) error {
 	return nil
 }
 
+func (m *mockProvider) Hosts(ctx context.Context, opts HostsOptions) ([]Host, error) {
+	return nil, nil
+}
+
 func TestRegistry_Register(t *testing.T) {
 	reg := NewRegistry()
 

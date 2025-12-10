@@ -14,7 +14,6 @@ See https://www.gnu.org/licenses/ for license details.
 //
 // Feature: INFRA_HOST_BOOTSTRAP
 // Spec: spec/infra/bootstrap.md
-
 package bootstrap
 
 import (
@@ -45,6 +44,8 @@ type CommandExecutor interface {
 type NoopExecutor struct{}
 
 // Run implements CommandExecutor by returning empty output and no error.
+//
+//nolint:gocritic // hugeParam: Host matches CommandExecutor interface signature
 func (n *NoopExecutor) Run(_ context.Context, _ Host, _ string) (string, string, error) {
 	return "", "", nil
 }

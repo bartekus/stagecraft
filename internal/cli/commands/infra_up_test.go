@@ -349,6 +349,7 @@ func (f *fakeCloudProvider) Plan(ctx context.Context, opts cloud.PlanOptions) (c
 	return cloud.InfraPlan{}, f.planErr
 }
 
+//nolint:gocritic // hugeParam: opts matches CloudProvider interface signature
 func (f *fakeCloudProvider) Apply(ctx context.Context, opts cloud.ApplyOptions) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()

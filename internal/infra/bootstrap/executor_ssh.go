@@ -14,7 +14,6 @@ See https://www.gnu.org/licenses/ for license details.
 //
 // Feature: INFRA_HOST_BOOTSTRAP
 // Spec: spec/infra/bootstrap.md
-
 package bootstrap
 
 import (
@@ -53,6 +52,8 @@ func NewSSHExecutor(sshUser string, runner executil.Runner) *SSHExecutor {
 //
 // The command is executed via executil.Runner, which handles context cancellation
 // and error handling.
+//
+//nolint:gocritic // hugeParam: host matches CommandExecutor interface signature
 func (e *SSHExecutor) Run(ctx context.Context, host Host, command string) (string, string, error) {
 	if host.PublicIP == "" {
 		return "", "", fmt.Errorf("missing PublicIP for host %q", host.ID)

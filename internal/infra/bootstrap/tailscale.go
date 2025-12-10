@@ -14,7 +14,6 @@ See https://www.gnu.org/licenses/ for license details.
 //
 // Feature: INFRA_HOST_BOOTSTRAP
 // Spec: spec/infra/bootstrap.md
-
 package bootstrap
 
 import (
@@ -33,7 +32,9 @@ import (
 // Both operations are idempotent - safe to call multiple times.
 //
 // Returns (true, nil) if Tailscale is working, (false, error) otherwise.
-func (s *service) ensureTailscale(ctx context.Context, host Host, cfg Config) (bool, error) {
+//
+//nolint:gocritic // hugeParam: host is passed by value for consistency with interface methods
+func (s *service) ensureTailscale(ctx context.Context, host Host, cfg Config) (bool, error) { //nolint:unparam // cfg is kept for future use (see TODO below)
 	// Map bootstrap.Host to network provider hostname
 	// Use Name as the hostname (e.g., "app-1")
 	hostname := host.Name

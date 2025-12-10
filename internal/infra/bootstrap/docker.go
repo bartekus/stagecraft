@@ -14,7 +14,6 @@ See https://www.gnu.org/licenses/ for license details.
 //
 // Feature: INFRA_HOST_BOOTSTRAP
 // Spec: spec/infra/bootstrap.md
-
 package bootstrap
 
 import (
@@ -30,19 +29,21 @@ import (
 // 3. Verification: Re-check Docker after installation
 //
 // Returns (true, nil) if Docker is working, (false, error) otherwise.
-func (s *service) ensureDocker(ctx context.Context, host Host, cfg Config) (bool, error) {
+//
+//nolint:gocritic // hugeParam: host is passed by value for consistency with interface methods
+func (s *service) ensureDocker(ctx context.Context, host Host) (bool, error) {
 	// First try detection
-	if ok := s.hasDocker(ctx, host, cfg); ok {
+	if ok := s.hasDocker(ctx, host); ok {
 		return true, nil
 	}
 
 	// Install path
-	if err := s.installDocker(ctx, host, cfg); err != nil {
+	if err := s.installDocker(ctx, host); err != nil {
 		return false, fmt.Errorf("docker install failed: %w", err)
 	}
 
 	// Re-check after installation
-	if ok := s.hasDocker(ctx, host, cfg); !ok {
+	if ok := s.hasDocker(ctx, host); !ok {
 		return false, fmt.Errorf("docker verification failed after install")
 	}
 
@@ -52,7 +53,9 @@ func (s *service) ensureDocker(ctx context.Context, host Host, cfg Config) (bool
 // hasDocker checks if Docker is installed and working on the host.
 //
 // It runs "docker version" and returns true if the command succeeds.
-func (s *service) hasDocker(ctx context.Context, host Host, cfg Config) bool {
+//
+//nolint:gocritic // hugeParam: host is passed by value for consistency with interface methods
+func (s *service) hasDocker(ctx context.Context, host Host) bool {
 	_, _, err := s.executor.Run(ctx, host, "docker version")
 	return err == nil
 }
@@ -64,7 +67,9 @@ func (s *service) hasDocker(ctx context.Context, host Host, cfg Config) bool {
 // 1. apt-get update -y
 // 2. apt-get install -y docker.io
 // 3. systemctl enable --now docker
-func (s *service) installDocker(ctx context.Context, host Host, cfg Config) error {
+//
+//nolint:gocritic // hugeParam: host is passed by value for consistency with interface methods
+func (s *service) installDocker(ctx context.Context, host Host) error {
 	// Step 1: Update package list
 	stdout, stderr, err := s.executor.Run(ctx, host, "apt-get update -y")
 	if err != nil {

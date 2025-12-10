@@ -151,9 +151,11 @@ func (s *service) Bootstrap(ctx context.Context, hosts []Host, cfg Config) (*Res
 //
 // v1 Slice 6: Ensures Docker is installed and working on the host.
 // v1 Slice 7: Ensures Tailscale is installed and joined via NetworkProvider.
+//
+//nolint:gocritic // hugeParam: host is passed by value for consistency with interface methods
 func (s *service) bootstrapHost(ctx context.Context, host Host, cfg Config) HostResult {
 	// 1. Ensure Docker is present and working
-	ok, err := s.ensureDocker(ctx, host, cfg)
+	ok, err := s.ensureDocker(ctx, host)
 	if !ok {
 		return HostResult{
 			Host:    host,

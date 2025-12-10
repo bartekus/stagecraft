@@ -10,6 +10,9 @@ This program is free software licensed under the terms of the GNU AGPL v3 or lat
 See https://www.gnu.org/licenses/ for license details.
 */
 
+// Feature: INFRA_HOST_BOOTSTRAP
+// Spec: spec/infra/bootstrap.md
+
 package bootstrap
 
 import (
@@ -30,6 +33,7 @@ type fakeRunner struct {
 	runCalls []executil.Command
 }
 
+//nolint:gocritic // hugeParam: cmd matches executil.Runner interface signature
 func (f *fakeRunner) Run(ctx context.Context, cmd executil.Command) (*executil.Result, error) {
 	f.runCalls = append(f.runCalls, cmd)
 	f.cmd = cmd
@@ -39,6 +43,7 @@ func (f *fakeRunner) Run(ctx context.Context, cmd executil.Command) (*executil.R
 	return f.result, nil
 }
 
+//nolint:gocritic // hugeParam: cmd matches executil.Runner interface signature
 func (f *fakeRunner) RunStream(ctx context.Context, cmd executil.Command, output io.Writer) error {
 	return fmt.Errorf("RunStream not implemented in fakeRunner")
 }
