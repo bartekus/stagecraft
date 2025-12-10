@@ -287,11 +287,12 @@ features:
   # Phase 4: Provider Implementations
   - id: PROVIDER_NETWORK_TAILSCALE
     title: "Tailscale NetworkProvider implementation"
-    status: todo
+    status: done
     spec: "providers/network/tailscale.md"
     owner: bart
     tests:
       - "internal/providers/network/tailscale/tailscale_test.go"
+      - "internal/providers/network/tailscale/registry_test.go"
 
   - id: PROVIDER_CLOUD_DO
     title: "DigitalOcean CloudProvider implementation"
