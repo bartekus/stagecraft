@@ -47,6 +47,7 @@ type Config struct {
 	Project      ProjectConfig                `yaml:"project"`
 	Backend      *BackendConfig               `yaml:"backend,omitempty"`
 	Frontend     *FrontendConfig              `yaml:"frontend,omitempty"`
+	Dev          *DevConfig                   `yaml:"dev,omitempty"`
 	Databases    map[string]DatabaseConfig    `yaml:"databases,omitempty"`
 	Environments map[string]EnvironmentConfig `yaml:"environments"`
 }
@@ -66,6 +67,21 @@ type BackendConfig struct {
 type FrontendConfig struct {
 	Provider  string         `yaml:"provider"`
 	Providers map[string]any `yaml:"providers"`
+}
+
+// DevConfig describes development environment configuration.
+// Feature: CLI_DEV
+// Spec: spec/commands/dev.md
+type DevConfig struct {
+	Domains *DevDomains `yaml:"domains,omitempty"`
+}
+
+// DevDomains describes development domain configuration.
+// Feature: CLI_DEV
+// Spec: spec/commands/dev.md
+type DevDomains struct {
+	Frontend string `yaml:"frontend,omitempty"`
+	Backend  string `yaml:"backend,omitempty"`
 }
 
 // DatabaseConfig describes database configuration including migrations.

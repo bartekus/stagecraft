@@ -21,8 +21,8 @@ This document tracks the implementation status of Stagecraft features. It should
 
 | ID | Title | Status | Owner | Spec | Tests |
 |----|-------|--------|-------|------|-------|
-| ARCH_OVERVIEW | Architecture documentation and project overview | done | bart | [overview.md](../../../spec/overview.md) | - |
-| DOCS_ADR | ADR process and initial decisions | done | bart | [0001-architecture.md](../../../spec/adr/0001-architecture.md) | - |
+| ARCH_OVERVIEW | Architecture documentation and project overview | todo | bart | [overview.md](../../../spec/overview.md) | - |
+| DOCS_ADR | ADR process and initial decisions | todo | bart | [0001-architecture.md](../../../spec/adr/0001-architecture.md) | - |
 
 ### CLI Commands
 
@@ -34,7 +34,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | CLI_CI_RUN | stagecraft ci run command | todo | bart | [ci-run.md](../../../spec/commands/ci-run.md) | [ci_run_test.go](../../../internal/cli/commands/ci_run_test.go) |
 | CLI_COMMIT_SUGGEST | stagecraft commit suggest command | done | bart | [commit-suggest.md](../../../spec/commands/commit-suggest.md) | [commit_suggest_test.go](../../../internal/cli/commands/commit_suggest_test.go) |
 | CLI_DEPLOY | Deploy command | done | bart | [deploy.md](../../../spec/commands/deploy.md) | [deploy_test.go](../../../internal/cli/commands/deploy_test.go), [deploy_smoke_test.go](../../../test/e2e/deploy_smoke_test.go) |
-| CLI_DEV | stagecraft dev command (full feature set) | todo | bart | [dev.md](../../../spec/commands/dev.md) | [dev_test.go](../../../internal/cli/commands/dev_test.go), [dev_smoke_test.go](../../../test/e2e/dev_smoke_test.go) |
+| CLI_DEV | stagecraft dev command (full feature set) | wip | bart | [dev.md](../../../spec/commands/dev.md) | [dev_test.go](../../../internal/cli/commands/dev_test.go), [dev_smoke_test.go](../../../test/e2e/dev_smoke_test.go) |
 | CLI_DEV_BASIC | Basic stagecraft dev command that delegates to backend provider | done | bart | [dev-basic.md](../../../spec/commands/dev-basic.md) | [dev_test.go](../../../internal/cli/commands/dev_test.go), [dev_smoke_test.go](../../../test/e2e/dev_smoke_test.go) |
 | CLI_GLOBAL_FLAGS | Global flags (--env, --config, --verbose, --dry-run) | done | bart | [global-flags.md](../../../spec/core/global-flags.md) | [root_test.go](../../../internal/cli/root_test.go) |
 | CLI_INFRA_DOWN | stagecraft infra down command | todo | bart | [infra-down.md](../../../spec/commands/infra-down.md) | [infra_down_test.go](../../../internal/cli/commands/infra_down_test.go) |
@@ -94,11 +94,12 @@ This document tracks the implementation status of Stagecraft features. It should
 |----|-------|--------|-------|------|-------|
 | DEPLOY_COMPOSE_GEN | Per-host Compose generation | todo | bart | [compose-gen.md](../../../spec/deploy/compose-gen.md) | [compose_test.go](../../../internal/deploy/compose_test.go) |
 | DEPLOY_ROLLOUT | docker-rollout integration | todo | bart | [rollout.md](../../../spec/deploy/rollout.md) | [rollout_test.go](../../../internal/deploy/rollout_test.go) |
-| DEV_COMPOSE_INFRA | Compose infra up/down for dev | todo | bart | [compose-infra.md](../../../spec/dev/compose-infra.md) | [compose_test.go](../../../internal/dev/compose_test.go) |
+| DEV_COMPOSE_INFRA | Compose infra up/down for dev | done | bart | [compose-infra.md](../../../spec/dev/compose-infra.md) | [generator_test.go](../../../internal/dev/compose/generator_test.go), [golden_test.go](../../../internal/dev/compose/golden_test.go) |
 | DEV_HOSTS | /etc/hosts management | todo | bart | [hosts.md](../../../spec/dev/hosts.md) | [hosts_test.go](../../../internal/dev/hosts_test.go) |
-| DEV_MKCERT | mkcert integration for local HTTPS | todo | bart | [mkcert.md](../../../spec/dev/mkcert.md) | [mkcert_test.go](../../../internal/dev/mkcert_test.go) |
-| DEV_PROCESS_MGMT | Process lifecycle management | todo | bart | [process-mgmt.md](../../../spec/dev/process-mgmt.md) | [process_test.go](../../../internal/dev/process_test.go) |
-| DEV_TRAEFIK | Traefik dev config generation | todo | bart | [traefik.md](../../../spec/dev/traefik.md) | [traefik_test.go](../../../internal/dev/traefik_test.go) |
+| DEV_MKCERT | mkcert integration for local HTTPS | done | bart | [mkcert.md](../../../spec/dev/mkcert.md) | [generator_test.go](../../../internal/dev/mkcert/generator_test.go) |
+| DEV_PROCESS_MGMT | Process lifecycle management | done | bart | [process-mgmt.md](../../../spec/dev/process-mgmt.md) | [runner_test.go](../../../internal/dev/process/runner_test.go) |
+| DEV_TRAEFIK | Traefik dev config generation | done | bart | [traefik.md](../../../spec/dev/traefik.md) | [generator_test.go](../../../internal/dev/traefik/generator_test.go) |
+| GOV_CLI_EXIT_CODES | CLI exit code governance and standardization | todo | bart | [GOV_CLI_EXIT_CODES.md](../../../spec/governance/GOV_CLI_EXIT_CODES.md) | - |
 | GOV_V1_CORE | Governance Core for v1 | done | bart | [GOV_V1_CORE.md](../../../spec/governance/GOV_V1_CORE.md) | [specschema_test.go](../../../internal/tools/specschema/specschema_test.go), [cliintrospect_test.go](../../../internal/tools/cliintrospect/cliintrospect_test.go), [features_test.go](../../../internal/tools/features/features_test.go), [mapping_test.go](../../../internal/governance/mapping/mapping_test.go), [docs_test.go](../../../internal/tools/docs/docs_test.go), [diff_test.go](../../../internal/tools/specvscli/diff_test.go) |
 | INFRA_FIREWALL | Firewall configuration | todo | bart | [firewall.md](../../../spec/infra/firewall.md) | [firewall_test.go](../../../internal/infra/firewall_test.go) |
 | INFRA_HOST_BOOTSTRAP | Host bootstrap (Docker, Tailscale, etc.) | todo | bart | [bootstrap.md](../../../spec/infra/bootstrap.md) | [bootstrap_test.go](../../../internal/infra/bootstrap_test.go) |
@@ -129,7 +130,6 @@ This document tracks the implementation status of Stagecraft features. It should
 
 ### Completed Features
 
-- **ARCH_OVERVIEW**: Architecture documentation and project overview
 - **CLI_BUILD**: stagecraft build command
 - **CLI_COMMIT_SUGGEST**: stagecraft commit suggest command
 - **CLI_DEPLOY**: Deploy command
@@ -153,7 +153,10 @@ This document tracks the implementation status of Stagecraft features. It should
 - **CORE_STATE**: State management (release history)
 - **CORE_STATE_CONSISTENCY**: State durability and read-after-write guarantees
 - **CORE_STATE_TEST_ISOLATION**: State test isolation for CLI commands
-- **DOCS_ADR**: ADR process and initial decisions
+- **DEV_COMPOSE_INFRA**: Compose infra up/down for dev
+- **DEV_MKCERT**: mkcert integration for local HTTPS
+- **DEV_PROCESS_MGMT**: Process lifecycle management
+- **DEV_TRAEFIK**: Traefik dev config generation
 - **GOV_V1_CORE**: Governance Core for v1
 - **MIGRATION_ENGINE_RAW**: Raw SQL migration engine implementation
 - **PROVIDER_BACKEND_ENCORE**: Encore.ts BackendProvider implementation
@@ -166,21 +169,9 @@ This document tracks the implementation status of Stagecraft features. It should
 - **PROVIDER_NETWORK_INTERFACE**: NetworkProvider interface definition
 - **PROVIDER_SECRETS_INTERFACE**: SecretsProvider interface definition
 
-### GOV_V1_CORE — Governance Core for v1 (DONE)
+### In Progress
 
-Status: **Done**
-
-Notes:
-
-- Phases 1–4 implemented and CI-enforced via `stagecraft gov feature-mapping` and `scripts/run-all-checks.sh`.
-
-- Phase 5 repository stabilization complete:
-
-  - Zero feature-mapping violations reported by `internal/governance/mapping`.
-
-  - Golden mapping report test in place: `internal/governance/mapping/mapping_golden_test.go`.
-
-  - Phase 5 agent brief and implementation outline applied (Workstreams A–D completed).
+- **CLI_DEV**: stagecraft dev command (full feature set)
 
 ## Coverage Status
 

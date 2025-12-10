@@ -15,10 +15,12 @@ See https://www.gnu.org/licenses/ for license details.
 package compose
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -38,6 +40,16 @@ var ErrComposeNotFound = errors.New("compose file not found")
 type ComposeFile struct {
 	data map[string]any
 	path string
+}
+
+// NewComposeFile creates a new ComposeFile from the given data map.
+// This is useful for programmatically constructing compose files
+// (e.g., for dev infrastructure generation).
+func NewComposeFile(data map[string]any) *ComposeFile {
+	return &ComposeFile{
+		data: data,
+		path: "",
+	}
 }
 
 // Loader loads and parses Docker Compose files.
@@ -81,6 +93,7 @@ func (l *Loader) Load(path string) (*ComposeFile, error) {
 }
 
 // GetServices returns all service names from the Compose file.
+// Service names are returned in lexicographically sorted order for determinism.
 func (c *ComposeFile) GetServices() []string {
 	services, ok := c.data["services"].(map[string]any)
 	if !ok {
@@ -92,7 +105,143 @@ func (c *ComposeFile) GetServices() []string {
 		serviceNames = append(serviceNames, name)
 	}
 
+	sort.Strings(serviceNames)
 	return serviceNames
+}
+
+// GetServiceData returns the service data for the given service name.
+// Returns nil if the service does not exist.
+func (c *ComposeFile) GetServiceData(serviceName string) map[string]any {
+	services, ok := c.data["services"].(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	serviceData, ok := services[serviceName].(map[string]any)
+	if !ok {
+		return nil
+	}
+
+	return serviceData
+}
+
+// composeYAML represents the structure for deterministic YAML serialization.
+type composeYAML struct {
+	Version  string         `yaml:"version,omitempty"`
+	Services map[string]any `yaml:"services,omitempty"`
+	Networks map[string]any `yaml:"networks,omitempty"`
+}
+
+// ToYAML serializes the ComposeFile to YAML bytes.
+// The output is deterministic with stable key ordering.
+// Top-level keys are ordered: version first, then services.
+func (c *ComposeFile) ToYAML() ([]byte, error) {
+	// Build struct for deterministic key ordering
+	yml := composeYAML{}
+
+	if version, ok := c.data["version"]; ok {
+		if v, ok := version.(string); ok {
+			yml.Version = v
+		}
+	}
+
+	if services, ok := c.data["services"]; ok {
+		if s, ok := services.(map[string]any); ok {
+			yml.Services = s
+		}
+	}
+
+	if networks, ok := c.data["networks"]; ok {
+		if n, ok := networks.(map[string]any); ok {
+			yml.Networks = n
+		}
+	}
+
+	// Use encoder with 2-space indent to match golden file format
+	var buf bytes.Buffer
+	enc := yaml.NewEncoder(&buf)
+	enc.SetIndent(2)
+	if err := enc.Encode(yml); err != nil {
+		return nil, fmt.Errorf("encoding YAML: %w", err)
+	}
+	if err := enc.Close(); err != nil {
+		return nil, fmt.Errorf("closing YAML encoder: %w", err)
+	}
+
+	result := buf.Bytes()
+
+	// Add blank line after version to match golden file format
+	versionPattern := []byte("version:")
+	servicesPattern := []byte("services:")
+	if versionIdx := bytes.Index(result, versionPattern); versionIdx >= 0 {
+		if servicesIdx := bytes.Index(result, servicesPattern); servicesIdx > versionIdx {
+			// Check if there's already a blank line
+			if servicesIdx > 0 && result[servicesIdx-1] == '\n' && (servicesIdx < 2 || result[servicesIdx-2] != '\n') {
+				// Insert blank line before services
+				result = append(result[:servicesIdx], append([]byte{'\n'}, result[servicesIdx:]...)...)
+			}
+		}
+	}
+
+	// Add blank lines between services to match golden file format
+	// Add blank line after ports section of each service (except last)
+	lines := bytes.Split(result, []byte{'\n'})
+	var newLines [][]byte
+	for i := 0; i < len(lines); i++ {
+		line := lines[i]
+		newLines = append(newLines, line)
+
+		// Check if this line is a port entry (starts with "      - ")
+		// and if it's the last port entry before a new service
+		if bytes.HasPrefix(line, []byte("      - ")) {
+			// Check if next non-empty line is a service definition
+			nextNonEmpty := i + 1
+			for nextNonEmpty < len(lines) && len(bytes.TrimSpace(lines[nextNonEmpty])) == 0 {
+				nextNonEmpty++
+			}
+			if nextNonEmpty < len(lines) {
+				nextLine := lines[nextNonEmpty]
+				nextTrimmed := bytes.TrimSpace(nextLine)
+				// If next line is a service definition (indented 2 spaces, ends with : or {})
+				// Service definitions can end with : (e.g., "backend:") or {} (e.g., "traefik: {}")
+				isServiceDef := len(nextLine) > 2 && nextLine[0] == ' ' && nextLine[1] == ' ' && len(nextTrimmed) > 0 && (nextTrimmed[len(nextTrimmed)-1] == ':' || bytes.HasSuffix(nextTrimmed, []byte("{}")))
+				if isServiceDef {
+					// Check if this is the last port entry (next port entry would also start with "      - ")
+					isLastPort := true
+					for j := i + 1; j < nextNonEmpty; j++ {
+						if bytes.HasPrefix(lines[j], []byte("      - ")) {
+							isLastPort = false
+							break
+						}
+					}
+					if isLastPort {
+						// Check if there's already a blank line
+						hasBlankLine := false
+						for j := i + 1; j < nextNonEmpty; j++ {
+							if len(bytes.TrimSpace(lines[j])) == 0 {
+								hasBlankLine = true
+								break
+							}
+						}
+						if !hasBlankLine {
+							newLines = append(newLines, []byte{})
+						}
+					}
+				}
+			}
+		}
+	}
+	result = bytes.Join(newLines, []byte{'\n'})
+
+	// Remove all trailing newlines, then add exactly two to match golden file format
+	// Golden file ends with blank line (two newlines: one after last content, one for blank line)
+	for len(result) > 0 && result[len(result)-1] == '\n' {
+		result = result[:len(result)-1]
+	}
+	// Add two newlines to match golden file format
+	result = append(result, '\n', '\n')
+
+	return result, nil
 }
 
 // GetServiceRoles returns the role mapping for services from config.

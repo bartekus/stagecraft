@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  backend:
+    environment:
+      A: "1"
+      B: "2"
+    networks:
+      - stagecraft-dev
+
+    ports:
+      - "8080:3000/tcp"
+      - "9090:4000/tcp"
+
+  frontend:
+    environment:
+      A: "1"
+      B: "2"
+    networks:
+      - stagecraft-dev
+
+    ports:
+      - "3000:3000/tcp"
+
+  traefik:
+    command:
+      - --configfile=/etc/traefik/traefik-static.yaml
+      - --providers.file.directory=/etc/traefik
+      - --providers.file.watch=true
+    image: traefik:v2.11
+    networks:
+      - stagecraft-dev
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./.stagecraft/dev/certs:/certs:ro
+      - ./.stagecraft/dev/traefik:/etc/traefik:ro
+networks:
+  stagecraft-dev:
+    name: stagecraft-dev
+

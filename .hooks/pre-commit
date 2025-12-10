@@ -162,8 +162,8 @@ fi
 # Files that need full headers (entry points)
 FULL_HEADER_FILES="cmd/stagecraft/main.go cmd/stagecraftd/main.go internal/version/version.go"
 
-# Files to ignore (generated, test scripts, etc.)
-IGNORE_PATTERNS="internal/providers/backend/generic/test_script.sh"
+# Files to ignore (generated, test scripts, testdata fixtures, etc.)
+IGNORE_PATTERNS="internal/providers/backend/generic/test_script.sh testdata/ *.testdata.yaml *.testdata.yml"
 
 if command -v addlicense >/dev/null 2>&1; then
     # Filter staged files that need headers (using newline-based list for space safety)
@@ -176,6 +176,11 @@ if command -v addlicense >/dev/null 2>&1; then
         # Skip if not a file type that needs headers
         case "$file" in
             *.go|*.sh|*.yaml|*.yml)
+                # Skip testdata files (test fixtures shouldn't have license headers)
+                if echo "$file" | grep -q "/testdata/"; then
+                    continue
+                fi
+                
                 # Check if file should be ignored (use -F for literal matching)
                 skip=false
                 for pattern in $IGNORE_PATTERNS; do

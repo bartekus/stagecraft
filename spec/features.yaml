@@ -212,7 +212,7 @@ features:
 
   - id: CLI_DEV
     title: "stagecraft dev command (full feature set)"
-    status: todo
+    status: wip
     spec: "commands/dev.md"
     owner: bart
     tests:
@@ -221,11 +221,11 @@ features:
 
   - id: DEV_MKCERT
     title: "mkcert integration for local HTTPS"
-    status: todo
+    status: done
     spec: "dev/mkcert.md"
     owner: bart
     tests:
-      - "internal/dev/mkcert_test.go"
+      - "internal/dev/mkcert/generator_test.go"
 
   - id: DEV_HOSTS
     title: "/etc/hosts management"
@@ -237,19 +237,20 @@ features:
 
   - id: DEV_TRAEFIK
     title: "Traefik dev config generation"
-    status: todo
+    status: done
     spec: "dev/traefik.md"
     owner: bart
     tests:
-      - "internal/dev/traefik_test.go"
+      - "internal/dev/traefik/generator_test.go"
 
   - id: DEV_COMPOSE_INFRA
     title: "Compose infra up/down for dev"
-    status: todo
+    status: done
     spec: "dev/compose-infra.md"
     owner: bart
     tests:
-      - "internal/dev/compose_test.go"
+      - "internal/dev/compose/generator_test.go"
+      - "internal/dev/compose/golden_test.go"
 
   - id: PROVIDER_BACKEND_ENCORE
     title: "Encore.ts BackendProvider implementation"
@@ -277,11 +278,11 @@ features:
 
   - id: DEV_PROCESS_MGMT
     title: "Process lifecycle management"
-    status: todo
+    status: done
     spec: "dev/process-mgmt.md"
     owner: bart
     tests:
-      - "internal/dev/process_test.go"
+      - "internal/dev/process/runner_test.go"
 
   # Phase 4: Provider Implementations
   - id: PROVIDER_NETWORK_TAILSCALE
@@ -617,6 +618,15 @@ features:
     depends_on:
       - "CORE_STATE"
       - "CLI_PHASE_EXECUTION_COMMON"
+
+  - id: GOV_CLI_EXIT_CODES
+    title: "CLI exit code governance and standardization"
+    status: todo
+    spec: "governance/GOV_CLI_EXIT_CODES.md"
+    owner: bart
+    tests: []
+    depends_on:
+      - "GOV_V1_CORE"
 
   - id: CLI_COMMIT_SUGGEST
     title: "stagecraft commit suggest command"
