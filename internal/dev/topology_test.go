@@ -61,14 +61,17 @@ func TestBuilder_Build_MinimalTopology(t *testing.T) {
 
 	if top == nil {
 		t.Fatalf("Build() = nil, want non-nil *Topology")
+		return
 	}
 
 	if top.Compose == nil {
 		t.Fatalf("Topology.Compose = nil, want non-nil *ComposeFile")
+		return
 	}
 
 	if top.Traefik == nil {
 		t.Fatalf("Topology.Traefik = nil, want non-nil *devtraefik.Config")
+		return
 	}
 
 	if top.Domains.Frontend != "app.localdev.test" {
@@ -232,10 +235,12 @@ func TestBuilder_Build_NoTraefik(t *testing.T) {
 
 	if top == nil {
 		t.Fatalf("Build() = nil, want non-nil *Topology")
+		return
 	}
 
 	if top.Compose == nil {
 		t.Fatalf("Topology.Compose = nil, want non-nil *ComposeFile")
+		return
 	}
 
 	// Traefik should be nil when traefikSvc is nil

@@ -37,6 +37,7 @@ func TestNewResolver(t *testing.T) {
 	resolver := NewResolver(cfg)
 	if resolver == nil {
 		t.Fatal("NewResolver returned nil")
+		return
 	}
 	if resolver.cfg != cfg {
 		t.Error("NewResolver did not store config correctly")

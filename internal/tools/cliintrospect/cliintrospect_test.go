@@ -144,6 +144,7 @@ func TestFindCommand(t *testing.T) {
 	cmd = FindCommand(commands, "build")
 	if cmd == nil {
 		t.Fatal("expected to find build command")
+		return
 	}
 	if cmd.Use != "build" {
 		t.Errorf("expected Use 'build', got %q", cmd.Use)

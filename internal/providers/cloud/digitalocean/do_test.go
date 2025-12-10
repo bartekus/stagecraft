@@ -298,6 +298,7 @@ func TestNewDigitalOceanProviderWithClient(t *testing.T) {
 	provider := NewDigitalOceanProviderWithClient(mockClient)
 	if provider == nil {
 		t.Fatal("NewDigitalOceanProviderWithClient() returned nil")
+		return
 	}
 	if got := provider.ID(); got != "digitalocean" {
 		t.Errorf("provider.ID() = %q, want %q", got, "digitalocean")

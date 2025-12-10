@@ -85,9 +85,11 @@ func TestGenerateSuggestions_CommitHealthViolations(t *testing.T) {
 
 	if missingFeatureID == nil {
 		t.Fatal("missing suggestion for MISSING_FEATURE_ID violation")
+		return
 	}
 	if summaryTooLong == nil {
 		t.Fatal("missing suggestion for SUMMARY_TOO_LONG violation")
+		return
 	}
 
 	// Verify MISSING_FEATURE_ID suggestion

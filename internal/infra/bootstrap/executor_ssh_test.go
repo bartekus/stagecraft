@@ -224,6 +224,7 @@ func TestSSHExecutor_NewSSHExecutor_DefaultRunner(t *testing.T) {
 	exec := NewSSHExecutor("root", nil)
 	if exec == nil {
 		t.Fatalf("expected non-nil executor")
+		return
 	}
 
 	if exec.sshUser != "root" {
