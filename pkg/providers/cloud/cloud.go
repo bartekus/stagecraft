@@ -67,6 +67,33 @@ type ApplyOptions struct {
 	Plan InfraPlan
 }
 
+// Host represents an actual provisioned host with runtime information.
+type Host struct {
+	// ID is the stable unique identifier from the cloud provider (e.g., droplet ID)
+	ID string
+
+	// Name is the human-readable name (e.g., "app-1")
+	Name string
+
+	// Role is the logical role (e.g., "app", "db", "proxy")
+	Role string
+
+	// PublicIP is the IPv4 address used for initial SSH connectivity
+	PublicIP string
+
+	// Tags are provider or user-defined tags
+	Tags []string
+}
+
+// HostsOptions contains options for listing hosts.
+type HostsOptions struct {
+	// Config is the provider-specific configuration
+	Config any
+
+	// Environment is the environment name (e.g., "staging", "prod")
+	Environment string
+}
+
 // CloudProvider is the interface that all cloud providers must implement.
 //
 //nolint:revive // CloudProvider is the preferred name for clarity
@@ -80,6 +107,9 @@ type CloudProvider interface {
 
 	// Apply applies the given infrastructure plan, creating and deleting hosts as needed.
 	Apply(ctx context.Context, opts ApplyOptions) error
+
+	// Hosts returns the list of provisioned hosts for the given environment.
+	Hosts(ctx context.Context, opts HostsOptions) ([]Host, error)
 }
 
 // ProviderMetadata contains metadata about a provider.

@@ -278,6 +278,14 @@ func (p *DigitalOceanProvider) Apply(ctx context.Context, opts cloud.ApplyOption
 	return nil
 }
 
+// Hosts returns the list of provisioned hosts for the given environment.
+// This is a stub implementation for Slice 2; full implementation will come in later slices.
+func (p *DigitalOceanProvider) Hosts(ctx context.Context, opts cloud.HostsOptions) ([]cloud.Host, error) {
+	// TODO: Implement full Hosts method in later slices
+	// For now, return empty list to satisfy interface
+	return []cloud.Host{}, nil
+}
+
 // init registers the provider with the cloud registry.
 func init() {
 	cloud.Register(NewDigitalOceanProvider())

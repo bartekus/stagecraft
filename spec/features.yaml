@@ -451,7 +451,7 @@ features:
   # Phase 7: Infrastructure
   - id: CLI_INFRA_UP
     title: "stagecraft infra up command"
-    status: todo
+    status: done
     spec: "commands/infra-up.md"
     owner: bart
     tests:
@@ -467,11 +467,12 @@ features:
 
   - id: INFRA_HOST_BOOTSTRAP
     title: "Host bootstrap (Docker, Tailscale, etc.)"
-    status: todo
+    status: done
     spec: "infra/bootstrap.md"
     owner: bart
     tests:
-      - "internal/infra/bootstrap_test.go"
+      - "internal/infra/bootstrap/bootstrap_test.go"
+      - "internal/infra/bootstrap/executor_ssh_test.go"
 
   - id: INFRA_VOLUME_MGMT
     title: "Volume management"

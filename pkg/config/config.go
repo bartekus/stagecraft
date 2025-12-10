@@ -50,8 +50,11 @@ type Config struct {
 	Backend      *BackendConfig               `yaml:"backend,omitempty"`
 	Frontend     *FrontendConfig              `yaml:"frontend,omitempty"`
 	Dev          *DevConfig                   `yaml:"dev,omitempty"`
+	Cloud        *CloudConfig                 `yaml:"cloud,omitempty"`
+	Network      *NetworkConfig               `yaml:"network,omitempty"`
 	Databases    map[string]DatabaseConfig    `yaml:"databases,omitempty"`
 	Environments map[string]EnvironmentConfig `yaml:"environments"`
+	Infra        *InfraConfig                 `yaml:"infra,omitempty"`
 }
 
 // ProjectConfig describes project-level settings.
@@ -69,6 +72,30 @@ type BackendConfig struct {
 type FrontendConfig struct {
 	Provider  string         `yaml:"provider"`
 	Providers map[string]any `yaml:"providers"`
+}
+
+// CloudConfig describes cloud provider configuration.
+type CloudConfig struct {
+	Provider  string         `yaml:"provider"`
+	Providers map[string]any `yaml:"providers"`
+}
+
+// NetworkConfig describes network provider configuration.
+type NetworkConfig struct {
+	Provider  string         `yaml:"provider"`
+	Providers map[string]any `yaml:"providers"`
+}
+
+// InfraConfig describes infrastructure-related configuration.
+type InfraConfig struct {
+	Bootstrap InfraBootstrapConfig `yaml:"bootstrap,omitempty"`
+}
+
+// InfraBootstrapConfig describes host bootstrap configuration used by
+// the INFRA_HOST_BOOTSTRAP engine.
+type InfraBootstrapConfig struct {
+	// SSHUser is the user used for initial SSH connectivity (e.g., "root").
+	SSHUser string `yaml:"ssh_user,omitempty"`
 }
 
 // DevConfig describes development environment configuration.
