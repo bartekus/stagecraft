@@ -241,4 +241,9 @@ jobs:
         run: go install github.com/google/addlicense@latest
 
       - name: Run license check
-        run: addlicense -check .
+        run: addlicense -ignore 'internal/providers/backend/generic/test_script.sh' \
+          -ignore '.bin/vendor/**' \
+          -ignore '**/testdata/**' \
+          -ignore '.idea/**' \
+          -ignore '**/.stagecraft/**' \
+          -check .
