@@ -25,8 +25,10 @@ import (
 	// Import providers to ensure they register themselves
 	_ "stagecraft/internal/providers/backend/encorets"
 	_ "stagecraft/internal/providers/backend/generic"
+	_ "stagecraft/internal/providers/cloud/digitalocean"
 	_ "stagecraft/internal/providers/frontend/generic"
 	_ "stagecraft/internal/providers/migration/raw"
+	_ "stagecraft/internal/providers/network/tailscale"
 
 	backendproviders "stagecraft/pkg/providers/backend"
 	frontendproviders "stagecraft/pkg/providers/frontend"

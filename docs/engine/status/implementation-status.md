@@ -75,7 +75,7 @@ This document tracks the implementation status of Stagecraft features. It should
 
 | ID | Title | Status | Owner | Spec | Tests |
 |----|-------|--------|-------|------|-------|
-| DRIVER_DO | DigitalOcean driver | todo | bart | [do.md](../../../spec/drivers/do.md) | [do_test.go](../../../internal/drivers/do/do_test.go) |
+| DRIVER_DO | DigitalOcean driver | cancelled | bart | [do.md](../../../spec/drivers/do.md) | [do_test.go](../../../internal/drivers/do/do_test.go) |
 
 ### Migration Engines
 
@@ -117,7 +117,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | PROVIDER_BACKEND_INTERFACE | BackendProvider interface definition | done | bart | [backend-registry.md](../../../spec/core/backend-registry.md) | [backend_test.go](../../../pkg/providers/backend/backend_test.go) |
 | PROVIDER_CI_GITHUB | GitHub Actions CIProvider | todo | bart | [github.md](../../../spec/providers/ci/github.md) | [github_test.go](../../../internal/providers/ci/github/github_test.go) |
 | PROVIDER_CI_INTERFACE | CIProvider interface definition | done | bart | [interface.md](../../../spec/providers/ci/interface.md) | [registry_test.go](../../../pkg/providers/ci/registry_test.go) |
-| PROVIDER_CLOUD_DO | DigitalOcean CloudProvider implementation | todo | bart | [digitalocean.md](../../../spec/providers/cloud/digitalocean.md) | [do_test.go](../../../internal/providers/cloud/digitalocean/do_test.go) |
+| PROVIDER_CLOUD_DO | DigitalOcean CloudProvider implementation | done | bart | [digitalocean.md](../../../spec/providers/cloud/digitalocean.md) | [do_test.go](../../../internal/providers/cloud/digitalocean/do_test.go) |
 | PROVIDER_CLOUD_INTERFACE | CloudProvider interface definition | done | bart | [interface.md](../../../spec/providers/cloud/interface.md) | [registry_test.go](../../../pkg/providers/cloud/registry_test.go) |
 | PROVIDER_FRONTEND_GENERIC | Generic dev command FrontendProvider | done | bart | [generic.md](../../../spec/providers/frontend/generic.md) | [generic_test.go](../../../internal/providers/frontend/generic/generic_test.go) |
 | PROVIDER_FRONTEND_INTERFACE | FrontendProvider interface definition | done | bart | [interface.md](../../../spec/providers/frontend/interface.md) | [frontend_test.go](../../../pkg/providers/frontend/frontend_test.go) |
@@ -167,6 +167,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **PROVIDER_BACKEND_GENERIC**: Generic command-based BackendProvider implementation
 - **PROVIDER_BACKEND_INTERFACE**: BackendProvider interface definition
 - **PROVIDER_CI_INTERFACE**: CIProvider interface definition
+- **PROVIDER_CLOUD_DO**: DigitalOcean CloudProvider implementation
 - **PROVIDER_CLOUD_INTERFACE**: CloudProvider interface definition
 - **PROVIDER_FRONTEND_GENERIC**: Generic dev command FrontendProvider
 - **PROVIDER_FRONTEND_INTERFACE**: FrontendProvider interface definition
