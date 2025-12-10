@@ -6,9 +6,11 @@ package commands
 import (
 	"context"
 	"fmt"
+	"os"
 
 	dev "stagecraft/internal/dev"
 	devcompose "stagecraft/internal/dev/compose"
+	devhosts "stagecraft/internal/dev/hosts"
 	devmkcert "stagecraft/internal/dev/mkcert"
 	devprocess "stagecraft/internal/dev/process"
 
@@ -144,7 +146,24 @@ func runDevWithOptions(ctx context.Context, opts devOptions) error {
 		return fmt.Errorf("dev: compute domains: %w", err)
 	}
 
-	// 3. DEV_MKCERT: ensure certificates when HTTPS is enabled.
+	// 3. DEV_HOSTS: add hosts file entries when hosts management is enabled.
+	var hostsMgr devhosts.Manager
+	if !opts.NoHosts {
+		hostsMgr = devhosts.NewManager()
+		if err := hostsMgr.AddEntries(ctx, []string{domains.Frontend, domains.Backend}); err != nil {
+			return fmt.Errorf("dev: add hosts entries: %w", err)
+		}
+		// Cleanup hosts entries on exit (best-effort, don't fail if cleanup fails)
+		defer func() {
+			if cleanupErr := hostsMgr.Cleanup(context.Background()); cleanupErr != nil {
+				// Log error but don't fail the command
+				// Using fmt.Printf since we don't have a logger in this context
+				_, _ = fmt.Fprintf(os.Stderr, "dev: cleanup hosts entries: %v\n", cleanupErr)
+			}
+		}()
+	}
+
+	// 4. DEV_MKCERT: ensure certificates when HTTPS is enabled.
 	devDir := ".stagecraft/dev" // relative to project root.
 	certGen := devmkcert.NewGenerator()
 
@@ -159,7 +178,7 @@ func runDevWithOptions(ctx context.Context, opts devOptions) error {
 		return fmt.Errorf("dev: ensure HTTPS certificates: %w", err)
 	}
 
-	// 4. Resolve providers and extract service definitions
+	// 5. Resolve providers and extract service definitions
 	builder := dev.NewDefaultBuilder()
 
 	backendSvc, frontendSvc, err := builder.ResolveServiceDefinitions(cfg, opts.Env)
@@ -172,7 +191,7 @@ func runDevWithOptions(ctx context.Context, opts devOptions) error {
 		return fmt.Errorf("dev: backend provider is required")
 	}
 
-	// 5. Conditionally include Traefik based on --no-traefik flag
+	// 6. Conditionally include Traefik based on --no-traefik flag
 	var traefikSvc *devcompose.ServiceDefinition
 	if !opts.NoTraefik {
 		traefikSvc = &devcompose.ServiceDefinition{
@@ -192,13 +211,13 @@ func runDevWithOptions(ctx context.Context, opts devOptions) error {
 		return fmt.Errorf("dev: build topology: %w", err)
 	}
 
-	// 6. Persist dev config files.
+	// 7. Persist dev config files.
 
 	if _, err := dev.WriteFiles(devDir, topology); err != nil {
 		return fmt.Errorf("dev: write dev files: %w", err)
 	}
 
-	// 7. Start processes via DEV_PROCESS_MGMT.
+	// 8. Start processes via DEV_PROCESS_MGMT.
 	procOpts := devprocess.Options{
 		DevDir:    devDir,
 		NoTraefik: opts.NoTraefik,

@@ -90,7 +90,8 @@ environments:
 	cmd := NewDevCommand()
 
 	// Set config path explicitly; use --no-https to skip mkcert (not available in CI)
-	cmd.SetArgs([]string{"--" + devFlagConfig, configPath, "--no-https"})
+	// Use --no-hosts to skip hosts file modification (requires permissions)
+	cmd.SetArgs([]string{"--" + devFlagConfig, configPath, "--no-https", "--no-hosts"})
 
 	err = cmd.Execute()
 	// Docker compose may fail if docker is not available or compose file is invalid,
@@ -179,6 +180,7 @@ environments:
 		Env:     "dev",
 		Config:  configPath,
 		NoHTTPS: true, // Skip mkcert (not available in CI)
+		NoHosts: true, // Skip hosts file modification (requires permissions)
 	}
 
 	err = runDevWithOptions(context.Background(), opts)
@@ -271,6 +273,7 @@ environments:
 		Config:    configPath,
 		NoTraefik: true, // Traefik should be disabled
 		NoHTTPS:   true, // Skip mkcert (not available in CI)
+		NoHosts:   true, // Skip hosts file modification (requires permissions)
 	}
 
 	err = runDevWithOptions(context.Background(), opts)
@@ -338,6 +341,7 @@ environments:
 		Env:     "dev",
 		Config:  configPath,
 		NoHTTPS: true, // HTTPS should be disabled
+		NoHosts: true, // Skip hosts file modification (requires permissions)
 	}
 
 	err = runDevWithOptions(context.Background(), opts)
@@ -418,6 +422,7 @@ environments:
 		Env:     "dev",
 		Config:  configPath,
 		NoHTTPS: true, // Skip mkcert (not available in CI)
+		NoHosts: true, // Skip hosts file modification (requires permissions)
 	}
 
 	err = runDevWithOptions(context.Background(), opts)
@@ -454,4 +459,69 @@ environments:
 			t.Errorf("traefik-dynamic.yaml should contain backend domain 'api.example.test', got:\n%s", traefikStr)
 		}
 	}
+}
+
+func TestRunDevWithOptions_NoHostsFlag(t *testing.T) {
+	t.Helper()
+
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, "stagecraft.yml")
+
+	// Write a config with backend provider
+	configContent := `project:
+  name: test-app
+backend:
+  provider: generic
+  providers:
+    generic:
+      dev:
+        command: ["echo", "backend"]
+        env:
+          PORT: "4000"
+environments:
+  dev:
+    driver: local
+`
+	if err := os.WriteFile(configPath, []byte(configContent), 0o600); err != nil {
+		t.Fatalf("failed to write config file: %v", err)
+	}
+
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get current directory: %v", err)
+	}
+	defer func() {
+		if err := os.Chdir(originalDir); err != nil {
+			t.Logf("failed to restore directory: %v", err)
+		}
+	}()
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("failed to change directory: %v", err)
+	}
+
+	opts := devOptions{
+		Env:     "dev",
+		Config:  configPath,
+		NoHosts: true, // Hosts file modification should be skipped
+		NoHTTPS: true, // Skip mkcert (not available in CI)
+	}
+
+	err = runDevWithOptions(context.Background(), opts)
+	// Docker compose may fail, but we're testing that --no-hosts flag is respected
+	// The actual hosts file modification is tested in DEV_HOSTS unit tests
+	if err != nil {
+		if !strings.Contains(err.Error(), "docker compose") && !strings.Contains(err.Error(), "start processes") {
+			t.Fatalf("runDevWithOptions() error = %v, want nil or docker compose error", err)
+		}
+	}
+
+	// Verify compose.yaml exists (proving command executed successfully)
+	devDir := filepath.Join(tmpDir, ".stagecraft", "dev")
+	composePath := filepath.Join(devDir, "compose.yaml")
+	if _, err := os.Stat(composePath); err != nil {
+		t.Fatalf("expected compose.yaml to be written at %s: %v", composePath, err)
+	}
+
+	// Note: Actual hosts file modification is tested in DEV_HOSTS unit tests.
+	// This test verifies that CLI_DEV respects the --no-hosts flag and doesn't fail.
 }

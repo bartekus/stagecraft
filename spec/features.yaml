@@ -212,7 +212,7 @@ features:
 
   - id: CLI_DEV
     title: "stagecraft dev command (full feature set)"
-    status: wip
+    status: done
     spec: "commands/dev.md"
     owner: bart
     tests:
@@ -229,11 +229,11 @@ features:
 
   - id: DEV_HOSTS
     title: "/etc/hosts management"
-    status: todo
+    status: done
     spec: "dev/hosts.md"
     owner: bart
     tests:
-      - "internal/dev/hosts_test.go"
+      - "internal/dev/hosts/hosts_test.go"
 
   - id: DEV_TRAEFIK
     title: "Traefik dev config generation"

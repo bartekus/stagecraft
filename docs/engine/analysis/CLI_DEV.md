@@ -97,13 +97,13 @@ This fragmentation creates friction, reduces determinism, and makes it harder to
 - ✅ DEV_TRAEFIK integration (routing configuration)
 - ✅ DEV_MKCERT integration (HTTPS certificate generation)
 - ✅ DEV_PROCESS_MGMT integration (process lifecycle)
-- ✅ Flag handling (`--no-https`, `--no-traefik`, `--detach`, `--verbose`)
+- ✅ DEV_HOSTS integration (hosts file management)
+- ✅ Flag handling (`--no-https`, `--no-hosts`, `--no-traefik`, `--detach`, `--verbose`)
 - ✅ Backend-only and backend+frontend topologies supported
 - ✅ Domain computation: Dev domains are computed from `dev.domains.*` in config with deterministic defaults (`app.localdev.test` / `api.localdev.test`), exactly as per the spec
 
 **v1 Limitations (Future Slices):**
 
-- ⏸ **DEV_HOSTS**: The `--no-hosts` flag is parsed but currently a no-op. Hosts file management will be implemented in a future DEV_HOSTS slice.
 - ⏸ **Service definition richness**: Current extraction uses environment variables and PORT only. Future slices will extract image, build, volumes, etc. from provider config.
 - ⏸ **Provider-specific service shapes**: Current extraction assumes generic provider config structure. Encore.ts and other providers may need provider-specific hooks in future slices.
 - ⏸ **Environment-specific domains**: Domain computation currently uses top-level `dev.domains.*` only. Future slice may introduce environment-specific domain overrides (e.g., `environments[env].dev.domains.*`).
