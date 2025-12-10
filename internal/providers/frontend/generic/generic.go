@@ -43,6 +43,13 @@ type GenericProvider struct{}
 // Ensure GenericProvider implements FrontendProvider
 var _ frontend.FrontendProvider = (*GenericProvider)(nil)
 
+// newScanner is a test seam for injecting scanner errors in tests.
+// In production, this always returns bufio.NewScanner(reader).
+// Tests can override this to inject failing readers.
+var newScanner = func(reader interface{ Read([]byte) (int, error) }) *bufio.Scanner {
+	return bufio.NewScanner(reader)
+}
+
 // ID returns the provider identifier.
 func (p *GenericProvider) ID() string {
 	return "generic"
@@ -152,7 +159,7 @@ func (p *GenericProvider) runWithReadyPattern(ctx context.Context, cmd *exec.Cmd
 	// TODO: Consider using structured logging instead of direct os.Stdout writes
 	// per Agent.md guidance. For v1, direct streaming is acceptable for dev-only provider.
 	go func() {
-		scanner := bufio.NewScanner(stdoutPipe)
+		scanner := newScanner(stdoutPipe)
 		for scanner.Scan() {
 			line := scanner.Text()
 			_, _ = os.Stdout.WriteString(line + "\n")
@@ -172,7 +179,7 @@ func (p *GenericProvider) runWithReadyPattern(ctx context.Context, cmd *exec.Cmd
 
 	// Monitor stderr
 	go func() {
-		scanner := bufio.NewScanner(stderrPipe)
+		scanner := newScanner(stderrPipe)
 		for scanner.Scan() {
 			line := scanner.Text()
 			_, _ = os.Stderr.WriteString(line + "\n")
