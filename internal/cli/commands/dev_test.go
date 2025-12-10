@@ -89,8 +89,8 @@ environments:
 
 	cmd := NewDevCommand()
 
-	// Set config path explicitly; defaults should work otherwise
-	cmd.SetArgs([]string{"--" + devFlagConfig, configPath})
+	// Set config path explicitly; use --no-https to skip mkcert (not available in CI)
+	cmd.SetArgs([]string{"--" + devFlagConfig, configPath, "--no-https"})
 
 	err = cmd.Execute()
 	// Docker compose may fail if docker is not available or compose file is invalid,
@@ -176,8 +176,9 @@ environments:
 	}
 
 	opts := devOptions{
-		Env:    "dev",
-		Config: configPath,
+		Env:     "dev",
+		Config:  configPath,
+		NoHTTPS: true, // Skip mkcert (not available in CI)
 	}
 
 	err = runDevWithOptions(context.Background(), opts)
@@ -269,6 +270,7 @@ environments:
 		Env:       "dev",
 		Config:    configPath,
 		NoTraefik: true, // Traefik should be disabled
+		NoHTTPS:   true, // Skip mkcert (not available in CI)
 	}
 
 	err = runDevWithOptions(context.Background(), opts)
@@ -413,8 +415,9 @@ environments:
 	}
 
 	opts := devOptions{
-		Env:    "dev",
-		Config: configPath,
+		Env:     "dev",
+		Config:  configPath,
+		NoHTTPS: true, // Skip mkcert (not available in CI)
 	}
 
 	err = runDevWithOptions(context.Background(), opts)
