@@ -3,6 +3,8 @@
 > **⚠️ Note**: This document is a snapshot view. For the complete, up-to-date feature list, see [`spec/features.yaml`](../../../spec/features.yaml).
 >
 > This document shows a subset of features for quick reference. The full feature catalog with 61+ features organized by phase is available in [`docs/narrative/implementation-roadmap.md`](../../narrative/implementation-roadmap.md).
+>
+> For a phase-oriented roadmapping analysis, see [feature-completion-analysis.md](feature-completion-analysis.md).
 
 This document tracks the implementation status of Stagecraft features. It should be regenerated from `spec/features.yaml` when needed.
 

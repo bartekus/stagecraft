@@ -637,3 +637,16 @@ features:
       - "internal/cli/commands/commit_suggest_test.go"
     depends_on:
       - "GOV_V1_CORE"
+
+  - id: GOV_STATUS_ROADMAP
+    title: "stagecraft status roadmap command"
+    status: done
+    spec: "commands/status-roadmap.md"
+    owner: bart
+    tests:
+      - "internal/cli/commands/status_test.go"
+      - "internal/tools/roadmap/phase_test.go"
+      - "internal/tools/roadmap/stats_test.go"
+      - "internal/tools/roadmap/generator_test.go"
+    depends_on:
+      - "GOV_V1_CORE"
