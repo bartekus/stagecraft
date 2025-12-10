@@ -296,7 +296,7 @@ features:
 
   - id: PROVIDER_CLOUD_DO
     title: "DigitalOcean CloudProvider implementation"
-    status: todo
+    status: done
     spec: "providers/cloud/digitalocean.md"
     owner: bart
     tests:
@@ -304,11 +304,12 @@ features:
 
   - id: DRIVER_DO
     title: "DigitalOcean driver"
-    status: todo
+    status: cancelled
     spec: "drivers/do.md"
     owner: bart
     tests:
       - "internal/drivers/do/do_test.go"
+    notes: "Merged into PROVIDER_CLOUD_DO. No separate driver layer required. Host-level bootstrap functionality belongs in Phase 7 (INFRA_HOST_BOOTSTRAP, INFRA_VOLUME_MGMT)."
 
   # Phase 5: Build and Deploy
   - id: CLI_BUILD

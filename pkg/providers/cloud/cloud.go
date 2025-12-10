@@ -60,6 +60,9 @@ type ApplyOptions struct {
 	// Config is the provider-specific configuration
 	Config any
 
+	// Environment is the environment name (e.g., "staging", "prod")
+	Environment string
+
 	// Plan is the infrastructure plan to apply
 	Plan InfraPlan
 }

@@ -43,6 +43,7 @@ func (m *mockProvider) Plan(ctx context.Context, opts PlanOptions) (InfraPlan, e
 	return InfraPlan{}, nil
 }
 
+//nolint:gocritic // hugeParam: opts matches interface signature
 func (m *mockProvider) Apply(ctx context.Context, opts ApplyOptions) error {
 	return nil
 }
