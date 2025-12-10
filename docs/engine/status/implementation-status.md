@@ -3,8 +3,6 @@
 > **⚠️ Note**: This document is a snapshot view. For the complete, up-to-date feature list, see [`spec/features.yaml`](../../../spec/features.yaml).
 >
 > This document shows a subset of features for quick reference. The full feature catalog with 61+ features organized by phase is available in [`docs/narrative/implementation-roadmap.md`](../../narrative/implementation-roadmap.md).
->
-> For a phase-oriented roadmapping analysis, see [feature-completion-analysis.md](feature-completion-analysis.md).
 
 This document tracks the implementation status of Stagecraft features. It should be regenerated from `spec/features.yaml` when needed.
 
@@ -102,6 +100,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | DEV_PROCESS_MGMT | Process lifecycle management | done | bart | [process-mgmt.md](../../../spec/dev/process-mgmt.md) | [runner_test.go](../../../internal/dev/process/runner_test.go) |
 | DEV_TRAEFIK | Traefik dev config generation | done | bart | [traefik.md](../../../spec/dev/traefik.md) | [generator_test.go](../../../internal/dev/traefik/generator_test.go) |
 | GOV_CLI_EXIT_CODES | CLI exit code governance and standardization | todo | bart | [GOV_CLI_EXIT_CODES.md](../../../spec/governance/GOV_CLI_EXIT_CODES.md) | - |
+| GOV_STATUS_ROADMAP | stagecraft status roadmap command | done | bart | [status-roadmap.md](../../../spec/commands/status-roadmap.md) | [status_test.go](../../../internal/cli/commands/status_test.go), [phase_test.go](../../../internal/tools/roadmap/phase_test.go), [stats_test.go](../../../internal/tools/roadmap/stats_test.go), [generator_test.go](../../../internal/tools/roadmap/generator_test.go) |
 | GOV_V1_CORE | Governance Core for v1 | done | bart | [GOV_V1_CORE.md](../../../spec/governance/GOV_V1_CORE.md) | [specschema_test.go](../../../internal/tools/specschema/specschema_test.go), [cliintrospect_test.go](../../../internal/tools/cliintrospect/cliintrospect_test.go), [features_test.go](../../../internal/tools/features/features_test.go), [mapping_test.go](../../../internal/governance/mapping/mapping_test.go), [docs_test.go](../../../internal/tools/docs/docs_test.go), [diff_test.go](../../../internal/tools/specvscli/diff_test.go) |
 | INFRA_FIREWALL | Firewall configuration | todo | bart | [firewall.md](../../../spec/infra/firewall.md) | [firewall_test.go](../../../internal/infra/firewall_test.go) |
 | INFRA_HOST_BOOTSTRAP | Host bootstrap (Docker, Tailscale, etc.) | todo | bart | [bootstrap.md](../../../spec/infra/bootstrap.md) | [bootstrap_test.go](../../../internal/infra/bootstrap_test.go) |
@@ -159,6 +158,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **DEV_MKCERT**: mkcert integration for local HTTPS
 - **DEV_PROCESS_MGMT**: Process lifecycle management
 - **DEV_TRAEFIK**: Traefik dev config generation
+- **GOV_STATUS_ROADMAP**: stagecraft status roadmap command
 - **GOV_V1_CORE**: Governance Core for v1
 - **MIGRATION_ENGINE_RAW**: Raw SQL migration engine implementation
 - **PROVIDER_BACKEND_ENCORE**: Encore.ts BackendProvider implementation
