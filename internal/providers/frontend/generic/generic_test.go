@@ -15,7 +15,9 @@ See https://www.gnu.org/licenses/ for license details.
 package generic
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,6 +29,25 @@ import (
 
 // Feature: PROVIDER_FRONTEND_GENERIC
 // Spec: spec/providers/frontend/generic.md
+
+// devWithTimeout wraps p.Dev() with an explicit test timeout to prevent hanging tests.
+// If p.Dev() does not return within timeout, the test fails immediately.
+// This prevents tests from hanging CI if there's a deadlock or blocking issue.
+func devWithTimeout(t *testing.T, p *GenericProvider, ctx context.Context, opts frontend.DevOptions, timeout time.Duration) error {
+	t.Helper()
+	done := make(chan error, 1)
+	go func() {
+		done <- p.Dev(ctx, opts)
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(timeout):
+		t.Fatalf("timeout: Dev() did not return within %v", timeout)
+		return nil // unreachable
+	}
+}
 
 func TestGenericProvider_ID(t *testing.T) {
 	p := &GenericProvider{}
@@ -327,6 +348,7 @@ done
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// Cancel context after a short delay
 	go func() {
@@ -334,7 +356,9 @@ done
 		cancel()
 	}()
 
-	err := p.Dev(ctx, opts)
+	// Use explicit timeout to prevent hanging if shutdown fails
+	// Default shutdown timeout is 10s, so allow 15s total to account for shutdown + overhead
+	err := devWithTimeout(t, p, ctx, opts, 15*time.Second)
 	// Shutdown should succeed (return nil) or fail with an error
 	// Both are acceptable - the important thing is that the process was terminated
 	// nil means graceful shutdown succeeded, error means shutdown had issues
@@ -374,6 +398,7 @@ done
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// Cancel context after a short delay
 	go func() {
@@ -381,7 +406,8 @@ done
 		cancel()
 	}()
 
-	err := p.Dev(ctx, opts)
+	// Use explicit timeout to prevent hanging if shutdown fails
+	err := devWithTimeout(t, p, ctx, opts, 10*time.Second)
 	// Shutdown should succeed (return nil) or fail with an error
 	// Both are acceptable - the important thing is that the process was terminated
 	// nil means graceful shutdown succeeded, error means shutdown had issues
@@ -455,7 +481,13 @@ func TestGenericProvider_RunWithReadyPattern_ContextAfterReady(t *testing.T) {
 echo "Starting server..."
 sleep 0.1
 echo "Local: http://localhost:5173"
-sleep 10
+# Use finite loop instead of long sleep - script will exit naturally if not cancelled
+i=0
+while [ "$i" -lt 20 ]; do
+  sleep 0.5
+  echo "Still running..."
+  i=$((i+1))
+done
 echo "Server running"
 `
 	//nolint:gosec // G306: 0755 is required for executable test scripts
@@ -478,6 +510,7 @@ echo "Server running"
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	// Cancel context after ready pattern should be found
 	go func() {
@@ -485,7 +518,9 @@ echo "Server running"
 		cancel()
 	}()
 
-	err := p.Dev(ctx, opts)
+	// Use explicit timeout to prevent hanging if shutdown fails
+	// Script has sleep 10, but context cancel should trigger shutdown much sooner
+	err := devWithTimeout(t, p, ctx, opts, 5*time.Second)
 	// Should handle graceful shutdown after ready pattern found
 	if err != nil && !strings.Contains(err.Error(), "process did not exit") {
 		t.Logf("Dev() returned error (may be expected): %v", err)
@@ -627,13 +662,15 @@ done
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	go func() {
 		time.Sleep(500 * time.Millisecond)
 		cancel()
 	}()
 
-	err := p.Dev(ctx, opts)
+	// Use explicit timeout to prevent hanging if shutdown fails
+	err := devWithTimeout(t, p, ctx, opts, 10*time.Second)
 	// Should handle SIGTERM gracefully
 	if err != nil && !strings.Contains(err.Error(), "process did not exit") {
 		t.Logf("Dev() returned error (may be expected): %v", err)
@@ -672,13 +709,15 @@ done
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	go func() {
 		time.Sleep(500 * time.Millisecond)
 		cancel()
 	}()
 
-	err := p.Dev(ctx, opts)
+	// Use explicit timeout to prevent hanging if shutdown fails
+	err := devWithTimeout(t, p, ctx, opts, 10*time.Second)
 	// SIGKILL should kill immediately
 	if err != nil {
 		t.Logf("Dev() returned error (may be expected): %v", err)
@@ -717,13 +756,15 @@ done
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	go func() {
 		time.Sleep(500 * time.Millisecond)
 		cancel()
 	}()
 
-	err := p.Dev(ctx, opts)
+	// Use explicit timeout to prevent hanging if shutdown fails
+	err := devWithTimeout(t, p, ctx, opts, 10*time.Second)
 	// Should default to SIGINT for unknown signal
 	if err != nil && !strings.Contains(err.Error(), "process did not exit") {
 		t.Logf("Dev() returned error (may be expected): %v", err)
@@ -770,7 +811,8 @@ done
 		cancel()
 	}()
 
-	err := p.Dev(ctx, opts)
+	// Use explicit timeout to prevent hanging if shutdown fails
+	err := devWithTimeout(t, p, ctx, opts, 10*time.Second)
 	// Should force kill after timeout
 	// Note: Process may finish before timeout in some cases, so we check for either timeout error or force kill error
 	// Also accept nil if process was killed successfully (race condition)
@@ -839,5 +881,181 @@ func TestGenericProvider_Dev_ParseConfigError(t *testing.T) {
 	}
 	if err != nil && !strings.Contains(err.Error(), "parsing generic provider config") {
 		t.Errorf("expected error about config parsing, got: %v", err)
+	}
+}
+
+// Phase 2 Coverage Tests - Targeted coverage for runWithReadyPattern
+// These tests improve coverage from 74.0% to 80%+ by testing critical edge cases
+
+func TestGenericProvider_RunWithReadyPattern_ScannerError(t *testing.T) {
+	p := &GenericProvider{}
+
+	// Create a test script that produces output to stdout
+	tmpDir := t.TempDir()
+	testScript := filepath.Join(tmpDir, "test_scanner_error.sh")
+
+	// Script that produces minimal output and exits quickly
+	// The error injection will happen before script finishes
+	scriptContent := `#!/bin/sh
+echo "Starting server..."
+sleep 0.1
+exit 0
+`
+	//nolint:gosec // G306: 0755 is required for executable test scripts
+	if err := os.WriteFile(testScript, []byte(scriptContent), 0o755); err != nil {
+		t.Fatalf("failed to create test script: %v", err)
+	}
+
+	opts := frontend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"command":       []string{testScript},
+				"ready_pattern": "Local:.*http://localhost:5173",
+			},
+		},
+		WorkDir: tmpDir,
+	}
+
+	// Inject a failing reader via test seam
+	originalNewScanner := newScanner
+	defer func() { newScanner = originalNewScanner }()
+
+	// Track scanner creation to inject error on stdout scanner
+	// The errorAfterBytesReader will return an error after reading a few bytes,
+	// which will cause scanner.Err() to return an error
+	scannerCount := 0
+	newScanner = func(reader interface{ Read([]byte) (int, error) }) *bufio.Scanner {
+		scannerCount++
+		// Inject failing reader for stdout scanner (first one)
+		// This simulates a read error that scanner.Err() will detect
+		if scannerCount == 1 {
+			errReader := &errorAfterBytesReader{maxBytes: 15}
+			return bufio.NewScanner(errReader)
+		}
+		return bufio.NewScanner(reader)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Use explicit timeout to prevent hanging if error handling fails
+	// Error should be detected quickly, but allow time for process cleanup
+	err := devWithTimeout(t, p, ctx, opts, 3*time.Second)
+	// Should return error about reading stdout (we inject error on stdout scanner)
+	if err == nil {
+		t.Error("expected error for scanner error, got nil")
+	}
+	if err != nil && !strings.Contains(err.Error(), "reading stdout") && !strings.Contains(err.Error(), "reading stderr") {
+		t.Errorf("expected error about reading stdout/stderr, got: %v", err)
+	}
+}
+
+// errorAfterBytesReader is a test helper that returns an error after reading maxBytes.
+// This simulates a scanner error by causing the underlying reader to fail.
+type errorAfterBytesReader struct {
+	maxBytes int
+	read     int
+}
+
+func (r *errorAfterBytesReader) Read(p []byte) (int, error) {
+	if r.read >= r.maxBytes {
+		return 0, fmt.Errorf("test: reader error after %d bytes", r.maxBytes)
+	}
+	toRead := len(p)
+	if toRead > (r.maxBytes - r.read) {
+		toRead = r.maxBytes - r.read
+	}
+	r.read += toRead
+	// Return some data before error
+	for i := 0; i < toRead; i++ {
+		p[i] = byte('A' + (i % 26))
+	}
+	// Return error immediately when we hit maxBytes to ensure scanner detects it
+	if r.read >= r.maxBytes {
+		return toRead, fmt.Errorf("test: reader error after %d bytes", r.maxBytes)
+	}
+	return toRead, nil
+}
+
+func TestGenericProvider_RunWithReadyPattern_ProcessExitsWithoutReadyPattern(t *testing.T) {
+	p := &GenericProvider{}
+
+	// Create a test script that exits successfully without emitting ready pattern
+	tmpDir := t.TempDir()
+	testScript := filepath.Join(tmpDir, "test_exit_no_ready.sh")
+
+	scriptContent := `#!/bin/sh
+echo "Starting server..."
+sleep 0.1
+echo "Server started but no ready pattern"
+exit 0
+`
+	//nolint:gosec // G306: 0755 is required for executable test scripts
+	if err := os.WriteFile(testScript, []byte(scriptContent), 0o755); err != nil {
+		t.Fatalf("failed to create test script: %v", err)
+	}
+
+	opts := frontend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"command":       []string{testScript},
+				"ready_pattern": "Local:.*http://localhost:5173", // Pattern that will never appear
+			},
+		},
+		WorkDir: tmpDir,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := p.Dev(ctx, opts)
+	// Should return error because process exited before ready pattern found
+	if err == nil {
+		t.Error("expected error when process exits without ready pattern, got nil")
+	}
+	if err != nil && !strings.Contains(err.Error(), "process exited before ready pattern found") {
+		t.Errorf("expected error about process exiting before ready pattern, got: %v", err)
+	}
+}
+
+func TestGenericProvider_RunWithReadyPattern_ReadyPatternOnStderr(t *testing.T) {
+	p := &GenericProvider{}
+
+	// Create a test script that outputs ready pattern only on stderr
+	tmpDir := t.TempDir()
+	testScript := filepath.Join(tmpDir, "test_ready_stderr.sh")
+
+	scriptContent := `#!/bin/sh
+echo "Starting server..." >&2
+sleep 0.1
+echo "Local: http://localhost:5173" >&2  # Ready pattern on stderr
+sleep 0.1
+echo "Server running"
+sleep 1
+`
+	//nolint:gosec // G306: 0755 is required for executable test scripts
+	if err := os.WriteFile(testScript, []byte(scriptContent), 0o755); err != nil {
+		t.Fatalf("failed to create test script: %v", err)
+	}
+
+	opts := frontend.DevOptions{
+		Config: map[string]any{
+			"dev": map[string]any{
+				"command":       []string{testScript},
+				"ready_pattern": "Local:.*http://localhost:5173",
+			},
+		},
+		WorkDir: tmpDir,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := p.Dev(ctx, opts)
+	// Should succeed because ready pattern was found on stderr
+	// The process will exit normally after the script completes
+	if err != nil && ctx.Err() == nil && !strings.Contains(err.Error(), "process exited") {
+		// Allow timeout errors or process exit errors, but not other errors
+		t.Errorf("unexpected error when ready pattern found on stderr: %v", err)
 	}
 }

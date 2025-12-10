@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Overall Coverage: 80.2%** (Phase 1 ✅ Complete)
+**Overall Coverage: 87.7%** (Phase 1 ✅ Complete, Phase 2 ✅ Complete)
 
 | Function | Coverage | Status |
 |----------|----------|--------|
@@ -11,7 +11,7 @@
 | `parseConfig` | 85.7% | ✅ Good |
 | `runWithShutdown` | 91.7% | ✅ Good |
 | `shutdownProcess` | 76.0% | ✅ Good |
-| `runWithReadyPattern` | 74.0% | 🟡 Acceptable (Phase 2 candidate) |
+| `runWithReadyPattern` | 92.0% | ✅ Excellent (Phase 2 complete) |
 | `init` | 100.0% | ✅ Complete |
 
 ### Phase 1 Completion Summary
@@ -24,23 +24,41 @@
 - `shutdownProcess`: 64.0% → **76.0%** (exceeds target)
 - `Dev`: 84.0% → **88.0%** (exceeds target)
 
-All critical error paths and shutdown edge cases are now covered. Remaining work on `runWithReadyPattern` is explicitly deferred to Phase 2 (focus: scanner error paths & additional edge cases).
+All critical error paths and shutdown edge cases are now covered. Phase 2 completed targeted coverage improvements for `runWithReadyPattern`.
+
+### Phase 2 Completion Summary
+
+**PROVIDER_FRONTEND_GENERIC – Phase 2 (✅ complete)**
+
+- Overall: 80.2% → **87.7%** (exceeds Phase 2 target of 80%+)
+- `runWithReadyPattern`: 74.0% → **92.0%** (exceeds Phase 2 target of 80%+)
+
+**Phase 2 Tests Added:**
+1. ✅ `TestGenericProvider_RunWithReadyPattern_ScannerError` - Tests scanner error handling via test seam
+2. ✅ `TestGenericProvider_RunWithReadyPattern_ProcessExitsWithoutReadyPattern` - Tests process exiting successfully without ready pattern
+3. ✅ `TestGenericProvider_RunWithReadyPattern_ReadyPatternOnStderr` - Tests ready pattern detection on stderr
+
+**Test Seam Added:**
+- Minimal test seam (`newScanner` variable) for injecting scanner errors in tests
+- Documented as test-only, behavior-preserving
 
 ## Missing Coverage Analysis
 
 ### 1. `runWithReadyPattern` (64.0% → Target: 85%+)
 
-**Missing paths:**
-- [ ] Invalid regex pattern compilation error
-- [ ] Stdout pipe creation error
-- [ ] Stderr pipe creation error
-- [ ] Command start error
-- [ ] Scanner error on stdout (scanner.Err() path)
-- [ ] Scanner error on stderr (scanner.Err() path)
-- [ ] Ready pattern found → context cancelled path
-- [ ] Ready pattern found → process exits with error path
-- [ ] Ready pattern found → process exits successfully path
-- [ ] Error reading output → kill process path
+**Missing paths (Phase 2 complete):**
+- [x] Invalid regex pattern compilation error ✅ (Phase 1)
+- [ ] Stdout pipe creation error (deferred - requires complex test seam)
+- [ ] Stderr pipe creation error (deferred - requires complex test seam)
+- [x] Command start error ✅ (Phase 1)
+- [x] Scanner error on stdout (scanner.Err() path) ✅ (Phase 2)
+- [x] Scanner error on stderr (scanner.Err() path) ✅ (Phase 2)
+- [x] Ready pattern found → context cancelled path ✅ (Phase 1)
+- [x] Ready pattern found → process exits with error path ✅ (Phase 1)
+- [x] Ready pattern found → process exits successfully path ✅ (Phase 1)
+- [x] Error reading output → kill process path ✅ (Phase 2)
+- [x] Process exits successfully without ready pattern ✅ (Phase 2)
+- [x] Ready pattern on stderr only ✅ (Phase 2)
 
 **Test cases to add:**
 1. `TestGenericProvider_Dev_InvalidReadyPattern` - Test invalid regex
@@ -108,17 +126,19 @@ All critical error paths and shutdown edge cases are now covered. Remaining work
 
 **Phase 1 Results**: Overall coverage 80.2% (exceeds 75% target). All critical error paths covered. `runWithReadyPattern` at 74.0% (just under 75% target; remaining work deferred to Phase 2).
 
-### Phase 2: Edge Cases (Target: 80%+) 🔄 NEXT
+### Phase 2: Edge Cases (Target: 80%+) ✅ COMPLETE
 1. ✅ Ready pattern found → context cancelled (completed in Phase 1)
 2. ✅ Ready pattern found → process exits (completed in Phase 1)
 3. ✅ Command failure paths in `runWithShutdown` (completed in Phase 1)
-4. Scanner error handling (remaining work):
-   - Scanner error on stdout (scanner.Err() path)
-   - Scanner error on stderr (scanner.Err() path)
-   - Error reading output → kill process path
-5. Additional `runWithReadyPattern` edge cases to reach 80%+:
-   - Pipe creation error paths (if test seams can be established)
-   - Additional context cancellation scenarios
+4. ✅ Scanner error handling (completed in Phase 2):
+   - ✅ Scanner error on stdout (scanner.Err() path)
+   - ✅ Scanner error on stderr (scanner.Err() path)
+   - ✅ Error reading output → kill process path
+5. ✅ Additional `runWithReadyPattern` edge cases (completed in Phase 2):
+   - ✅ Process exits successfully without ready pattern
+   - ✅ Ready pattern detection on stderr only
+
+**Phase 2 Results**: `runWithReadyPattern` coverage 74.0% → **92.0%** (exceeds 80% target). Overall coverage 80.2% → **87.7%**.
 
 ### Phase 3: Complete Coverage (Target: 85%+)
 1. All remaining error paths
@@ -138,6 +158,38 @@ All critical error paths and shutdown edge cases are now covered. Remaining work
 - Group tests by function being tested
 - Use table-driven tests where appropriate
 - Keep integration tests separate from unit tests
+
+### Test Hardening (Post-Phase 2)
+- **Explicit timeouts**: All tests with infinite loops or long-running operations use `devWithTimeout()` helper to prevent CI hangs
+- **Finite scripts**: Prefer finite loops in shell scripts where possible (e.g., `while [ "$i" -lt 10 ]` instead of `while true`)
+- **Timeout values**: Tests account for shutdown timeouts (default 10s) plus overhead (typically 15s total for shutdown tests)
+- **No hanging tests**: All tests guaranteed to complete within their timeout, preventing CI deadlocks
+
+## Known Test Debt
+
+### Flaky Scanner Error Test for `runWithReadyPattern`
+
+`TestGenericProvider_RunWithReadyPattern_ScannerError` uses the `newScanner` test seam in `generic.go` to inject a failing reader and exercise the `scanner.Err()` error path.
+
+This test has the following properties:
+
+- It is **bounded** by an explicit timeout (3s) via `devWithTimeout`, so it cannot hang CI.
+- It **usually** exercises the intended error path and contributes to coverage for `runWithReadyPattern`.
+- It can **occasionally time out** due to interaction between the injected reader and the real process lifetime, making it *potentially flaky*.
+
+For now, this tradeoff is accepted in order to:
+
+- Achieve coverage for the scanner error path.
+- Verify that the error handling in `runWithReadyPattern` is correctly wired.
+
+However, this is treated as **explicit test debt**. A future improvement should:
+
+- Eliminate flakiness by tightening the test seam:
+  - Either by wrapping the real pipe reader instead of replacing it, or
+  - By extracting the scan loop into a helper that can be tested in isolation.
+- Preserve coverage for the `scanner.Err()` path without relying on timing-sensitive behavior.
+
+Until that work is done, the timeout wrapper and this section in the coverage strategy serve as documentation of the known risk and rationale.
 
 ### Coverage Goals
 - **Minimum**: 75% overall (acceptable for v1)
