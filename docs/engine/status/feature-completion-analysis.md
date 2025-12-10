@@ -138,6 +138,47 @@ No blocked features detected. All dependencies for non-done features are satisfi
 
 ## Next Steps
 
-1. Use `stagecraft status roadmap` to regenerate this document whenever `spec/features.yaml` changes.
-2. Prioritize unblocking critical-path features.
-3. Complete partially implemented phases before starting new ones.
+### Phase 3 Complete ✅
+
+**Phase 3: Local Development** is now 100% complete (10/10 features done). All local development capabilities are functional:
+- Complete `stagecraft dev` command with full topology orchestration
+- Cross-platform hosts file management
+- HTTPS certificate provisioning
+- Traefik routing configuration
+- Process lifecycle management
+
+### Immediate Priorities
+
+**1. Complete Phase 5: Build and Deploy (67% → 100%)**
+   - `DEPLOY_COMPOSE_GEN` - Per-host Compose generation
+   - `DEPLOY_ROLLOUT` - docker-rollout integration for zero-downtime deployments
+   
+   **Rationale**: Phase 5 is 67% complete with core deployment commands done. Completing the remaining features enables production-ready deployment workflows.
+
+**2. Start Phase 4: Provider Implementations (0% → 100%)**
+   - `PROVIDER_NETWORK_TAILSCALE` - Required for multi-host deployments
+   - `PROVIDER_CLOUD_DO` - Required for infrastructure provisioning
+   - `DRIVER_DO` - DigitalOcean driver integration
+   
+   **Rationale**: Phase 4 features are prerequisites for multi-host deployments and infrastructure provisioning. These unblock Phase 7 (Infrastructure) work.
+
+**3. Continue Phase 6: Migration System (30% → 100%)**
+   - Core migration features: `MIGRATION_CONFIG`, `MIGRATION_INTERFACE`
+   - Pre/post-deploy hooks: `MIGRATION_PRE_DEPLOY`, `MIGRATION_POST_DEPLOY`
+   - Migration commands: `CLI_MIGRATE_PLAN`, `CLI_MIGRATE_RUN`
+   
+   **Rationale**: Migration system is critical for production deployments. Current 30% completion provides foundation; remaining features enable full migration workflows.
+
+### Strategic Sequencing
+
+**Recommended order:**
+1. **Phase 5 completion** (2 features) - Closes out deployment capabilities
+2. **Phase 4 start** (3 features) - Enables multi-host and infrastructure work
+3. **Phase 6 completion** (7 features) - Production-ready migration system
+
+This sequence maximizes value delivery while maintaining logical dependencies.
+
+### Maintenance
+
+- Use `stagecraft status roadmap` to regenerate this document whenever `spec/features.yaml` changes.
+- Monitor blocker dependencies as new features are implemented.
