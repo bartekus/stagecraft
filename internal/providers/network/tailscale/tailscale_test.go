@@ -208,8 +208,8 @@ func TestTailscaleProvider_EnsureInstalled_InstallSkipped(t *testing.T) {
 
 func TestTailscaleProvider_EnsureJoined_AlreadyJoined(t *testing.T) {
 	// Set up auth key env var
-	os.Setenv("TS_AUTHKEY", "test-auth-key")
-	defer os.Unsetenv("TS_AUTHKEY")
+	_ = os.Setenv("TS_AUTHKEY", "test-auth-key")
+	defer func() { _ = os.Unsetenv("TS_AUTHKEY") }()
 
 	provider := &TailscaleProvider{
 		commander: NewLocalCommander(),
@@ -253,7 +253,7 @@ func TestTailscaleProvider_EnsureJoined_AlreadyJoined(t *testing.T) {
 
 func TestTailscaleProvider_EnsureJoined_AuthKeyMissing(t *testing.T) {
 	// Ensure env var is not set
-	os.Unsetenv("TS_AUTHKEY")
+	_ = os.Unsetenv("TS_AUTHKEY")
 
 	provider := &TailscaleProvider{
 		commander: NewLocalCommander(),
@@ -282,8 +282,8 @@ func TestTailscaleProvider_EnsureJoined_AuthKeyMissing(t *testing.T) {
 }
 
 func TestTailscaleProvider_EnsureJoined_WrongTailnet(t *testing.T) {
-	os.Setenv("TS_AUTHKEY", "test-auth-key")
-	defer os.Unsetenv("TS_AUTHKEY")
+	_ = os.Setenv("TS_AUTHKEY", "test-auth-key")
+	defer func() { _ = os.Unsetenv("TS_AUTHKEY") }()
 
 	provider := &TailscaleProvider{
 		commander: NewLocalCommander(),
@@ -488,7 +488,7 @@ func TestTailscaleProvider_tagsMatch(t *testing.T) {
 
 func TestTailscaleProvider_EnsureJoined_MissingAuthKey(t *testing.T) {
 	// Make sure env var is not set
-	os.Unsetenv("TS_AUTHKEY")
+	_ = os.Unsetenv("TS_AUTHKEY")
 
 	p := &TailscaleProvider{
 		commander: NewLocalCommander(),
@@ -817,8 +817,8 @@ func TestTailscaleProvider_EnsureInstalled_LSBReleaseFallback(t *testing.T) {
 }
 
 func TestTailscaleProvider_EnsureJoined_JoinSucceeds(t *testing.T) {
-	os.Setenv("TS_AUTHKEY", "test-auth-key")
-	defer os.Unsetenv("TS_AUTHKEY")
+	_ = os.Setenv("TS_AUTHKEY", "test-auth-key")
+	defer func() { _ = os.Unsetenv("TS_AUTHKEY") }()
 
 	provider := &TailscaleProvider{
 		commander: NewLocalCommander(),
@@ -869,8 +869,8 @@ func TestTailscaleProvider_EnsureJoined_JoinSucceeds(t *testing.T) {
 }
 
 func TestTailscaleProvider_EnsureJoined_StatusParseError(t *testing.T) {
-	os.Setenv("TS_AUTHKEY", "test-auth-key")
-	defer os.Unsetenv("TS_AUTHKEY")
+	_ = os.Setenv("TS_AUTHKEY", "test-auth-key")
+	defer func() { _ = os.Unsetenv("TS_AUTHKEY") }()
 
 	provider := &TailscaleProvider{
 		commander: NewLocalCommander(),
@@ -921,8 +921,8 @@ func TestTailscaleProvider_EnsureJoined_StatusParseError(t *testing.T) {
 }
 
 func TestTailscaleProvider_EnsureJoined_JoinFails(t *testing.T) {
-	os.Setenv("TS_AUTHKEY", "test-auth-key")
-	defer os.Unsetenv("TS_AUTHKEY")
+	_ = os.Setenv("TS_AUTHKEY", "test-auth-key")
+	defer func() { _ = os.Unsetenv("TS_AUTHKEY") }()
 
 	provider := &TailscaleProvider{
 		commander: NewLocalCommander(),
@@ -968,7 +968,7 @@ func TestTailscaleProvider_EnsureJoined_JoinFails(t *testing.T) {
 
 // Helper function
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
+	return len(s) >= len(substr) && (s == substr || substr == "" ||
 		(len(s) > len(substr) && (s[:len(substr)] == substr ||
 			s[len(s)-len(substr):] == substr ||
 			containsMiddle(s, substr))))

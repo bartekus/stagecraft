@@ -282,16 +282,17 @@ func checkOSCompatibility(ctx context.Context, commander Commander, host string)
 	// Parse os-release for ID
 	lines := strings.Split(osRelease, "\n")
 	for _, line := range lines {
-		if strings.HasPrefix(line, "ID=") {
-			id := strings.TrimPrefix(line, "ID=")
-			id = strings.Trim(id, `"`)
-			id = strings.ToLower(id)
-			if id == "debian" || id == "ubuntu" {
-				return nil
-			}
-			return fmt.Errorf("tailscale provider: %w: detected distribution %q, v1 supports Debian/Ubuntu only",
-				ErrUnsupportedOS, id)
+		if !strings.HasPrefix(line, "ID=") {
+			continue
 		}
+		id := strings.TrimPrefix(line, "ID=")
+		id = strings.Trim(id, `"`)
+		id = strings.ToLower(id)
+		if id == "debian" || id == "ubuntu" {
+			return nil
+		}
+		return fmt.Errorf("tailscale provider: %w: detected distribution %q, v1 supports Debian/Ubuntu only",
+			ErrUnsupportedOS, id)
 	}
 
 	// If we can't determine the distribution, proceed (install script will handle it)

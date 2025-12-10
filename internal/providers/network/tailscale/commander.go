@@ -14,6 +14,7 @@ See https://www.gnu.org/licenses/ for license details.
 // Feature: PROVIDER_NETWORK_TAILSCALE
 // Spec: spec/providers/network/tailscale.md
 
+// Package tailscale provides a Tailscale implementation of the NetworkProvider interface.
 package tailscale
 
 import (
@@ -48,7 +49,9 @@ func NewSSHCommander() *SSHCommander {
 }
 
 // Run executes a command on the remote host via SSH.
-func (c *SSHCommander) Run(ctx context.Context, host string, cmd string, args ...string) (string, string, error) {
+//
+//nolint:gocritic // unnamedResult: return values are clear from context
+func (c *SSHCommander) Run(ctx context.Context, host, cmd string, args ...string) (string, string, error) {
 	// Build SSH command: ssh [user@]host [command]
 	sshArgs := []string{}
 
@@ -105,7 +108,9 @@ func NewLocalCommander() *LocalCommander {
 }
 
 // Run executes a command locally (for testing).
-func (c *LocalCommander) Run(ctx context.Context, host string, cmd string, args ...string) (string, string, error) {
+//
+//nolint:gocritic // unnamedResult: return values are clear from context
+func (c *LocalCommander) Run(ctx context.Context, host, cmd string, args ...string) (string, string, error) {
 	// Build command key - try both with and without "sh -c" wrapper
 	cmdKey := fmt.Sprintf("%s %s %s", host, cmd, strings.Join(args, " "))
 
