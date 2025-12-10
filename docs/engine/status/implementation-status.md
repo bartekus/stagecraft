@@ -122,7 +122,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | PROVIDER_FRONTEND_GENERIC | Generic dev command FrontendProvider | done | bart | [generic.md](../../../spec/providers/frontend/generic.md) | [generic_test.go](../../../internal/providers/frontend/generic/generic_test.go) |
 | PROVIDER_FRONTEND_INTERFACE | FrontendProvider interface definition | done | bart | [interface.md](../../../spec/providers/frontend/interface.md) | [frontend_test.go](../../../pkg/providers/frontend/frontend_test.go) |
 | PROVIDER_NETWORK_INTERFACE | NetworkProvider interface definition | done | bart | [interface.md](../../../spec/providers/network/interface.md) | [registry_test.go](../../../pkg/providers/network/registry_test.go) |
-| PROVIDER_NETWORK_TAILSCALE | Tailscale NetworkProvider implementation | todo | bart | [tailscale.md](../../../spec/providers/network/tailscale.md) | [tailscale_test.go](../../../internal/providers/network/tailscale/tailscale_test.go) |
+| PROVIDER_NETWORK_TAILSCALE | Tailscale NetworkProvider implementation | done | bart | [tailscale.md](../../../spec/providers/network/tailscale.md) | [tailscale_test.go](../../../internal/providers/network/tailscale/tailscale_test.go), [registry_test.go](../../../internal/providers/network/tailscale/registry_test.go) |
 | PROVIDER_SECRETS_ENCORE | Encore dev secrets SecretsProvider | todo | bart | [encore.md](../../../spec/providers/secrets/encore.md) | [encore_test.go](../../../internal/providers/secrets/encore/encore_test.go) |
 | PROVIDER_SECRETS_ENVFILE | Env file SecretsProvider | todo | bart | [envfile.md](../../../spec/providers/secrets/envfile.md) | [envfile_test.go](../../../internal/providers/secrets/envfile/envfile_test.go) |
 | PROVIDER_SECRETS_INTERFACE | SecretsProvider interface definition | done | bart | [interface.md](../../../spec/providers/secrets/interface.md) | [registry_test.go](../../../pkg/providers/secrets/registry_test.go) |
@@ -171,6 +171,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **PROVIDER_FRONTEND_GENERIC**: Generic dev command FrontendProvider
 - **PROVIDER_FRONTEND_INTERFACE**: FrontendProvider interface definition
 - **PROVIDER_NETWORK_INTERFACE**: NetworkProvider interface definition
+- **PROVIDER_NETWORK_TAILSCALE**: Tailscale NetworkProvider implementation
 - **PROVIDER_SECRETS_INTERFACE**: SecretsProvider interface definition
 
 ## Coverage Status
