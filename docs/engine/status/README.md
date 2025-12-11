@@ -5,6 +5,11 @@ This directory contains generated documentation that tracks feature implementati
 ## Files
 
 - `implementation-status.md` - Auto-generated from `spec/features.yaml`
+- `PROVIDER_FRONTEND_GENERIC_COVERAGE_V1_COMPLETE.md` - Coverage completion tracking for PROVIDER_FRONTEND_GENERIC
+- `PROVIDER_FRONTEND_GENERIC_COVERAGE_PR.md` - PR description and reviewer guide for coverage completion
+- `PROVIDER_NETWORK_TAILSCALE_COVERAGE_PLAN.md` - Coverage plan tracking for PROVIDER_NETWORK_TAILSCALE
+
+**Note**: Provider coverage status documents follow the pattern `PROVIDER_*_COVERAGE_*.md` (either `*_COVERAGE_V1_COMPLETE.md` for completed coverage or `*_COVERAGE_PLAN.md` for in-progress work).
 
 ## Generation
 

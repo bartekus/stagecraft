@@ -213,6 +213,19 @@ addlicense -ignore 'internal/providers/backend/generic/test_script.sh' \
           -check .
 info "License headers check passed"
 
+# === Provider Governance Checks ===
+section "Provider Governance Checks"
+
+if [ -x "./scripts/check-provider-governance.sh" ]; then
+    ./scripts/check-provider-governance.sh || {
+        error "Provider governance checks failed"
+        exit 1
+    }
+    info "Provider governance checks passed"
+else
+    echo "Skipping provider governance checks (scripts/check-provider-governance.sh not found)"
+fi
+
 # === Summary ===
 section "Summary"
 info "All checks passed!"

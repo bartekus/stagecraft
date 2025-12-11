@@ -86,6 +86,30 @@ This directory contains all project documentation organized by purpose and lifec
 - `CONTRIBUTING_CURSOR.md` - AI-assisted development workflow
 - `COMMIT_MESSAGE_ANALYSIS.md` - Commit message format analysis
 - `STRATEGIC_DOC_MIGRATION.md` - Strategic document handling guide
+- `GOV_V1_TEST_REQUIREMENTS.md` - Test strategy standards for providers
+- `CI_PROVIDER_COVERAGE_ENFORCEMENT.md` - CI enforcement for provider coverage
+- `PR_TEMPLATE_PROVIDER_COVERAGE.md` - PR template for coverage completion
+
+#### Provider Coverage Governance
+
+Stagecraft enforces provider-level coverage governance to ensure all providers meet ≥80% coverage with deterministic, AATSE-aligned tests.
+
+**Quick Status:**
+```bash
+./scripts/provider-coverage-planner.sh
+```
+
+**Validation:**
+```bash
+./scripts/check-provider-governance.sh
+```
+
+**Status Tracking:**
+- `engine/status/PROVIDER_COVERAGE_STATUS.md` - Central dashboard for all provider coverage status
+- `engine/agents/PROVIDER_COVERAGE_AGENT.md` - Systematic coverage improvement workflow
+
+**Reference Model:**
+- `internal/providers/frontend/generic/COVERAGE_STRATEGY.md` - V1 Complete example
 
 #### Feature Mapping Check (GOV_V1_CORE Phase 4)
 

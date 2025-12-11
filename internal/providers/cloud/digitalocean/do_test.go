@@ -1156,3 +1156,26 @@ func TestDigitalOceanProvider_Apply_WaitForDropletError(t *testing.T) {
 		t.Errorf("CreateDroplet called %d times, want 1", len(mockClient.created))
 	}
 }
+
+func TestDigitalOceanProvider_Hosts_Stub(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	provider := NewDigitalOceanProvider()
+
+	opts := cloud.HostsOptions{
+		Environment: "prod",
+		Config: map[string]interface{}{
+			"token_env": "DO_TOKEN",
+		},
+	}
+
+	hosts, err := provider.Hosts(ctx, opts)
+	if err != nil {
+		t.Fatalf("Hosts() returned error: %v", err)
+	}
+
+	if len(hosts) != 0 {
+		t.Errorf("Hosts() returned %d hosts, want 0 (stub)", len(hosts))
+	}
+}

@@ -116,6 +116,11 @@ Git hooks are required for all development work. The pre-commit hook runs gofump
    - Verify again: `ls -la .git/hooks/pre-commit`
    - If installation fails: STOP and report error
 
+3. **Verify governance wrapper is present:**
+   - Expected: `.git/hooks/pre-commit` calls `scripts/gov-pre-commit.sh` (directly or via `.hooks/pre-commit-gov-snippet.sh`)
+   - If missing, AI MUST recommend re-running `./scripts/install-hooks.sh` or manually wiring the snippet from `.hooks/pre-commit-gov-snippet.sh`
+   - Governance checks can be bypassed with `SKIP_GOV_PRE_COMMIT=1 git commit` if needed
+
 ⸻
 
 # 🔀 Git Branch Workflow (Critical)
