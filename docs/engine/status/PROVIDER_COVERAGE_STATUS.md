@@ -73,16 +73,7 @@ Per `docs/governance/GOV_V1_TEST_REQUIREMENTS.md`:
 
 ## Next Actions
 
-### Priority 1: Complete PROVIDER_BACKEND_GENERIC
-
-Already exceeds 80% coverage but needs:
-
-1. Review existing tests for flakiness patterns
-2. Verify deterministic design (`-race`, `-count=20`)
-3. Update strategy to "V1 Complete"
-4. Create status document
-
-### Priority 3: Complete PROVIDER_NETWORK_TAILSCALE
+### Priority 1: Complete PROVIDER_NETWORK_TAILSCALE
 
 1. Extract deterministic helpers (if needed)
 2. Add missing error path tests
