@@ -44,8 +44,9 @@ type GenericProvider struct{}
 // Ensure GenericProvider implements FrontendProvider
 var _ frontend.FrontendProvider = (*GenericProvider)(nil)
 
-// scanStream scans a stream for a ready pattern and forwards output.
-// This is a pure function that can be unit tested in isolation.
+// scanStream implements the core ready-pattern detection logic.
+// This function is intentionally pure and synchronous so it can be tested
+// deterministically without goroutines, pipes, or OS-level behavior.
 // It scans lines from r, writes them to out, matches against re, and signals
 // via readyCh/errCh when the pattern is found or an error occurs.
 func scanStream(

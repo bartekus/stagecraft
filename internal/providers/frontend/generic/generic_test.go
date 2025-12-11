@@ -1187,3 +1187,114 @@ sleep 1
 		t.Errorf("unexpected error when ready pattern found on stderr: %v", err)
 	}
 }
+
+// Benchmarks for scanStream
+
+func BenchmarkScanStream_NoMatch(b *testing.B) {
+	// Benchmark scanning with no pattern match
+	inputStr := "Starting server...\nSome output...\nMore output...\n"
+	re := regexp.MustCompile("Local:.*http://localhost:5173")
+	discard := io.Discard
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		input := strings.NewReader(inputStr)
+		readyCh := make(chan bool, 1)
+		errCh := make(chan error, 1)
+		var readyOnce sync.Once
+		scanStream(input, discard, re, "stdout", &readyOnce, readyCh, errCh)
+		// Drain channels
+		select {
+		case <-readyCh:
+		default:
+		}
+		select {
+		case <-errCh:
+		default:
+		}
+	}
+}
+
+func BenchmarkScanStream_MatchEarly(b *testing.B) {
+	// Benchmark scanning with pattern match early in the stream
+	inputStr := "Local: http://localhost:5173\nSome output...\nMore output...\n"
+	re := regexp.MustCompile("Local:.*http://localhost:5173")
+	discard := io.Discard
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		input := strings.NewReader(inputStr)
+		readyCh := make(chan bool, 1)
+		errCh := make(chan error, 1)
+		var readyOnce sync.Once
+		scanStream(input, discard, re, "stdout", &readyOnce, readyCh, errCh)
+		// Drain channels
+		select {
+		case <-readyCh:
+		default:
+		}
+		select {
+		case <-errCh:
+		default:
+		}
+	}
+}
+
+func BenchmarkScanStream_MatchLate(b *testing.B) {
+	// Benchmark scanning with pattern match late in the stream
+	lines := make([]string, 100)
+	for i := 0; i < 99; i++ {
+		lines[i] = fmt.Sprintf("Line %d: Some output...\n", i)
+	}
+	lines[99] = "Local: http://localhost:5173\n"
+	inputStr := strings.Join(lines, "")
+	re := regexp.MustCompile("Local:.*http://localhost:5173")
+	discard := io.Discard
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		input := strings.NewReader(inputStr)
+		readyCh := make(chan bool, 1)
+		errCh := make(chan error, 1)
+		var readyOnce sync.Once
+		scanStream(input, discard, re, "stdout", &readyOnce, readyCh, errCh)
+		// Drain channels
+		select {
+		case <-readyCh:
+		default:
+		}
+		select {
+		case <-errCh:
+		default:
+		}
+	}
+}
+
+func BenchmarkScanStream_LargeInput(b *testing.B) {
+	// Benchmark scanning with large input (1000 lines)
+	lines := make([]string, 1000)
+	for i := 0; i < 1000; i++ {
+		lines[i] = fmt.Sprintf("Line %d: Some output with various content...\n", i)
+	}
+	inputStr := strings.Join(lines, "")
+	re := regexp.MustCompile("Local:.*http://localhost:5173")
+	discard := io.Discard
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		input := strings.NewReader(inputStr)
+		readyCh := make(chan bool, 1)
+		errCh := make(chan error, 1)
+		var readyOnce sync.Once
+		scanStream(input, discard, re, "stdout", &readyOnce, readyCh, errCh)
+		// Drain channels
+		select {
+		case <-readyCh:
+		default:
+		}
+		select {
+		case <-errCh:
+		default:
+		}
+	}
+}
