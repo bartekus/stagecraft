@@ -1,0 +1,125 @@
+# Provider Coverage Status
+
+**Last Updated**: 2025-01-XX  
+**Source**: `spec/features.yaml` and coverage strategy files
+
+This document tracks the coverage status of all provider implementations marked as `done` in `spec/features.yaml`.
+
+---
+
+## Coverage Status Summary
+
+| Feature ID | Status (spec) | Coverage Strategy | Coverage Status | Status Doc | Notes |
+|------------|---------------|-------------------|-----------------|------------|-------|
+| `PROVIDER_FRONTEND_GENERIC` | done | ✅ yes | V1 Complete | ✅ yes | **Reference model** - canonical example |
+| `PROVIDER_NETWORK_TAILSCALE` | done | ✅ yes | V1 Plan | ✅ yes | In progress (~68.2% → target ≥80%) |
+| `PROVIDER_BACKEND_ENCORE` | done | ✅ yes | V1 Plan | ❌ no | 90.6% coverage (exceeds target) - needs review |
+| `PROVIDER_BACKEND_GENERIC` | done | ✅ yes | V1 Plan | ❌ no | 84.1% coverage (exceeds target) - needs review |
+| `PROVIDER_CLOUD_DO` | done | ✅ yes | V1 Plan | ❌ no | 79.7% coverage (just below target) - needs improvement |
+
+---
+
+## Provider Details
+
+### ✅ PROVIDER_FRONTEND_GENERIC (V1 Complete)
+
+- **Coverage**: 87.7% (exceeds 80% target)
+- **Strategy**: `internal/providers/frontend/generic/COVERAGE_STRATEGY.md`
+- **Status Doc**: `docs/engine/status/PROVIDER_FRONTEND_GENERIC_COVERAGE_V1_COMPLETE.md`
+- **Reference**: Use as the canonical pattern for other providers
+- **Key Pattern**: Extracted `scanStream()` pure helper, deterministic unit tests, no flaky patterns
+
+### 🔄 PROVIDER_NETWORK_TAILSCALE (V1 Plan)
+
+- **Current Coverage**: ~68.2%
+- **Target Coverage**: ≥80%
+- **Strategy**: `internal/providers/network/tailscale/COVERAGE_STRATEGY.md`
+- **Status Doc**: `docs/engine/status/PROVIDER_NETWORK_TAILSCALE_COVERAGE_PLAN.md`
+- **Next Steps**: Extract deterministic helpers, add error path tests, remove any flaky patterns
+
+### 🔄 PROVIDER_BACKEND_ENCORE (V1 Plan)
+
+- **Current Coverage**: 90.6% (exceeds 80% target) ✅
+- **Target Coverage**: ≥80%
+- **Strategy**: `internal/providers/backend/encorets/COVERAGE_STRATEGY.md`
+- **Status Doc**: Missing (will be created when marked V1 Complete)
+- **Next Steps**: Review existing tests for flakiness patterns, verify deterministic design, update to V1 Complete
+
+### 🔄 PROVIDER_BACKEND_GENERIC (V1 Plan)
+
+- **Current Coverage**: 84.1% (exceeds 80% target) ✅
+- **Target Coverage**: ≥80%
+- **Strategy**: `internal/providers/backend/generic/COVERAGE_STRATEGY.md`
+- **Status Doc**: Missing (will be created when marked V1 Complete)
+- **Next Steps**: Review existing tests for flakiness patterns, verify deterministic design, update to V1 Complete
+
+### 🔄 PROVIDER_CLOUD_DO (V1 Plan)
+
+- **Current Coverage**: 79.7% (just below 80% target)
+- **Target Coverage**: ≥80%
+- **Strategy**: `internal/providers/cloud/digitalocean/COVERAGE_STRATEGY.md`
+- **Status Doc**: Missing (will be created when marked V1 Complete)
+- **Next Steps**: Add missing error path tests to reach ≥80%, review for flakiness, update to V1 Complete
+
+---
+
+## Governance Requirements
+
+Per `docs/governance/GOV_V1_TEST_REQUIREMENTS.md`:
+
+- **All providers marked `done`** MUST have a `COVERAGE_STRATEGY.md` file
+- **Providers claiming "V1 Complete"** MUST have a corresponding status document
+- **Coverage target**: ≥80% for provider implementations
+- **Test quality**: Deterministic, no flakiness, AATSE-aligned
+
+---
+
+## Next Actions
+
+### Priority 1: Complete PROVIDER_CLOUD_DO (Closest to Target)
+
+1. Add missing error path tests to reach ≥80%
+2. Review for flakiness patterns
+3. Verify deterministic design
+4. Update strategy to "V1 Complete"
+5. Create `PROVIDER_CLOUD_DO_COVERAGE_V1_COMPLETE.md`
+
+### Priority 2: Complete PROVIDER_BACKEND_ENCORE and PROVIDER_BACKEND_GENERIC
+
+Both already exceed 80% coverage but need:
+
+1. Review existing tests for flakiness patterns
+2. Verify deterministic design (`-race`, `-count=20`)
+3. Update strategies to "V1 Complete"
+4. Create status documents
+
+### Priority 3: Complete PROVIDER_NETWORK_TAILSCALE
+
+1. Extract deterministic helpers (if needed)
+2. Add missing error path tests
+3. Verify coverage ≥80%
+4. Update strategy to "V1 Complete"
+5. Create `PROVIDER_NETWORK_TAILSCALE_COVERAGE_V1_COMPLETE.md`
+
+### Workflow
+
+Follow `docs/engine/agents/PROVIDER_COVERAGE_AGENT.md` workflow to systematically bring each provider to V1 Complete status.
+
+---
+
+## Validation
+
+Run provider governance checks:
+
+```bash
+./scripts/check-provider-governance.sh
+```
+
+This will verify:
+- Coverage strategy files exist for all `done` providers
+- Status documents exist when "V1 Complete" is claimed
+- Feature IDs in strategies match `spec/features.yaml`
+
+---
+
+**Note**: This document is manually maintained. Update when provider coverage status changes.

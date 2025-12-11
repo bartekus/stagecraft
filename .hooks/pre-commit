@@ -306,4 +306,15 @@ EOF
     fi
 fi
 
+# === Governance checks (optional but recommended) ===
+# Source: .hooks/pre-commit-gov-snippet.sh
+# Escape hatch: Set SKIP_GOV_PRE_COMMIT=1 to bypass
+if [ "${SKIP_GOV_PRE_COMMIT:-}" != "1" ] && [ -x "$PROJECT_ROOT/scripts/gov-pre-commit.sh" ]; then
+    if ! bash "$PROJECT_ROOT/scripts/gov-pre-commit.sh"; then
+        error "Governance pre-commit checks failed"
+        error "Fix the issues above, or skip with: SKIP_GOV_PRE_COMMIT=1 git commit"
+        exit 1
+    fi
+fi
+
 info "Pre-commit checks passed"

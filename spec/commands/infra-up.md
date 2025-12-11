@@ -7,11 +7,11 @@ inputs:
   flags: []
 outputs:
   exit_codes:
-    "0": "All hosts created and bootstrap succeeded"
-    "10": "Some hosts failed bootstrap (partial failure)"
-    "1": "Config error"
-    "2": "CloudProvider failure"
-    "3": "Global bootstrap error"
+    success: 0
+    partial_failure: 10
+    config_error: 1
+    cloud_provider_failure: 2
+    global_bootstrap_error: 3
 ---
 
 # CLI_INFRA_UP – Infrastructure Up
