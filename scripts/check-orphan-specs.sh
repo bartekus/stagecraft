@@ -47,6 +47,11 @@ while IFS= read -r -d '' SPEC_FILE; do
         continue
     fi
     
+    # Skip ADR files (Architecture Decision Records) - they are not feature specs
+    if [[ "$REL_PATH" == adr/* ]]; then
+        continue
+    fi
+    
     # Check if this spec path is referenced in features.yaml
     if ! echo "$SPEC_PATHS" | grep -q "^${REL_PATH}$"; then
         echo "❌ Orphan spec file: ${SPEC_FILE}"
