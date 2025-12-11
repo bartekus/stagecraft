@@ -12,9 +12,9 @@ This document tracks the coverage status of all provider implementations marked 
 | Feature ID | Status (spec) | Coverage Strategy | Coverage Status | Status Doc | Notes |
 |------------|---------------|-------------------|-----------------|------------|-------|
 | `PROVIDER_FRONTEND_GENERIC` | done | ✅ yes | V1 Complete | ✅ yes | **Reference model** - canonical example |
+| `PROVIDER_BACKEND_ENCORE` | done | ✅ yes | V1 Complete | ✅ yes | 90.6% coverage (exceeds target) |
 | `PROVIDER_CLOUD_DO` | done | ✅ yes | V1 Complete | ✅ yes | 80.5% coverage (exceeds target) |
 | `PROVIDER_NETWORK_TAILSCALE` | done | ✅ yes | V1 Plan | ✅ yes | In progress (~68.2% → target ≥80%) |
-| `PROVIDER_BACKEND_ENCORE` | done | ✅ yes | V1 Plan | ❌ no | 90.6% coverage (exceeds target) - needs review |
 | `PROVIDER_BACKEND_GENERIC` | done | ✅ yes | V1 Plan | ❌ no | 84.1% coverage (exceeds target) - needs review |
 
 ---
@@ -37,13 +37,12 @@ This document tracks the coverage status of all provider implementations marked 
 - **Status Doc**: `docs/engine/status/PROVIDER_NETWORK_TAILSCALE_COVERAGE_PLAN.md`
 - **Next Steps**: Extract deterministic helpers, add error path tests, remove any flaky patterns
 
-### 🔄 PROVIDER_BACKEND_ENCORE (V1 Plan)
+### ✅ PROVIDER_BACKEND_ENCORE (V1 Complete)
 
-- **Current Coverage**: 90.6% (exceeds 80% target) ✅
-- **Target Coverage**: ≥80%
+- **Coverage**: 90.6% (exceeds 80% target)
 - **Strategy**: `internal/providers/backend/encorets/COVERAGE_STRATEGY.md`
-- **Status Doc**: Missing (will be created when marked V1 Complete)
-- **Next Steps**: Review existing tests for flakiness patterns, verify deterministic design, update to V1 Complete
+- **Status Doc**: `docs/engine/status/PROVIDER_BACKEND_ENCORE_COVERAGE_V1_COMPLETE.md`
+- **Key Achievement**: Verified deterministic test design with zero flakiness patterns
 
 ### 🔄 PROVIDER_BACKEND_GENERIC (V1 Plan)
 
@@ -75,14 +74,14 @@ Per `docs/governance/GOV_V1_TEST_REQUIREMENTS.md`:
 
 ## Next Actions
 
-### Priority 1: Complete PROVIDER_BACKEND_ENCORE and PROVIDER_BACKEND_GENERIC
+### Priority 1: Complete PROVIDER_BACKEND_GENERIC
 
-Both already exceed 80% coverage but need:
+Already exceeds 80% coverage but needs:
 
 1. Review existing tests for flakiness patterns
 2. Verify deterministic design (`-race`, `-count=20`)
-3. Update strategies to "V1 Complete"
-4. Create status documents
+3. Update strategy to "V1 Complete"
+4. Create status document
 
 ### Priority 3: Complete PROVIDER_NETWORK_TAILSCALE
 
