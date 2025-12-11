@@ -28,9 +28,11 @@ Tests SHOULD focus on:
 
 ## ✔️ V1 Coverage Status - Plan
 
-**Current Coverage (from recent run): ~68.2 percent**
+**Current Coverage (from recent run): 71.3 percent**
 
 Target for v1: **≥ 80 percent** coverage.
+
+**Slice 1 complete**: Extracted 4 pure helper functions and added comprehensive unit tests.
 
 Initial coverage is focused on:
 

@@ -982,3 +982,220 @@ func containsMiddle(s, substr string) bool {
 	}
 	return false
 }
+
+func TestBuildTailscaleUpCommand(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		authKey  string
+		hostname string
+		tags     []string
+		want     string
+	}{
+		{
+			name:     "single tag",
+			authKey:  "tskey-auth-123",
+			hostname: "app-1",
+			tags:     []string{"tag:web"},
+			want:     "tailscale up --authkey=tskey-auth-123 --hostname=app-1 --advertise-tags=tag:web",
+		},
+		{
+			name:     "multiple tags",
+			authKey:  "tskey-auth-123",
+			hostname: "app-1",
+			tags:     []string{"tag:web", "tag:prod"},
+			want:     "tailscale up --authkey=tskey-auth-123 --hostname=app-1 --advertise-tags=tag:web,tag:prod",
+		},
+		{
+			name:     "no tags",
+			authKey:  "tskey-auth-123",
+			hostname: "app-1",
+			tags:     []string{},
+			want:     "tailscale up --authkey=tskey-auth-123 --hostname=app-1 --advertise-tags=",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := buildTailscaleUpCommand(tt.authKey, tt.hostname, tt.tags)
+			if got != tt.want {
+				t.Errorf("buildTailscaleUpCommand() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseOSRelease(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		content string
+		want    string
+	}{
+		{
+			name: "debian",
+			content: `PRETTY_NAME="Debian GNU/Linux 11 (bullseye)"
+NAME="Debian GNU/Linux"
+ID=debian
+ID_LIKE=debian`,
+			want: "debian",
+		},
+		{
+			name: "ubuntu",
+			content: `NAME="Ubuntu"
+VERSION="22.04.3 LTS (Jammy Jellyfish)"
+ID=ubuntu
+ID_LIKE=debian`,
+			want: "ubuntu",
+		},
+		{
+			name:    "quoted ID",
+			content: `ID="debian"`,
+			want:    "debian",
+		},
+		{
+			name:    "no ID field",
+			content: `PRETTY_NAME="Some OS"`,
+			want:    "",
+		},
+		{
+			name:    "empty content",
+			content: "",
+			want:    "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := parseOSRelease(tt.content)
+			if got != tt.want {
+				t.Errorf("parseOSRelease() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidateTailnetDomain(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		domain  string
+		wantErr bool
+	}{
+		{
+			name:    "valid domain",
+			domain:  "example.ts.net",
+			wantErr: false,
+		},
+		{
+			name:    "valid subdomain",
+			domain:  "sub.example.ts.net",
+			wantErr: false,
+		},
+		{
+			name:    "empty domain",
+			domain:  "",
+			wantErr: true,
+		},
+		{
+			name:    "no dot",
+			domain:  "example",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateTailnetDomain(tt.domain)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("validateTailnetDomain() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestBuildNodeFQDN(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		host   string
+		domain string
+		want   string
+	}{
+		{
+			name:   "simple host",
+			host:   "app-1",
+			domain: "example.ts.net",
+			want:   "app-1.example.ts.net",
+		},
+		{
+			name:   "host with dash",
+			host:   "db-primary",
+			domain: "example.ts.net",
+			want:   "db-primary.example.ts.net",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := buildNodeFQDN(tt.host, tt.domain)
+			if got != tt.want {
+				t.Errorf("buildNodeFQDN() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseStatus_InvalidJSON(t *testing.T) {
+	t.Parallel()
+
+	_, err := parseStatus("not json")
+	if err == nil {
+		t.Error("parseStatus() should return error for invalid JSON")
+	}
+}
+
+func TestParseStatus_EmptyJSON(t *testing.T) {
+	t.Parallel()
+
+	// Empty JSON will unmarshal successfully but return empty struct
+	status, err := parseStatus("{}")
+	if err != nil {
+		t.Fatalf("parseStatus() with empty JSON returned error: %v", err)
+	}
+	if status == nil {
+		t.Fatal("parseStatus() returned nil status")
+	}
+	// Verify it's actually empty
+	if status.TailnetName != "" {
+		t.Errorf("parseStatus() with empty JSON: TailnetName = %q, want empty", status.TailnetName)
+	}
+}
+
+func TestParseStatus_ValidStatus(t *testing.T) {
+	t.Parallel()
+
+	jsonData := `{
+		"TailnetName": "example.ts.net",
+		"Self": {
+			"Online": true,
+			"TailscaleIPs": ["100.64.0.1"],
+			"Tags": ["tag:web"]
+		}
+	}`
+
+	status, err := parseStatus(jsonData)
+	if err != nil {
+		t.Fatalf("parseStatus() returned error: %v", err)
+	}
+	if status.TailnetName != "example.ts.net" {
+		t.Errorf("parseStatus() TailnetName = %q, want %q", status.TailnetName, "example.ts.net")
+	}
+	if len(status.Self.Tags) != 1 || status.Self.Tags[0] != "tag:web" {
+		t.Errorf("parseStatus() Self.Tags = %v, want [tag:web]", status.Self.Tags)
+	}
+}

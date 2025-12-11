@@ -15,7 +15,7 @@ This document tracks the coverage status of all provider implementations marked 
 | `PROVIDER_BACKEND_ENCORE` | done | ✅ yes | V1 Complete | ✅ yes | 90.6% coverage (exceeds target) |
 | `PROVIDER_BACKEND_GENERIC` | done | ✅ yes | V1 Complete | ✅ yes | 84.1% coverage (exceeds target) |
 | `PROVIDER_CLOUD_DO` | done | ✅ yes | V1 Complete | ✅ yes | 80.5% coverage (exceeds target) |
-| `PROVIDER_NETWORK_TAILSCALE` | done | ✅ yes | V1 Plan | ✅ yes | In progress (~68.2% → target ≥80%) |
+| `PROVIDER_NETWORK_TAILSCALE` | done | ✅ yes | V1 Plan | ✅ yes | In progress (71.3% → target ≥80%) |
 
 ---
 
@@ -31,11 +31,12 @@ This document tracks the coverage status of all provider implementations marked 
 
 ### 🔄 PROVIDER_NETWORK_TAILSCALE (V1 Plan)
 
-- **Current Coverage**: ~68.2%
+- **Current Coverage**: 71.3%
 - **Target Coverage**: ≥80%
 - **Strategy**: `internal/providers/network/tailscale/COVERAGE_STRATEGY.md`
 - **Status Doc**: `docs/engine/status/PROVIDER_NETWORK_TAILSCALE_COVERAGE_PLAN.md`
-- **Next Steps**: Extract deterministic helpers, add error path tests, remove any flaky patterns
+- **Slice 1 Complete**: Extracted 4 pure helper functions (buildTailscaleUpCommand, parseOSRelease, validateTailnetDomain, buildNodeFQDN) and added comprehensive unit tests
+- **Next Steps**: Continue with additional slices to reach ≥80% coverage
 
 ### ✅ PROVIDER_BACKEND_ENCORE (V1 Complete)
 

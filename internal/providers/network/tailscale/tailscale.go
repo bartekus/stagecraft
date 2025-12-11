@@ -149,9 +149,7 @@ func (p *TailscaleProvider) EnsureJoined(ctx context.Context, opts network.Ensur
 	}
 
 	// Join to tailnet
-	tagArgs := strings.Join(tags, ",")
-	joinCmd := fmt.Sprintf("tailscale up --authkey=%s --hostname=%s --advertise-tags=%s",
-		authKey, opts.Host, tagArgs)
+	joinCmd := buildTailscaleUpCommand(authKey, opts.Host, tags)
 
 	_, stderr, err := commander.Run(ctx, opts.Host, "sh", "-c", joinCmd)
 	if err != nil {
@@ -198,11 +196,54 @@ func (p *TailscaleProvider) NodeFQDN(host string) (string, error) {
 		return "", fmt.Errorf("tailscale provider: %w: config not available (call EnsureInstalled or EnsureJoined first)", ErrConfigInvalid)
 	}
 
-	if p.config.TailnetDomain == "" {
-		return "", fmt.Errorf("tailscale provider: %w: tailnet_domain is required", ErrConfigInvalid)
+	if err := validateTailnetDomain(p.config.TailnetDomain); err != nil {
+		return "", err
 	}
+	return buildNodeFQDN(host, p.config.TailnetDomain), nil
+}
 
-	return fmt.Sprintf("%s.%s", host, p.config.TailnetDomain), nil
+// buildTailscaleUpCommand builds the Tailscale "up" command string.
+// This is a pure function that takes explicit inputs and returns a command string.
+func buildTailscaleUpCommand(authKey, hostname string, tags []string) string {
+	tagArgs := strings.Join(tags, ",")
+	return fmt.Sprintf("tailscale up --authkey=%s --hostname=%s --advertise-tags=%s",
+		authKey, hostname, tagArgs)
+}
+
+// parseOSRelease parses the ID field from /etc/os-release content.
+// Returns the distribution ID (e.g., "debian", "ubuntu") or empty string if not found.
+// This is a pure function that operates on string content only.
+func parseOSRelease(osReleaseContent string) string {
+	lines := strings.Split(osReleaseContent, "\n")
+	for _, line := range lines {
+		if !strings.HasPrefix(line, "ID=") {
+			continue
+		}
+		id := strings.TrimPrefix(line, "ID=")
+		id = strings.Trim(id, `"`)
+		id = strings.ToLower(id)
+		return id
+	}
+	return ""
+}
+
+// validateTailnetDomain validates that a Tailnet domain is non-empty and has valid format.
+// Returns an error if the domain is invalid.
+func validateTailnetDomain(domain string) error {
+	if domain == "" {
+		return fmt.Errorf("tailscale provider: %w: tailnet_domain is required", ErrConfigInvalid)
+	}
+	// Basic validation: should contain at least one dot
+	if !strings.Contains(domain, ".") {
+		return fmt.Errorf("tailscale provider: %w: tailnet_domain %q must contain a dot", ErrConfigInvalid, domain)
+	}
+	return nil
+}
+
+// buildNodeFQDN builds the FQDN for a Tailscale node.
+// This is a pure function: host + domain = FQDN.
+func buildNodeFQDN(host, domain string) string {
+	return fmt.Sprintf("%s.%s", host, domain)
 }
 
 // computeTags computes the union of default tags, role tags, and provided tags.
@@ -280,17 +321,11 @@ func checkOSCompatibility(ctx context.Context, commander Commander, host string)
 	}
 
 	// Parse os-release for ID
-	lines := strings.Split(osRelease, "\n")
-	for _, line := range lines {
-		if !strings.HasPrefix(line, "ID=") {
-			continue
-		}
-		id := strings.TrimPrefix(line, "ID=")
-		id = strings.Trim(id, `"`)
-		id = strings.ToLower(id)
-		if id == "debian" || id == "ubuntu" {
-			return nil
-		}
+	id := parseOSRelease(osRelease)
+	if id == "debian" || id == "ubuntu" {
+		return nil
+	}
+	if id != "" {
 		return fmt.Errorf("tailscale provider: %w: detected distribution %q, v1 supports Debian/Ubuntu only",
 			ErrUnsupportedOS, id)
 	}
