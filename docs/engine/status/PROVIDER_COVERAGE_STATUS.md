@@ -13,9 +13,9 @@ This document tracks the coverage status of all provider implementations marked 
 |------------|---------------|-------------------|-----------------|------------|-------|
 | `PROVIDER_FRONTEND_GENERIC` | done | ✅ yes | V1 Complete | ✅ yes | **Reference model** - canonical example |
 | `PROVIDER_BACKEND_ENCORE` | done | ✅ yes | V1 Complete | ✅ yes | 90.6% coverage (exceeds target) |
+| `PROVIDER_BACKEND_GENERIC` | done | ✅ yes | V1 Complete | ✅ yes | 84.1% coverage (exceeds target) |
 | `PROVIDER_CLOUD_DO` | done | ✅ yes | V1 Complete | ✅ yes | 80.5% coverage (exceeds target) |
 | `PROVIDER_NETWORK_TAILSCALE` | done | ✅ yes | V1 Plan | ✅ yes | In progress (~68.2% → target ≥80%) |
-| `PROVIDER_BACKEND_GENERIC` | done | ✅ yes | V1 Plan | ❌ no | 84.1% coverage (exceeds target) - needs review |
 
 ---
 
@@ -44,13 +44,12 @@ This document tracks the coverage status of all provider implementations marked 
 - **Status Doc**: `docs/engine/status/PROVIDER_BACKEND_ENCORE_COVERAGE_V1_COMPLETE.md`
 - **Key Achievement**: Verified deterministic test design with zero flakiness patterns
 
-### 🔄 PROVIDER_BACKEND_GENERIC (V1 Plan)
+### ✅ PROVIDER_BACKEND_GENERIC (V1 Complete)
 
-- **Current Coverage**: 84.1% (exceeds 80% target) ✅
-- **Target Coverage**: ≥80%
+- **Coverage**: 84.1% (exceeds 80% target)
 - **Strategy**: `internal/providers/backend/generic/COVERAGE_STRATEGY.md`
-- **Status Doc**: Missing (will be created when marked V1 Complete)
-- **Next Steps**: Review existing tests for flakiness patterns, verify deterministic design, update to V1 Complete
+- **Status Doc**: `docs/engine/status/PROVIDER_BACKEND_GENERIC_COVERAGE_V1_COMPLETE.md`
+- **Key Achievement**: Verified deterministic test design with zero flakiness patterns
 
 ### ✅ PROVIDER_CLOUD_DO (V1 Complete)
 

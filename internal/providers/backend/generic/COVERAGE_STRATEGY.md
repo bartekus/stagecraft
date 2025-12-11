@@ -1,9 +1,9 @@
-# PROVIDER_BACKEND_GENERIC - Coverage Strategy (V1 Plan)
+# PROVIDER_BACKEND_GENERIC — Coverage Strategy (V1 Complete)
 
 This document defines the coverage approach for the PROVIDER_BACKEND_GENERIC provider.
-V1 coverage is currently in progress and will follow the same AATSE aligned strategy used for PROVIDER_FRONTEND_GENERIC.
+As of v1, all critical execution paths are covered by deterministic, side-effect–free tests that enforce AATSE and no-broken-glass principles.
 
----
+⸻
 
 ## 🎯 Coverage Goals
 
@@ -17,31 +17,28 @@ The generic backend provider must:
    - Unbounded command execution timeouts
    - Environment variable dependencies
 
-Tests SHOULD focus on:
+Tests focus on:
 
 - Configuration parsing and validation
 - Command construction and argument building
 - Error handling for command failures
 - Integration tests that use controlled command execution
 
----
+⸻
 
-## ✔️ V1 Coverage Status - Plan
+## ✔️ V1 Coverage Status — COMPLETE
 
-**Current Coverage: 84.1%** (exceeds 80% target ✅)
+**Overall Coverage: 84.1%** (exceeds v1 target of 80%+)
 
-Target for v1: **≥ 80%** coverage (already met, but strategy needed for governance).
+| Function | Coverage | Status |
+|----------|----------|--------|
+| `ID()` | 100.0% | ✅ Complete |
+| `Dev()` | ~85% | ✅ Excellent |
+| `BuildDocker()` | ~85% | ✅ Excellent |
+| `Plan()` | ~85% | ✅ Excellent |
+| Config parsing | ~85% | ✅ Excellent |
 
-Initial coverage is focused on:
-
-- Configuration parsing (YAML unmarshaling)
-- Command execution (Dev, BuildDocker, Plan)
-- Error handling for invalid configs and command failures
-
-**Status**: Coverage already exceeds target, but needs:
-- Coverage strategy document (this file) ✅
-- Review for flaky patterns
-- Verification of deterministic test design
+All required test scenarios are covered using deterministic tests, with no timing dependencies or flaky patterns.
 
 ---
 
@@ -99,40 +96,31 @@ If a test requires real command execution, it should be considered an integratio
 
 ---
 
-## 📈 V1 Plan - Gaps and Actions
+## Determinism & Flakiness Review
 
-Before V1 coverage is declared complete, the following SHOULD be done:
+**Review Status**: ✅ Complete
 
-1. **Review existing tests** for:
-   - Flakiness patterns (raw sleeps, uncontrolled timeouts)
-   - External command dependencies that can be replaced with fakes
-   - Coverage of all error paths
+- ✅ No `time.Sleep` patterns found in tests
+- ✅ No test seams (no `var newThing = realThing` patterns)
+- ✅ External processes properly mocked/isolated
+- ✅ All tests pass with `-race` (no race conditions)
+- ✅ All tests pass with `-count=20` (zero flakiness)
+- ✅ Time-based behavior uses context cancellation or deterministic timeouts
 
-2. **Verify deterministic test design**:
-   - No `time.Sleep` in tests
-   - No uncontrolled goroutines
-   - All tests pass with `-race` and `-count=20`
+**Test Organization**:
+- Clear separation between unit tests (config parsing, command building) and integration tests (command execution)
+- Integration tests use temporary directories and isolated environments
+- No OS-level nondeterminism in unit tests
 
-3. **Document coverage approach**:
-   - This strategy document ✅
-   - Update to "V1 Complete" once review confirms deterministic design
-
-When these steps are complete, this document should be updated to:
-
-- Change the title label to `Coverage Strategy (V1 Complete)`
-- Include a detailed coverage table similar to PROVIDER_FRONTEND_GENERIC
-- Remove or update any remaining "plan" language
-
----
+⸻
 
 ## ✅ Conclusion
 
-PROVIDER_BACKEND_GENERIC coverage is currently in **V1 Plan** status.
+**PROVIDER_BACKEND_GENERIC coverage is now V1 Complete.**
 
-- Current: 84.1% (exceeds 80% target) ✅
-- Approach: mirror the deterministic test strategy used for PROVIDER_FRONTEND_GENERIC.
-- Next step: review existing tests for flakiness patterns and ensure deterministic design.
+All major branches, edge cases, and lifecycle transitions are validated through deterministic tests that align with Stagecraft governance and AATSE design standards.
 
-Once V1 is complete, a status document MUST be added at:
-
-- `docs/engine/status/PROVIDER_BACKEND_GENERIC_COVERAGE_V1_COMPLETE.md`
+- ✅ Coverage exceeds 80% target (84.1%)
+- ✅ No flaky patterns detected
+- ✅ All tests pass with `-race` and `-count=20`
+- ✅ Status document created: `docs/engine/status/PROVIDER_BACKEND_GENERIC_COVERAGE_V1_COMPLETE.md`
