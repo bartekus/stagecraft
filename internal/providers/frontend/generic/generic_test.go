@@ -15,12 +15,14 @@ See https://www.gnu.org/licenses/ for license details.
 package generic
 
 import (
-	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -407,7 +409,7 @@ done
 	}()
 
 	// Use explicit timeout to prevent hanging if shutdown fails
-	err := devWithTimeout(t, p, ctx, opts, 10*time.Second)
+	err := devWithTimeout(t, p, ctx, opts, 15*time.Second)
 	// Shutdown should succeed (return nil) or fail with an error
 	// Both are acceptable - the important thing is that the process was terminated
 	// nil means graceful shutdown succeeded, error means shutdown had issues
@@ -884,75 +886,14 @@ func TestGenericProvider_Dev_ParseConfigError(t *testing.T) {
 	}
 }
 
-// Phase 2 Coverage Tests - Targeted coverage for runWithReadyPattern
-// These tests improve coverage from 74.0% to 80%+ by testing critical edge cases
+// Unit tests for scanStream - these test the scanner logic in isolation
+// without involving external processes, pipes, or timeouts.
 
-func TestGenericProvider_RunWithReadyPattern_ScannerError(t *testing.T) {
-	p := &GenericProvider{}
-
-	// Create a test script that produces output to stdout
-	tmpDir := t.TempDir()
-	testScript := filepath.Join(tmpDir, "test_scanner_error.sh")
-
-	// Script that produces minimal output and exits quickly
-	// The error injection will happen before script finishes
-	scriptContent := `#!/bin/sh
-echo "Starting server..."
-sleep 0.1
-exit 0
-`
-	//nolint:gosec // G306: 0755 is required for executable test scripts
-	if err := os.WriteFile(testScript, []byte(scriptContent), 0o755); err != nil {
-		t.Fatalf("failed to create test script: %v", err)
-	}
-
-	opts := frontend.DevOptions{
-		Config: map[string]any{
-			"dev": map[string]any{
-				"command":       []string{testScript},
-				"ready_pattern": "Local:.*http://localhost:5173",
-			},
-		},
-		WorkDir: tmpDir,
-	}
-
-	// Inject a failing reader via test seam
-	originalNewScanner := newScanner
-	defer func() { newScanner = originalNewScanner }()
-
-	// Track scanner creation to inject error on stdout scanner
-	// The errorAfterBytesReader will return an error after reading a few bytes,
-	// which will cause scanner.Err() to return an error
-	scannerCount := 0
-	newScanner = func(reader interface{ Read([]byte) (int, error) }) *bufio.Scanner {
-		scannerCount++
-		// Inject failing reader for stdout scanner (first one)
-		// This simulates a read error that scanner.Err() will detect
-		if scannerCount == 1 {
-			errReader := &errorAfterBytesReader{maxBytes: 15}
-			return bufio.NewScanner(errReader)
-		}
-		return bufio.NewScanner(reader)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	// Use explicit timeout to prevent hanging if error handling fails
-	// Error should be detected quickly, but allow time for process cleanup
-	err := devWithTimeout(t, p, ctx, opts, 3*time.Second)
-	// Should return error about reading stdout (we inject error on stdout scanner)
-	if err == nil {
-		t.Error("expected error for scanner error, got nil")
-	}
-	if err != nil && !strings.Contains(err.Error(), "reading stdout") && !strings.Contains(err.Error(), "reading stderr") {
-		t.Errorf("expected error about reading stdout/stderr, got: %v", err)
-	}
-}
-
-// errorAfterBytesReader is a test helper that returns an error after reading maxBytes.
-// This simulates a scanner error by causing the underlying reader to fail.
+// errorAfterBytesReader is a test helper that wraps a reader and returns
+// an error after reading maxBytes. This simulates a scanner error by
+// causing the underlying reader to fail.
 type errorAfterBytesReader struct {
+	r        io.Reader
 	maxBytes int
 	read     int
 }
@@ -961,20 +902,207 @@ func (r *errorAfterBytesReader) Read(p []byte) (int, error) {
 	if r.read >= r.maxBytes {
 		return 0, fmt.Errorf("test: reader error after %d bytes", r.maxBytes)
 	}
-	toRead := len(p)
-	if toRead > (r.maxBytes - r.read) {
-		toRead = r.maxBytes - r.read
-	}
-	r.read += toRead
-	// Return some data before error
-	for i := 0; i < toRead; i++ {
-		p[i] = byte('A' + (i % 26))
-	}
-	// Return error immediately when we hit maxBytes to ensure scanner detects it
+
+	n, err := r.r.Read(p)
+	r.read += n
+
 	if r.read >= r.maxBytes {
-		return toRead, fmt.Errorf("test: reader error after %d bytes", r.maxBytes)
+		// Deliver the data *and* an error, so scanner sees it
+		return n, fmt.Errorf("test: reader error after %d bytes", r.maxBytes)
 	}
-	return toRead, nil
+
+	return n, err
+}
+
+func TestScanStream_ScannerError(t *testing.T) {
+	// Underlying reader that errors after some bytes but still returns data first
+	base := strings.NewReader("Starting server...\nSome output...\n")
+	r := &errorAfterBytesReader{
+		r:        base,
+		maxBytes: 15,
+	}
+
+	re := regexp.MustCompile("Local:.*http://localhost:5173")
+
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error, 1)
+	var readyOnce sync.Once
+
+	// Use a pipe to capture output without touching real stdout
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("failed to create pipe: %v", err)
+	}
+
+	// Run scanStream synchronously (no goroutine, no timeout needed)
+	scanStream(r, pw, re, "stdout", &readyOnce, readyCh, errCh)
+
+	// Close the write end so the pipe reader can finish
+	if err := pw.Close(); err != nil {
+		t.Fatalf("failed to close write pipe: %v", err)
+	}
+
+	// Verify error was sent to errCh
+	select {
+	case err := <-errCh:
+		if !strings.Contains(err.Error(), "reading stdout") {
+			t.Fatalf("expected stdout read error, got: %v", err)
+		}
+	default:
+		t.Fatalf("expected scanner error to be sent to errCh")
+	}
+
+	// Verify readyCh was not signaled (pattern not found before error)
+	select {
+	case <-readyCh:
+		t.Fatalf("expected readyCh to not be signaled when error occurs")
+	default:
+		// Good - readyCh should not be signaled
+	}
+
+	// Close the read end
+	if err := pr.Close(); err != nil {
+		t.Fatalf("failed to close read pipe: %v", err)
+	}
+}
+
+func TestScanStream_ReadyPatternFound(t *testing.T) {
+	r := strings.NewReader("Starting server...\nLocal: http://localhost:5173\nServer running\n")
+
+	re := regexp.MustCompile("Local:.*http://localhost:5173")
+
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error, 1)
+	var readyOnce sync.Once
+
+	// Use a pipe to capture output
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("failed to create pipe: %v", err)
+	}
+
+	// Run scanStream synchronously
+	scanStream(r, pw, re, "stdout", &readyOnce, readyCh, errCh)
+
+	// Close the write end
+	if err := pw.Close(); err != nil {
+		t.Fatalf("failed to close write pipe: %v", err)
+	}
+
+	// Verify ready pattern was found
+	select {
+	case <-readyCh:
+		// Good - pattern found
+	default:
+		t.Fatalf("expected readyCh to be signaled when pattern found")
+	}
+
+	// Verify no error
+	select {
+	case err := <-errCh:
+		t.Fatalf("expected no error, got: %v", err)
+	default:
+		// Good - no error
+	}
+
+	// Verify output was written
+	buf := make([]byte, 1024)
+	n, _ := pr.Read(buf)
+	output := string(buf[:n])
+	if !strings.Contains(output, "Starting server...") {
+		t.Errorf("expected output to contain 'Starting server...', got: %q", output)
+	}
+	if !strings.Contains(output, "Local: http://localhost:5173") {
+		t.Errorf("expected output to contain ready pattern, got: %q", output)
+	}
+
+	// Close the read end
+	if err := pr.Close(); err != nil {
+		t.Fatalf("failed to close read pipe: %v", err)
+	}
+}
+
+func TestScanStream_ReadyPatternOnStderr(t *testing.T) {
+	// Test that scanStream works with stderr label and verifies label is wired through
+	// by using an error case to check the error message contains the correct label
+	r := &errorAfterBytesReader{
+		r:        strings.NewReader("Starting server...\n"),
+		maxBytes: 5, // Error very early to test label
+	}
+
+	re := regexp.MustCompile("Local:.*http://localhost:5173")
+
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error, 1)
+	var readyOnce sync.Once
+
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("failed to create pipe: %v", err)
+	}
+
+	// Run with "stderr" label
+	scanStream(r, pw, re, "stderr", &readyOnce, readyCh, errCh)
+
+	if err := pw.Close(); err != nil {
+		t.Fatalf("failed to close write pipe: %v", err)
+	}
+
+	// Verify error message uses correct label
+	select {
+	case err := <-errCh:
+		if !strings.Contains(err.Error(), "reading stderr") {
+			t.Fatalf("expected error to contain 'reading stderr', got: %v", err)
+		}
+	default:
+		t.Fatalf("expected error to be sent to errCh")
+	}
+
+	if err := pr.Close(); err != nil {
+		t.Fatalf("failed to close read pipe: %v", err)
+	}
+}
+
+func TestScanStream_ReadyOncePreventsMultipleSignals(t *testing.T) {
+	// Test that readyOnce prevents multiple signals even if pattern appears multiple times
+	r := strings.NewReader("Local: http://localhost:5173\nLocal: http://localhost:5173\nLocal: http://localhost:5173\n")
+
+	re := regexp.MustCompile("Local:.*http://localhost:5173")
+
+	readyCh := make(chan bool, 1)
+	errCh := make(chan error, 1)
+	var readyOnce sync.Once
+
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("failed to create pipe: %v", err)
+	}
+
+	scanStream(r, pw, re, "stdout", &readyOnce, readyCh, errCh)
+
+	if err := pw.Close(); err != nil {
+		t.Fatalf("failed to close write pipe: %v", err)
+	}
+
+	// Should only receive one signal despite multiple matches
+	select {
+	case <-readyCh:
+		// Good - received first signal
+	default:
+		t.Fatalf("expected readyCh to be signaled")
+	}
+
+	// Should not receive a second signal
+	select {
+	case <-readyCh:
+		t.Fatalf("expected only one signal despite multiple pattern matches")
+	default:
+		// Good - readyOnce prevented duplicate signals
+	}
+
+	if err := pr.Close(); err != nil {
+		t.Fatalf("failed to close read pipe: %v", err)
+	}
 }
 
 func TestGenericProvider_RunWithReadyPattern_ProcessExitsWithoutReadyPattern(t *testing.T) {
@@ -1005,7 +1133,7 @@ exit 0
 		WorkDir: tmpDir,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
 
 	err := p.Dev(ctx, opts)

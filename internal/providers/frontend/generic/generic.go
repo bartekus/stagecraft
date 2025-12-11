@@ -19,6 +19,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"regexp"
@@ -43,11 +44,35 @@ type GenericProvider struct{}
 // Ensure GenericProvider implements FrontendProvider
 var _ frontend.FrontendProvider = (*GenericProvider)(nil)
 
-// newScanner is a test seam for injecting scanner errors in tests.
-// In production, this always returns bufio.NewScanner(reader).
-// Tests can override this to inject failing readers.
-var newScanner = func(reader interface{ Read([]byte) (int, error) }) *bufio.Scanner {
-	return bufio.NewScanner(reader)
+// scanStream scans a stream for a ready pattern and forwards output.
+// This is a pure function that can be unit tested in isolation.
+// It scans lines from r, writes them to out, matches against re, and signals
+// via readyCh/errCh when the pattern is found or an error occurs.
+func scanStream(
+	r io.Reader,
+	out io.Writer,
+	re *regexp.Regexp,
+	label string,
+	readyOnce *sync.Once,
+	readyCh chan<- bool,
+	errCh chan<- error,
+) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		line := scanner.Text()
+		_, _ = fmt.Fprintln(out, line)
+		if re.MatchString(line) {
+			readyOnce.Do(func() {
+				select {
+				case readyCh <- true:
+				default:
+				}
+			})
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		errCh <- fmt.Errorf("reading %s: %w", label, err)
+	}
 }
 
 // ID returns the provider identifier.
@@ -158,44 +183,10 @@ func (p *GenericProvider) runWithReadyPattern(ctx context.Context, cmd *exec.Cmd
 	// Monitor stdout
 	// TODO: Consider using structured logging instead of direct os.Stdout writes
 	// per Agent.md guidance. For v1, direct streaming is acceptable for dev-only provider.
-	go func() {
-		scanner := newScanner(stdoutPipe)
-		for scanner.Scan() {
-			line := scanner.Text()
-			_, _ = os.Stdout.WriteString(line + "\n")
-			if re.MatchString(line) {
-				readyOnce.Do(func() {
-					select {
-					case readyCh <- true:
-					default:
-					}
-				})
-			}
-		}
-		if err := scanner.Err(); err != nil {
-			errCh <- fmt.Errorf("reading stdout: %w", err)
-		}
-	}()
+	go scanStream(stdoutPipe, os.Stdout, re, "stdout", &readyOnce, readyCh, errCh)
 
 	// Monitor stderr
-	go func() {
-		scanner := newScanner(stderrPipe)
-		for scanner.Scan() {
-			line := scanner.Text()
-			_, _ = os.Stderr.WriteString(line + "\n")
-			if re.MatchString(line) {
-				readyOnce.Do(func() {
-					select {
-					case readyCh <- true:
-					default:
-					}
-				})
-			}
-		}
-		if err := scanner.Err(); err != nil {
-			errCh <- fmt.Errorf("reading stderr: %w", err)
-		}
-	}()
+	go scanStream(stderrPipe, os.Stderr, re, "stderr", &readyOnce, readyCh, errCh)
 
 	// Wait for either ready pattern, context cancellation, or process exit
 	doneCh := make(chan error, 1)
