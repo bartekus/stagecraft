@@ -1,14 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-/*
-Feature: DEV_PROCESS_MGMT
-Specs: spec/dev/process-mgmt.md
-Docs:
-  - docs/engine/analysis/DEV_PROCESS_MGMT.md
-  - docs/engine/outlines/DEV_PROCESS_MGMT_IMPLEMENTATION_OUTLINE.md
-*/
-
 // Package process contains dev process lifecycle management for CLI_DEV.
+//
+// Feature: DEV_PROCESS_MGMT
+// Spec: spec/dev/process-mgmt.md
 package process
 
 import (

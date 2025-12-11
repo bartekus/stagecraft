@@ -40,6 +40,7 @@ func TestNewDevCommand_HasExpectedFlags(t *testing.T) {
 			f := flags.Lookup(tt.flagName)
 			if f == nil {
 				t.Fatalf("expected flag %q to be defined", tt.flagName)
+				return
 			}
 			if f.Value.Type() != tt.expectedType {
 				t.Errorf("flag %q type = %q, want %q", tt.flagName, f.Value.Type(), tt.expectedType)

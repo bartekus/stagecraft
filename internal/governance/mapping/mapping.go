@@ -419,7 +419,12 @@ func analyzeWithFeatures(root string, metas []featureMeta) (Report, error) {
 	}
 
 	// Detect orphan specs: any spec file that is not the canonical spec of any feature.
+	// Exclude ADR files (Architecture Decision Records) as they are not feature specs.
 	for specPath := range specFiles {
+		// Skip ADR files - they are architectural decisions, not feature specs.
+		if strings.HasPrefix(specPath, "spec/adr/") {
+			continue
+		}
 		if _, ok := specOwner[specPath]; !ok {
 			violations = append(violations, Violation{
 				Code:    CodeOrphanSpec,

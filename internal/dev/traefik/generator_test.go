@@ -36,12 +36,15 @@ func TestGenerator_GenerateConfig_MinimalHTTP(t *testing.T) {
 
 	if out == nil {
 		t.Fatalf("GenerateConfig() = nil, want non-nil *Config")
+		return
 	}
 	if out.Static == nil {
 		t.Fatalf("GenerateConfig() Static = nil, want non-nil")
+		return
 	}
 	if out.Dynamic == nil || out.Dynamic.HTTP == nil {
 		t.Fatalf("GenerateConfig() Dynamic.HTTP = nil, want non-nil")
+		return
 	}
 
 	httpCfg := out.Dynamic.HTTP

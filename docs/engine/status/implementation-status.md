@@ -38,7 +38,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | CLI_DEV_BASIC | Basic stagecraft dev command that delegates to backend provider | done | bart | [dev-basic.md](../../../spec/commands/dev-basic.md) | [dev_test.go](../../../internal/cli/commands/dev_test.go), [dev_smoke_test.go](../../../test/e2e/dev_smoke_test.go) |
 | CLI_GLOBAL_FLAGS | Global flags (--env, --config, --verbose, --dry-run) | done | bart | [global-flags.md](../../../spec/core/global-flags.md) | [root_test.go](../../../internal/cli/root_test.go) |
 | CLI_INFRA_DOWN | stagecraft infra down command | todo | bart | [infra-down.md](../../../spec/commands/infra-down.md) | [infra_down_test.go](../../../internal/cli/commands/infra_down_test.go) |
-| CLI_INFRA_UP | stagecraft infra up command | todo | bart | [infra-up.md](../../../spec/commands/infra-up.md) | [infra_up_test.go](../../../internal/cli/commands/infra_up_test.go) |
+| CLI_INFRA_UP | stagecraft infra up command | done | bart | [infra-up.md](../../../spec/commands/infra-up.md) | [infra_up_test.go](../../../internal/cli/commands/infra_up_test.go) |
 | CLI_INIT | Project bootstrap command | done | bart | [init.md](../../../spec/commands/init.md) | [init_test.go](../../../internal/cli/commands/init_test.go), [init_smoke_test.go](../../../test/e2e/init_smoke_test.go) |
 | CLI_INIT_TEMPLATE | Template system for stagecraft init | todo | bart | [templates.md](../../../spec/scaffold/templates.md) | [templates_test.go](../../../internal/scaffold/templates_test.go) |
 | CLI_LOGS | stagecraft logs command | todo | bart | [logs.md](../../../spec/commands/logs.md) | [logs_test.go](../../../internal/cli/commands/logs_test.go) |
@@ -103,7 +103,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | GOV_STATUS_ROADMAP | stagecraft status roadmap command | done | bart | [status-roadmap.md](../../../spec/commands/status-roadmap.md) | [status_test.go](../../../internal/cli/commands/status_test.go), [phase_test.go](../../../internal/tools/roadmap/phase_test.go), [stats_test.go](../../../internal/tools/roadmap/stats_test.go), [generator_test.go](../../../internal/tools/roadmap/generator_test.go) |
 | GOV_V1_CORE | Governance Core for v1 | done | bart | [GOV_V1_CORE.md](../../../spec/governance/GOV_V1_CORE.md) | [specschema_test.go](../../../internal/tools/specschema/specschema_test.go), [cliintrospect_test.go](../../../internal/tools/cliintrospect/cliintrospect_test.go), [features_test.go](../../../internal/tools/features/features_test.go), [mapping_test.go](../../../internal/governance/mapping/mapping_test.go), [docs_test.go](../../../internal/tools/docs/docs_test.go), [diff_test.go](../../../internal/tools/specvscli/diff_test.go) |
 | INFRA_FIREWALL | Firewall configuration | todo | bart | [firewall.md](../../../spec/infra/firewall.md) | [firewall_test.go](../../../internal/infra/firewall_test.go) |
-| INFRA_HOST_BOOTSTRAP | Host bootstrap (Docker, Tailscale, etc.) | todo | bart | [bootstrap.md](../../../spec/infra/bootstrap.md) | [bootstrap_test.go](../../../internal/infra/bootstrap_test.go) |
+| INFRA_HOST_BOOTSTRAP | Host bootstrap (Docker, Tailscale, etc.) | done | bart | [bootstrap.md](../../../spec/infra/bootstrap.md) | [bootstrap_test.go](../../../internal/infra/bootstrap/bootstrap_test.go), [executor_ssh_test.go](../../../internal/infra/bootstrap/executor_ssh_test.go) |
 | INFRA_VOLUME_MGMT | Volume management | todo | bart | [volumes.md](../../../spec/infra/volumes.md) | [volumes_test.go](../../../internal/infra/volumes_test.go) |
 | SCAFFOLD_STAGECRAFT_DIR | .stagecraft/ directory generation | todo | bart | [stagecraft-dir.md](../../../spec/scaffold/stagecraft-dir.md) | [dir_test.go](../../../internal/scaffold/dir_test.go) |
 | TEMPLATE_PLATFORM | Platform template (embedded) | todo | bart | [platform-template.md](../../../spec/scaffold/platform-template.md) | [platform_test.go](../../../internal/scaffold/platform_test.go) |
@@ -137,6 +137,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **CLI_DEV**: stagecraft dev command (full feature set)
 - **CLI_DEV_BASIC**: Basic stagecraft dev command that delegates to backend provider
 - **CLI_GLOBAL_FLAGS**: Global flags (--env, --config, --verbose, --dry-run)
+- **CLI_INFRA_UP**: stagecraft infra up command
 - **CLI_INIT**: Project bootstrap command
 - **CLI_MIGRATE_BASIC**: Basic stagecraft migrate command using registered migration engines
 - **CLI_PHASE_EXECUTION_COMMON**: Shared phase execution semantics for deploy and rollback
@@ -162,6 +163,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **DEV_TRAEFIK**: Traefik dev config generation
 - **GOV_STATUS_ROADMAP**: stagecraft status roadmap command
 - **GOV_V1_CORE**: Governance Core for v1
+- **INFRA_HOST_BOOTSTRAP**: Host bootstrap (Docker, Tailscale, etc.)
 - **MIGRATION_ENGINE_RAW**: Raw SQL migration engine implementation
 - **PROVIDER_BACKEND_ENCORE**: Encore.ts BackendProvider implementation
 - **PROVIDER_BACKEND_GENERIC**: Generic command-based BackendProvider implementation

@@ -104,6 +104,7 @@ func TestScanSourceTree(t *testing.T) {
 
 	if index == nil {
 		t.Fatal("ScanSourceTree returned nil index")
+		return
 	}
 
 	// At minimum, we should have features loaded

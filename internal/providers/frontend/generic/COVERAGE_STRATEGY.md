@@ -164,32 +164,31 @@ All critical error paths and shutdown edge cases are now covered. Phase 2 comple
 - **Finite scripts**: Prefer finite loops in shell scripts where possible (e.g., `while [ "$i" -lt 10 ]` instead of `while true`)
 - **Timeout values**: Tests account for shutdown timeouts (default 10s) plus overhead (typically 15s total for shutdown tests)
 - **No hanging tests**: All tests guaranteed to complete within their timeout, preventing CI deadlocks
+- **Deterministic unit tests**: Scanner error handling is covered via `scanStream` unit tests (no processes, no timeouts, no OS dependencies)
 
-## Known Test Debt
+### Scanner Error Handling Strategy
 
-### Flaky Scanner Error Test for `runWithReadyPattern`
+Scanner error handling is tested via deterministic unit tests on the `scanStream` helper function:
 
-`TestGenericProvider_RunWithReadyPattern_ScannerError` uses the `newScanner` test seam in `generic.go` to inject a failing reader and exercise the `scanner.Err()` error path.
+- **`TestScanStream_ScannerError`**: Tests the `scanner.Err()` error path with a controlled failing reader
+- **`TestScanStream_ReadyPatternFound`**: Tests pattern detection and output forwarding
+- **`TestScanStream_ReadyPatternOnStderr`**: Tests stderr label handling
+- **`TestScanStream_ReadyOncePreventsMultipleSignals`**: Tests `sync.Once` behavior
 
-This test has the following properties:
+These tests:
+- Run synchronously (no goroutines, no timeouts)
+- Use in-memory readers (no external processes)
+- Cannot deadlock or depend on OS pipe buffering
+- Provide deterministic coverage for scanner error paths
 
-- It is **bounded** by an explicit timeout (3s) via `devWithTimeout`, so it cannot hang CI.
-- It **usually** exercises the intended error path and contributes to coverage for `runWithReadyPattern`.
-- It can **occasionally time out** due to interaction between the injected reader and the real process lifetime, making it *potentially flaky*.
+The `runWithReadyPattern` integration tests focus on:
+- Invalid regex pattern compilation
+- Process start failures
+- Ready pattern success cases (stdout and stderr)
+- Process exit before ready pattern found
+- Context cancellation and shutdown behavior
 
-For now, this tradeoff is accepted in order to:
-
-- Achieve coverage for the scanner error path.
-- Verify that the error handling in `runWithReadyPattern` is correctly wired.
-
-However, this is treated as **explicit test debt**. A future improvement should:
-
-- Eliminate flakiness by tightening the test seam:
-  - Either by wrapping the real pipe reader instead of replacing it, or
-  - By extracting the scan loop into a helper that can be tested in isolation.
-- Preserve coverage for the `scanner.Err()` path without relying on timing-sensitive behavior.
-
-Until that work is done, the timeout wrapper and this section in the coverage strategy serve as documentation of the known risk and rationale.
+This separation ensures that scanner logic is tested deterministically, while integration tests focus on process orchestration concerns.
 
 ### Coverage Goals
 - **Minimum**: 75% overall (acceptable for v1)

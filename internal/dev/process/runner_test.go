@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
+// Feature: DEV_PROCESS_MGMT
+// Spec: spec/dev/process-mgmt.md
+
 package process
 
 import (
