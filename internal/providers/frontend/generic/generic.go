@@ -177,7 +177,9 @@ func (p *GenericProvider) runWithReadyPattern(ctx context.Context, cmd *exec.Cmd
 
 	// Channel to signal when ready pattern is found
 	readyCh := make(chan bool, 1)
-	errCh := make(chan error, 1)
+	// errCh buffer size 2 to accommodate both stdout and stderr goroutines
+	// to prevent deadlock if both encounter errors simultaneously
+	errCh := make(chan error, 2)
 	var readyOnce sync.Once
 
 	// Monitor stdout
