@@ -110,19 +110,27 @@ type PlanStep struct {
 type StepAction string
 
 const (
+	// StepActionCreate creates a resource.
 	StepActionCreate StepAction = "create"
+	// StepActionUpdate updates a resource.
 	StepActionUpdate StepAction = "update"
+	// StepActionDelete deletes a resource.
 	StepActionDelete StepAction = "delete"
-	StepActionNoop   StepAction = "noop"
+	// StepActionNoop performs no operation.
+	StepActionNoop StepAction = "noop"
 
-	// Deploy-oriented actions (v1 starting set; add as specs land)
+	// StepActionRenderCompose renders compose artifacts for deployment.
 	StepActionRenderCompose StepAction = "render_compose"
-	StepActionApplyCompose  StepAction = "apply_compose"
-	StepActionRollout       StepAction = "rollout"
+	// StepActionApplyCompose applies a rendered compose file.
+	StepActionApplyCompose StepAction = "apply_compose"
+	// StepActionRollout performs a rollout deployment.
+	StepActionRollout StepAction = "rollout"
 
-	// Operation-specific actions (v1 adapter support)
-	StepActionBuild       StepAction = "build"
-	StepActionMigrate     StepAction = "migrate"
+	// StepActionBuild builds container images for deployment.
+	StepActionBuild StepAction = "build"
+	// StepActionMigrate runs database migrations.
+	StepActionMigrate StepAction = "migrate"
+	// StepActionHealthCheck performs health checks on services.
 	StepActionHealthCheck StepAction = "health_check"
 )
 
@@ -194,20 +202,28 @@ type ExecutionReport struct {
 type ExecutionStatus string
 
 const (
+	// ExecStatusSucceeded indicates all steps completed successfully.
 	ExecStatusSucceeded ExecutionStatus = "succeeded"
-	ExecStatusFailed    ExecutionStatus = "failed"
-	ExecStatusPartial   ExecutionStatus = "partial"
+	// ExecStatusFailed indicates execution failed.
+	ExecStatusFailed ExecutionStatus = "failed"
+	// ExecStatusPartial indicates partial success.
+	ExecStatusPartial ExecutionStatus = "partial"
 )
 
 // StepStatus represents the status of an individual step execution.
 type StepStatus string
 
 const (
-	StepStatusPending   StepStatus = "pending"
-	StepStatusRunning   StepStatus = "running"
+	// StepStatusPending indicates the step is pending execution.
+	StepStatusPending StepStatus = "pending"
+	// StepStatusRunning indicates the step is currently running.
+	StepStatusRunning StepStatus = "running"
+	// StepStatusSucceeded indicates the step completed successfully.
 	StepStatusSucceeded StepStatus = "succeeded"
-	StepStatusFailed    StepStatus = "failed"
-	StepStatusSkipped   StepStatus = "skipped"
+	// StepStatusFailed indicates the step failed.
+	StepStatusFailed StepStatus = "failed"
+	// StepStatusSkipped indicates the step was skipped.
+	StepStatusSkipped StepStatus = "skipped"
 )
 
 // StepExecution represents the execution result of a single step.

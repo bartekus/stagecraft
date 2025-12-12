@@ -560,6 +560,7 @@ type jsonProviderStep struct {
 
 // getOperationID generates a deterministic ID for an operation.
 // Prefers Operation.ID (canonical) over metadata fallback.
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 func getOperationID(op core.Operation, index int) string {
 	// Use canonical Operation.ID if present (matches engine/agent view)
 	if op.ID != "" {

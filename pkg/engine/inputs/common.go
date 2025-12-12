@@ -89,6 +89,7 @@ func PathNormalize(p string) (string, error) {
 	return clean, nil
 }
 
+// ValidateSha256Hex64 validates that a string is a 64-character lowercase hexadecimal SHA256 hash.
 func ValidateSha256Hex64(hash string) error {
 	if !reLowerHex64.MatchString(hash) {
 		return fmt.Errorf("sha256 hash must be 64 lowercase hex chars: %q", hash)
@@ -104,41 +105,52 @@ func Sha256HexLower(b []byte) string {
 
 // ---------- Shared leaf types ----------
 
+// BuildArg represents a build argument key-value pair.
 type BuildArg struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
+// GetKey returns the build argument key.
 func (a BuildArg) GetKey() string { return a.Key }
 
+// BuildLabel represents a build label key-value pair.
 type BuildLabel struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
+// GetKey returns the build label key.
 func (l BuildLabel) GetKey() string { return l.Key }
 
+// ComposeOverlay represents a compose file overlay configuration.
 type ComposeOverlay struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
 }
 
+// GetKey returns the overlay name.
 func (o ComposeOverlay) GetKey() string { return o.Name }
 
+// ComposeVar represents a compose variable key-value pair.
 type ComposeVar struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
+// GetKey returns the compose variable key.
 func (v ComposeVar) GetKey() string { return v.Key }
 
+// HeaderKV represents an HTTP header key-value pair.
 type HeaderKV struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
 }
 
+// GetKey returns the header key.
 func (h HeaderKV) GetKey() string { return h.Key }
 
+// HealthEndpoint represents a health check endpoint configuration.
 type HealthEndpoint struct {
 	Name           string     `json:"name"`
 	URL            string     `json:"url"`
@@ -147,4 +159,6 @@ type HealthEndpoint struct {
 	Headers        []HeaderKV `json:"headers,omitempty"`
 }
 
+// GetKey returns the endpoint name.
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 func (e HealthEndpoint) GetKey() string { return e.Name }

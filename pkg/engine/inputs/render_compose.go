@@ -14,6 +14,7 @@ package inputs
 
 import "fmt"
 
+// RenderComposeInputs defines inputs for rendering a compose file.
 type RenderComposeInputs struct {
 	Environment string `json:"environment"`
 
@@ -30,6 +31,7 @@ type RenderComposeInputs struct {
 	ExpectedComposeHash    string `json:"expected_compose_hash,omitempty"`
 }
 
+// Normalize canonicalizes RenderComposeInputs fields.
 func (in *RenderComposeInputs) Normalize() error {
 	in.Environment = NormalizeString(in.Environment)
 	in.BaseComposePath = NormalizeString(in.BaseComposePath)
@@ -73,6 +75,7 @@ func (in *RenderComposeInputs) Normalize() error {
 	return nil
 }
 
+// Validate validates RenderComposeInputs according to v1 rules.
 func (in *RenderComposeInputs) Validate() error {
 	if in.Environment == "" {
 		return fmt.Errorf("environment is required")

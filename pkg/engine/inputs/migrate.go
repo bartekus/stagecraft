@@ -14,6 +14,7 @@ package inputs
 
 import "fmt"
 
+// MigrateInputs defines inputs for a migration step.
 type MigrateInputs struct {
 	Database string `json:"database"`
 	Strategy string `json:"strategy"`
@@ -25,6 +26,7 @@ type MigrateInputs struct {
 	Args           []string `json:"args,omitempty"` // order significant; do not sort
 }
 
+// Normalize canonicalizes MigrateInputs fields.
 func (in *MigrateInputs) Normalize() error {
 	in.Database = NormalizeString(in.Database)
 	in.Strategy = NormalizeString(in.Strategy)
@@ -44,6 +46,7 @@ func (in *MigrateInputs) Normalize() error {
 	return nil
 }
 
+// Validate validates MigrateInputs according to v1 rules.
 func (in *MigrateInputs) Validate() error {
 	if in.Database == "" {
 		return fmt.Errorf("database is required")

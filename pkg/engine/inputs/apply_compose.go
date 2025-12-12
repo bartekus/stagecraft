@@ -14,6 +14,7 @@ package inputs
 
 import "fmt"
 
+// ApplyComposeInputs defines inputs for applying a rendered compose file.
 type ApplyComposeInputs struct {
 	Environment string `json:"environment"`
 	ComposePath string `json:"compose_path"`
@@ -29,6 +30,7 @@ type ApplyComposeInputs struct {
 	ExpectedComposeHash    string `json:"expected_compose_hash,omitempty"`
 }
 
+// Normalize canonicalizes ApplyComposeInputs fields.
 func (in *ApplyComposeInputs) Normalize() error {
 	in.Environment = NormalizeString(in.Environment)
 	in.ComposePath = NormalizeString(in.ComposePath)
@@ -52,6 +54,7 @@ func (in *ApplyComposeInputs) Normalize() error {
 	return nil
 }
 
+// Validate validates ApplyComposeInputs according to v1 rules.
 func (in *ApplyComposeInputs) Validate() error {
 	if in.Environment == "" {
 		return fmt.Errorf("environment is required")
