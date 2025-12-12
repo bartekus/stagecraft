@@ -2,6 +2,8 @@
 
 > Canonical coverage overview for Stagecraft.
 > This document replaces ad hoc coverage snapshots and feature specific coverage notes.
+>
+> **This ledger is authoritative; automation may append but not rewrite history.**
 
 ## 1. Purpose and Scope
 
@@ -121,28 +123,28 @@ All future coverage snapshots and deltas should be recorded here.
 - Current coverage: 87.7 %
 - Phases completed: Phase 1 (70.2% → 80.2%), Phase 2 (80.2% → 87.7%), deflake work
 - Notes: Reference model - canonical example for other providers. Extracted `scanStream()` pure helper, deterministic unit tests, no flaky patterns
-- See also: `docs/engine/status/PROVIDER_FRONTEND_GENERIC_COVERAGE_V1_COMPLETE.md`
+- See also: `docs/engine/history/PROVIDER_FRONTEND_GENERIC_EVOLUTION.md`
 
 ### 5.3 PROVIDER_BACKEND_ENCORE
 
 - Current coverage: 90.6 %
 - Status: v1 complete
 - Notes: Verified deterministic test design with zero flakiness patterns
-- See also: `docs/engine/status/PROVIDER_BACKEND_ENCORE_COVERAGE_V1_COMPLETE.md`
+- See also: `docs/engine/history/PROVIDER_BACKEND_ENCORE_EVOLUTION.md`
 
 ### 5.4 PROVIDER_BACKEND_GENERIC
 
 - Current coverage: 84.1 %
 - Status: v1 complete
 - Notes: Verified deterministic test design with zero flakiness patterns
-- See also: `docs/engine/status/PROVIDER_BACKEND_GENERIC_COVERAGE_V1_COMPLETE.md`
+- See also: `docs/engine/history/PROVIDER_BACKEND_GENERIC_EVOLUTION.md`
 
 ### 5.5 PROVIDER_CLOUD_DO
 
 - Current coverage: 80.5 %
 - Status: v1 complete
 - Notes: Added test for `Hosts()` stub method, achieving 80% coverage threshold (was 79.7%)
-- See also: `docs/engine/status/PROVIDER_CLOUD_DO_COVERAGE_V1_COMPLETE.md`
+- See also: `docs/engine/history/PROVIDER_CLOUD_DO_EVOLUTION.md`
 
 ---
 

@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 5.2 (PROVIDER_FRONTEND_GENERIC). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 # Follow-up: COVERAGE_STRATEGY.md Update After Deflaking Scanner Error Test
 
 This document shows the update to `COVERAGE_STRATEGY.md` that should be applied after the scanner error test is deflaked.

@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/history/PROVIDER_CLOUD_DO_EVOLUTION.md`. Kept for historical reference. New Cloud DO evolution notes MUST go into the evolution log.
+
 # PROVIDER_CLOUD_DO — Coverage V1 Complete
 
 **Status**: ✅ V1 Complete  

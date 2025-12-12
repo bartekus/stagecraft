@@ -45,16 +45,29 @@ fi
 echo
 
 # 3. Core coverage guardrail (config + core)
-echo "[3/4] Running core coverage guardrail (pkg/config + internal/core)..."
+echo "[3/5] Running core coverage guardrail (pkg/config + internal/core)..."
 go test -cover ./pkg/config ./internal/core
 echo
 
-# 4. Full checks (optional but recommended)
+# 4. Documentation pattern checks
+echo "[4/5] Checking for forbidden documentation patterns..."
+if [[ -x ./scripts/check-doc-patterns.sh ]]; then
+  ./scripts/check-doc-patterns.sh || {
+    echo "✗ Documentation pattern checks failed"
+    echo "✗ Governance pre-commit checks failed"
+    exit 1
+  }
+else
+  echo "WARN: ./scripts/check-doc-patterns.sh not found or not executable"
+fi
+echo
+
+# 5. Full checks (optional but recommended)
 if [[ "${GOV_FAST:-0}" == "1" ]]; then
-  echo "[4/4] GOV_FAST=1 set - skipping full run-all-checks.sh"
+  echo "[5/5] GOV_FAST=1 set - skipping full run-all-checks.sh"
   echo "      Remember to run ./scripts/run-all-checks.sh before merging."
 else
-  echo "[4/4] Running full project checks..."
+  echo "[5/5] Running full project checks..."
   if [[ -x ./scripts/run-all-checks.sh ]]; then
     ./scripts/run-all-checks.sh
   else

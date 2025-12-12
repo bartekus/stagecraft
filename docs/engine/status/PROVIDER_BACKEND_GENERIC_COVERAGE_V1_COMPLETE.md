@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/history/PROVIDER_BACKEND_GENERIC_EVOLUTION.md`. Kept for historical reference. New Backend Generic evolution notes MUST go into the evolution log.
+
 # PROVIDER_BACKEND_GENERIC — Coverage V1 Complete
 
 **Status**: ✅ V1 Complete  

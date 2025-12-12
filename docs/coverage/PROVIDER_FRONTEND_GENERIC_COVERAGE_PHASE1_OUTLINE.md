@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 5.2 (PROVIDER_FRONTEND_GENERIC). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 # PROVIDER_FRONTEND_GENERIC Coverage Phase 1 Implementation Outline
 
 > This document defines the Phase 1 implementation plan for test coverage improvement for PROVIDER_FRONTEND_GENERIC. It translates the coverage analysis brief into a concrete, testable delivery plan.

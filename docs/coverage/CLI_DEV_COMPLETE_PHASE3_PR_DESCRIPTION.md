@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 3 (Historical Coverage Timeline). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 ## Summary
 
 Complete DEV_HOSTS and full CLI_DEV v1 integration, closing out Phase 3: Local Development.

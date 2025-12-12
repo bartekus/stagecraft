@@ -1,3 +1,5 @@
+> **Superseded by** `docs/context-handoff/CONTEXT_LOG.md`. Kept for historical reference. New context handoffs MUST be added to the context log.
+
 ⸻
 
 docs/context-handoff/CLI_PHASE_EXECUTION_COMMON-to-CORE_STATE_TEST_ISOLATION.md

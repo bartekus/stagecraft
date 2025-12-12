@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 5.3 (PROVIDER_BACKEND_ENCORE) and `docs/governance/GOVERNANCE_ALMANAC.md` section 4 (Provider Governance). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 # PROVIDER_BACKEND_ENCORE - Coverage V1 Completion Plan
 
 **Feature**: PROVIDER_BACKEND_ENCORE  

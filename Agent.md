@@ -1752,7 +1752,7 @@ AI MUST NOT create new standalone documents for these concerns.
 
 | Concern | Canonical File |
 |------|----------------|
-| Provider evolution, slices, coverage progression, and design decisions | `docs/engine/history/PROVIDER_NETWORK_TAILSCALE_EVOLUTION.md` |
+| Provider evolution, slices, coverage progression, and design decisions | `docs/engine/history/<FEATURE_ID>_EVOLUTION.md` (e.g., `PROVIDER_NETWORK_TAILSCALE_EVOLUTION.md`) |
 | Coverage snapshots, thresholds, deltas, and compliance history | `docs/coverage/COVERAGE_LEDGER.md` |
 | Governance rules, enforcement, commit discipline, coverage policy | `docs/governance/GOVERNANCE_ALMANAC.md` |
 | Multi-step task context, AI handoffs, execution continuity | `docs/context-handoff/CONTEXT_LOG.md` |
@@ -1763,6 +1763,7 @@ AI MUST NOT create new standalone documents for these concerns.
 - Legacy documents MAY be marked as **Superseded by** one of these files, but MUST NOT be deleted.
 - New documents of these categories are forbidden unless explicitly approved by a human maintainer.
 - When unsure where information belongs, AI MUST choose one of the four files above and justify placement.
+- **When creating a new evolution log**: Use `./scripts/generate-evolution-log.sh <FEATURE_ID>` to scaffold the file with the standard structure.
 
 Failure to follow this rule is considered a governance violation.
 

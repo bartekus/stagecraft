@@ -17,6 +17,7 @@ on:
       - "spec/**"
       - "docs/**"
       - "scripts/generate-implementation-status.sh"
+      - "scripts/check-doc-patterns.sh"
       - ".github/workflows/docs-governance.yml"
   push:
     branches: [main]
@@ -24,6 +25,7 @@ on:
       - "spec/**"
       - "docs/**"
       - "scripts/generate-implementation-status.sh"
+      - "scripts/check-doc-patterns.sh"
 
 jobs:
   implementation-status-drift:
@@ -71,3 +73,13 @@ jobs:
             echo "::error ::Found references to deprecated outline path. Use docs/engine/outlines/<FEATURE_ID>_IMPLEMENTATION_OUTLINE.md instead."
             exit 1
           fi
+
+      - name: Check for forbidden documentation patterns
+        run: |
+          set -euo pipefail
+          
+          # Make script executable
+          chmod +x ./scripts/check-doc-patterns.sh
+          
+          # Run doc pattern check (un-skippable in CI)
+          ./scripts/check-doc-patterns.sh

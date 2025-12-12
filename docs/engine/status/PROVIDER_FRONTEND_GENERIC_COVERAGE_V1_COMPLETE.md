@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/history/PROVIDER_FRONTEND_GENERIC_EVOLUTION.md`. Kept for historical reference. New Frontend Generic evolution notes MUST go into the evolution log.
+
 # PROVIDER_FRONTEND_GENERIC — Coverage V1 Complete
 
 **Status**: ✅ V1 Complete  

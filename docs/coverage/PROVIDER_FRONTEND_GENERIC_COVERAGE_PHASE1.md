@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 5.2 (PROVIDER_FRONTEND_GENERIC). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 # PROVIDER_FRONTEND_GENERIC Coverage Phase 1 Analysis Brief
 
 This document captures the high level motivation, constraints, and success definition for Phase 1 of the test coverage strategy for PROVIDER_FRONTEND_GENERIC.

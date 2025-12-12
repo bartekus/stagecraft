@@ -226,6 +226,21 @@ else
     echo "Skipping provider governance checks (scripts/check-provider-governance.sh not found)"
 fi
 
+# === Documentation Pattern Checks ===
+section "Documentation Pattern Checks"
+
+info "Checking for forbidden documentation patterns..."
+if [ -x "./scripts/check-doc-patterns.sh" ]; then
+    ./scripts/check-doc-patterns.sh || {
+        error "Documentation pattern checks failed"
+        exit 1
+    }
+    info "Documentation pattern checks passed"
+else
+    error "scripts/check-doc-patterns.sh not found"
+    exit 1
+fi
+
 # === Summary ===
 section "Summary"
 info "All checks passed!"

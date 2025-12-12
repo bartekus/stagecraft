@@ -2,6 +2,8 @@
 
 > Canonical reference for Stagecraft governance.
 > This document replaces scattered governance checklists, commit discipline notes, and provider governance summaries.
+>
+> **This document is canonical and should evolve slowly; changes here usually imply governance or workflow shifts.**
 
 ## 1. Purpose and Scope
 
@@ -140,11 +142,19 @@ It consolidates content that previously lived in (non exhaustive):
 
 - `PROVIDER_NETWORK_TAILSCALE`:
   - Evolution log: `docs/engine/history/PROVIDER_NETWORK_TAILSCALE_EVOLUTION.md`
-  - Status: v1 coverage complete
+  - Status: v1 plan (79.6% coverage, 2 slices complete)
+- `PROVIDER_FRONTEND_GENERIC`:
+  - Evolution log: `docs/engine/history/PROVIDER_FRONTEND_GENERIC_EVOLUTION.md`
+  - Status: v1 complete (87.7% coverage, reference model)
 - `PROVIDER_BACKEND_GENERIC`:
-  - ...
+  - Evolution log: `docs/engine/history/PROVIDER_BACKEND_GENERIC_EVOLUTION.md`
+  - Status: v1 complete (84.1% coverage)
+- `PROVIDER_BACKEND_ENCORE`:
+  - Evolution log: `docs/engine/history/PROVIDER_BACKEND_ENCORE_EVOLUTION.md`
+  - Status: v1 complete (90.6% coverage)
 - `PROVIDER_CLOUD_DO`:
-  - ...
+  - Evolution log: `docs/engine/history/PROVIDER_CLOUD_DO_EVOLUTION.md`
+  - Status: v1 complete (80.5% coverage)
 
 ---
 

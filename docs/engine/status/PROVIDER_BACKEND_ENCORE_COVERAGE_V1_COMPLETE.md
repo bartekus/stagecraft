@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/history/PROVIDER_BACKEND_ENCORE_EVOLUTION.md`. Kept for historical reference. New Backend Encore evolution notes MUST go into the evolution log.
+
 # PROVIDER_BACKEND_ENCORE — Coverage V1 Complete
 
 **Status**: ✅ V1 Complete  

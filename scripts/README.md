@@ -34,6 +34,9 @@ This directory contains utility scripts for development, testing, and maintenanc
 | `validate-feature-integrity.sh` | Validate feature metadata | When editing features.yaml |
 | `check-orphan-docs.sh` | Find orphan Analysis/Outline files | Periodically, before PR |
 | `check-orphan-specs.sh` | Find orphan spec files | Periodically, before PR |
+| `check-doc-patterns.sh` | Fail CI if new docs match forbidden patterns | In CI, before commit |
+| `generate-evolution-log.sh` | Scaffold new provider evolution log | When creating new provider |
+| `append-coverage-snapshot.sh` | Append coverage snapshot to ledger | In CI, after coverage runs |
 
 ## Essential Scripts
 
@@ -301,6 +304,102 @@ This directory contains utility scripts for development, testing, and maintenanc
 - Remove if feature was cancelled
 - Move to `docs/archive/` if feature is historical
 - Add Feature ID to `spec/features.yaml` if feature is active
+
+---
+
+### `check-doc-patterns.sh`
+
+**Purpose**: Fail CI if new documentation files match forbidden patterns that should use canonical docs instead.
+
+**Usage**:
+```bash
+./scripts/check-doc-patterns.sh
+```
+
+**What it does**:
+- Checks for forbidden patterns:
+  - `*_COVERAGE_V1_COMPLETE.md` → Use `COVERAGE_LEDGER.md` and `<FEATURE_ID>_EVOLUTION.md`
+  - `*_SLICE*_PLAN.md` → Use `<FEATURE_ID>_EVOLUTION.md`
+  - `COMMIT_*_PHASE*.md` → Use `GOVERNANCE_ALMANAC.md`
+- Only flags new files (not existing legacy files)
+- Provides guidance on which canonical doc to use
+
+**When to use**: 
+- Automatically in CI (enforced as first-class check in `.github/workflows/docs-governance.yml`)
+- Before committing documentation changes
+- To enforce canonical documentation homes
+
+**Integration**: 
+- First-class CI check in `.github/workflows/docs-governance.yml` (un-skippable in CI)
+- Included in `run-all-checks.sh` and `gov-pre-commit.sh`
+- Can be bypassed locally with `STAGECRAFT_SKIP_DOC_PATTERNS=1` (blocked in CI)
+
+---
+
+### `generate-evolution-log.sh`
+
+**Purpose**: Scaffold a new provider evolution log with standard structure and migration checklist.
+
+**Usage**:
+```bash
+./scripts/generate-evolution-log.sh <FEATURE_ID>
+```
+
+**Example**:
+```bash
+./scripts/generate-evolution-log.sh PROVIDER_NETWORK_TAILSCALE
+```
+
+**What it does**:
+- Creates `docs/engine/history/<FEATURE_ID>_EVOLUTION.md`
+- Populates with standard sections:
+  - Purpose and scope
+  - Feature references
+  - Design intent and constraints
+  - Coverage timeline overview
+  - Migration checklist
+- Attempts to auto-detect spec and analysis file paths
+
+**When to use**: 
+- When starting a new provider that will have slices or coverage progression
+- When establishing evolution tracking for an existing provider
+
+**Next steps after generation**:
+1. Review and populate sections with actual content
+2. Migrate content from legacy docs (use migration checklist)
+3. Mark legacy docs as superseded
+4. Update cross-references in `COVERAGE_LEDGER.md` and `GOVERNANCE_ALMANAC.md`
+
+---
+
+### `append-coverage-snapshot.sh`
+
+**Purpose**: Append coverage snapshot to `COVERAGE_LEDGER.md` in an append-only manner (never rewrites history).
+
+**Usage**:
+```bash
+# Automatic (reads from go test -cover)
+./scripts/append-coverage-snapshot.sh --event "Provider X slice 2 complete"
+
+# Manual (specify values)
+./scripts/append-coverage-snapshot.sh --event "Coverage snapshot" --overall 75.2 --core 82.1 --providers 73.5
+```
+
+**What it does**:
+- Runs `go test -cover` to get current coverage (if not provided)
+- Calculates overall, core, and providers coverage
+- Appends a new row to the Historical Coverage Timeline table
+- Never edits or rewrites existing entries (append-only)
+- Uses current date automatically
+
+**When to use**: 
+- In CI after coverage runs
+- After completing a slice or phase
+- After significant coverage improvements
+
+**Integration**: Can be added to CI workflows to automatically track coverage over time
+
+**Note**: This script ensures the ledger remains an audit log - historical entries are never modified.
 
 ---
 

@@ -1,3 +1,5 @@
+> **Superseded by** `docs/context-handoff/CONTEXT_LOG.md`. Kept for historical reference. New context handoffs MUST be added to the context log.
+
 ⸻
 
 docs/context-handoff/CLI_ROLLBACK-to-CLI_PHASE_EXECUTION_COMMON.md

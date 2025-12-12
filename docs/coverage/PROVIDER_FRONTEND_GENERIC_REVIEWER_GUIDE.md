@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 5.2 (PROVIDER_FRONTEND_GENERIC). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 # Reviewer Guide: Test Hardening PR
 
 **Feature**: PROVIDER_FRONTEND_GENERIC  
