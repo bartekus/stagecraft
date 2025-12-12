@@ -3,6 +3,8 @@ status: canonical
 scope: meta
 ---
 
+> **Superseded by** `docs/governance/GOVERNANCE_ALMANAC.md` section 6 (Documentation Governance). Kept for historical reference. New governance rules MUST be recorded in the almanac.
+
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 
 <!--

@@ -1,3 +1,5 @@
+> **Superseded by** `docs/context-handoff/CONTEXT_LOG.md`. New context handoffs MUST be added to the context log. Kept for historical reference.
+
 # Context Handoff Documents
 
 This directory contains handoff documents that provide deterministic context for AI agents transitioning between feature implementations.

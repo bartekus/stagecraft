@@ -1,3 +1,5 @@
+> **Superseded by** `docs/context-handoff/CONTEXT_LOG.md` section 4.4. Kept for historical reference. New context handoffs MUST be added to the context log.
+
 ---
 
 ## 📋 NEXT AGENT CONTEXT — After Completing Feature CORE_STATE

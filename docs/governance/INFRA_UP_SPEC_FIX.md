@@ -1,3 +1,5 @@
+> **Superseded by** `docs/governance/GOVERNANCE_ALMANAC.md` section 7 (Violation Handling and Fixes). Kept for historical reference. New governance rules MUST be recorded in the almanac.
+
 # CLI_INFRA_UP - Spec Frontmatter Fix
 
 **Feature**: CLI_INFRA_UP  

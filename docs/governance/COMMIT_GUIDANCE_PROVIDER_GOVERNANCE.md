@@ -1,3 +1,5 @@
+> **Superseded by** `docs/governance/GOVERNANCE_ALMANAC.md` sections 3 (Commit and PR Discipline) and 4 (Provider Governance). Kept for historical reference. New governance rules MUST be recorded in the almanac.
+
 # Commit Guidance: Provider Coverage Governance
 
 **Feature**: GOV_V1_CORE  

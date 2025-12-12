@@ -1,3 +1,5 @@
+> **Superseded by** `docs/governance/GOVERNANCE_ALMANAC.md` section 4 (Provider Governance) and `docs/coverage/COVERAGE_LEDGER.md`. Kept for historical reference. New governance rules MUST be recorded in the almanac.
+
 # Provider Coverage Governance - Implementation Summary
 
 **Date**: 2025-01-XX  

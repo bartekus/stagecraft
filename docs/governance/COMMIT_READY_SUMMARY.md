@@ -1,3 +1,5 @@
+> **Superseded by** `docs/governance/GOVERNANCE_ALMANAC.md` section 3 (Commit and PR Discipline). Kept for historical reference. New governance rules MUST be recorded in the almanac.
+
 # Governance Commit - Ready Summary
 
 **Status**: ✅ All files ready for commit  

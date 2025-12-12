@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 3 (Historical Coverage Timeline) and section 4 (Compliance Phases). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 # Test Coverage Compliance Analysis
 
 **Date**: 2025-12-07  

@@ -3,6 +3,8 @@ status: canonical
 scope: v1
 ---
 
+> **Superseded by** `docs/governance/GOVERNANCE_ALMANAC.md` section 3.1 (Commit Message Rules). Kept for historical reference. New governance rules MUST be recorded in the almanac.
+
 # Commit Message Format Analysis
 
 ## Issue Summary

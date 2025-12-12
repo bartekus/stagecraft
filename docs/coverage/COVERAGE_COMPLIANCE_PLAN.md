@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 4.1 (Phase 1 - Coverage Compliance). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 # Test Coverage Compliance Plan
 
 **Feature**: GOV_V1_CORE  

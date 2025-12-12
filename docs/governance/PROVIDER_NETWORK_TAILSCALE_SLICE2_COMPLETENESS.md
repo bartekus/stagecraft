@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/history/PROVIDER_NETWORK_TAILSCALE_EVOLUTION.md` section 6. Kept for historical reference. New Tailscale evolution notes MUST go into the evolution log.
+
 # PROVIDER_NETWORK_TAILSCALE Slice 2 - Completeness Review
 
 **Review Date**: Generated for Slice 2 planning  

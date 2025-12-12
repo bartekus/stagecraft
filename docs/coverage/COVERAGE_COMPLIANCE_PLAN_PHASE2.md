@@ -1,3 +1,5 @@
+> **Superseded by** `docs/coverage/COVERAGE_LEDGER.md` section 4.2 (Phase 2 - Provider Coverage Enforcement). Kept for historical reference. New coverage snapshots and summaries MUST go into the coverage ledger.
+
 # Test Coverage Quality Lift - Phase 2 Plan
 
 **Feature**: GOV_V1_CORE  

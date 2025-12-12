@@ -1,3 +1,5 @@
+> **Superseded by** `docs/context-handoff/CONTEXT_LOG.md` section 4.3. Kept for historical reference. New context handoffs MUST be added to the context log.
+
 # 🔥 Agent Promo: Phase 3.A – Commit Report Go Types & Golden JSON Roundtrip
 
 **Task:** Implement the Go types and initial golden tests for the Phase 3 commit discipline reports, based on the design in `docs/design/commit-reports-go-types.md`.

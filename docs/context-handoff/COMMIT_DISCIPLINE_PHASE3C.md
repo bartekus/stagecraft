@@ -1,3 +1,5 @@
+> **Superseded by** `docs/context-handoff/CONTEXT_LOG.md` section 4.3. Kept for historical reference. New context handoffs MUST be added to the context log.
+
 # 🔥 Agent Promo: Phase 3.C – CLI Wiring for Commit Discipline Reports
 
 **Task:** Implement Phase 3.C of the commit discipline system: integrate the Phase 3.B generators into stable, deterministic, Stagecraft CLI commands.

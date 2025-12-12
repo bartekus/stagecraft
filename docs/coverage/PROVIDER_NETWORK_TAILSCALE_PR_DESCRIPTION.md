@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/history/PROVIDER_NETWORK_TAILSCALE_EVOLUTION.md` and `docs/coverage/COVERAGE_LEDGER.md`. Kept for historical reference. New Tailscale evolution notes MUST go into the evolution log.
+
 ## Summary
 
 Implement PROVIDER_NETWORK_TAILSCALE - Tailscale NetworkProvider implementation for Stagecraft, enabling mesh networking for multi-host deployments.

@@ -1,3 +1,5 @@
+> **Superseded by** `docs/governance/GOVERNANCE_ALMANAC.md` section 3 (Commit and PR Discipline). Kept for historical reference. New governance rules MUST be recorded in the almanac.
+
 # TODO: Phase 2 – Commit Message CI Validation & CLI Tooling
 
 - **Link:** `docs/COMMIT_MESSAGE_ANALYSIS.md`

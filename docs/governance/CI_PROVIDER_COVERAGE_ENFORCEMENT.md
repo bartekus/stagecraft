@@ -1,3 +1,5 @@
+> **Superseded by** `docs/governance/GOVERNANCE_ALMANAC.md` section 4.2 (Provider Coverage Requirements) and section 8 (Tooling and Automation). Kept for historical reference. New governance rules MUST be recorded in the almanac.
+
 # CI Provider Coverage Enforcement
 
 This document describes how provider coverage governance is enforced in CI.

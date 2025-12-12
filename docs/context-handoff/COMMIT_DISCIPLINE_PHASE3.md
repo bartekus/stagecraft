@@ -1,3 +1,5 @@
+> **Superseded by** `docs/context-handoff/CONTEXT_LOG.md` section 4.3. Kept for historical reference. New context handoffs MUST be added to the context log.
+
 # 🔥 Agent Promo: Phase 3 – Commit Intelligence & Historical Analysis
 
 **Task:** Implement Phase 3 of the commit message discipline system, building on Phase 1 (local + hooks) and Phase 2 (CI + CLI).
