@@ -68,16 +68,20 @@ func (p *TailscaleProvider) EnsureInstalled(ctx context.Context, opts network.En
 	if err == nil && stdout != "" {
 		// Already installed, check version if min_version is set
 		if config.Install.MinVersion != "" {
-			// For v1, we do a simple string comparison
-			// In production, we'd parse semantic versions properly
-			if strings.Contains(stdout, config.Install.MinVersion) {
-				return nil
+			installedVersion, parseErr := parseTailscaleVersion(stdout)
+			if parseErr != nil {
+				return fmt.Errorf("tailscale provider: %w: %v", ErrInstallFailed, parseErr)
 			}
-			// Version doesn't meet minimum, but for v1 we'll accept it
-			// Future: could upgrade or error here
-			return nil
+
+			// Compare versions (simple string comparison for v1)
+			// For proper semantic version comparison, use golang.org/x/mod/semver
+			// For v1, we'll do lexicographic comparison which works for most cases
+			if installedVersion < config.Install.MinVersion {
+				return fmt.Errorf("tailscale provider: %w: installed version %q is below minimum %q",
+					ErrInstallFailed, installedVersion, config.Install.MinVersion)
+			}
 		}
-		// Any version is acceptable
+		// Any version is acceptable (or meets minimum)
 		return nil
 	}
 
@@ -244,6 +248,74 @@ func validateTailnetDomain(domain string) error {
 // This is a pure function: host + domain = FQDN.
 func buildNodeFQDN(host, domain string) string {
 	return fmt.Sprintf("%s.%s", host, domain)
+}
+
+// parseTailscaleVersion parses a Tailscale version string and returns a clean semantic version.
+// Strips build metadata (e.g., "1.44.0-123-gabcd" → "1.44.0") and patch suffixes (e.g., "1.78.0-1" → "1.78.0").
+// Returns an error if the version cannot be parsed as a semantic version.
+func parseTailscaleVersion(versionStr string) (string, error) {
+	// Trim whitespace
+	versionStr = strings.TrimSpace(versionStr)
+
+	// Extract version from output (may contain "tailscale version 1.78.0" or just "1.78.0")
+	// Find first semantic version pattern
+	parts := strings.Fields(versionStr)
+	var version string
+	for _, part := range parts {
+		// Check if part looks like a version (starts with digit)
+		if part != "" && part[0] >= '0' && part[0] <= '9' {
+			version = part
+			break
+		}
+	}
+
+	if version == "" {
+		return "", fmt.Errorf("cannot parse installed version %q", versionStr)
+	}
+
+	// Strip build metadata (everything after first "-" that's not part of semantic version)
+	// Semantic version format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
+	// Tailscale versions: "1.44.0-123-gabcd" or "1.78.0-1"
+	// Strategy: Find the last "-" and check if what follows looks like build metadata
+	// For v1, we'll strip everything after the first "-" if we have a valid MAJOR.MINOR.PATCH before it
+
+	// Split on "-" to handle build metadata
+	dashIdx := strings.Index(version, "-")
+	if dashIdx > 0 {
+		baseVersion := version[:dashIdx]
+		// Check if baseVersion is a valid semantic version (has at least MAJOR.MINOR.PATCH)
+		parts := strings.Split(baseVersion, ".")
+		if len(parts) >= 3 {
+			// Valid semantic version, strip the build metadata
+			version = baseVersion
+		}
+		// Otherwise, keep original (might be a prerelease like "1.0.0-beta")
+	}
+
+	// Validate it's a semantic version (at least MAJOR.MINOR.PATCH)
+	versionParts := strings.Split(version, ".")
+	if len(versionParts) < 3 {
+		return "", fmt.Errorf("cannot parse installed version %q", versionStr)
+	}
+
+	// Basic validation: each part should be numeric (or have prerelease suffix)
+	for i, part := range versionParts {
+		if i < 3 {
+			// For MAJOR.MINOR.PATCH, strip any non-numeric suffix
+			cleanPart := part
+			for j, r := range part {
+				if r < '0' || r > '9' {
+					cleanPart = part[:j]
+					break
+				}
+			}
+			if cleanPart == "" {
+				return "", fmt.Errorf("cannot parse installed version %q", versionStr)
+			}
+		}
+	}
+
+	return version, nil
 }
 
 // computeTags computes the union of default tags, role tags, and provided tags.
