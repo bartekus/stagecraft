@@ -23,7 +23,7 @@ import (
 // Spec: spec/deploy/rollout.md
 
 // RolloutNotInstalledMessage is returned when rollout is enabled but docker-rollout is not installed.
-// Spec: spec/deploy/rollout.md (Error message format)
+// Spec: spec/deploy/rollout.md
 const RolloutNotInstalledMessage = "docker-rollout is required but not installed; install it from the docker-rollout repository"
 
 // RolloutExecutor executes docker-rollout deployments.
