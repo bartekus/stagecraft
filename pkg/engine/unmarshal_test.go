@@ -12,7 +12,10 @@ See https://www.gnu.org/licenses/ for license details.
 
 package engine
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestUnmarshalStrictHostPlan_RejectsUnknownFields(t *testing.T) {
 	// Valid HostPlan JSON with an extra unknown field
@@ -91,7 +94,9 @@ func TestUnmarshalStrictHostPlan_ErrorContext(t *testing.T) {
 		t.Fatal("error message should not be empty")
 	}
 	// Error should mention planId in context
-	// (exact format may vary, but should be present)
+	if !strings.Contains(errStr, "planId") || !strings.Contains(errStr, "my-plan-123") {
+		t.Errorf("error message should contain planId context, got: %q", errStr)
+	}
 }
 
 func TestUnmarshalStrictPlan_RejectsUnknownFields(t *testing.T) {
