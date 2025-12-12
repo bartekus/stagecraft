@@ -25,6 +25,7 @@ import (
 type StubExecutor struct{}
 
 // Execute validates inputs but doesn't perform the actual action.
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 func (s *StubExecutor) Execute(ctx context.Context, step engine.HostPlanStep, inputsJSON []byte) error {
 	// Strict decode and validate inputs based on action
 	switch step.Action {

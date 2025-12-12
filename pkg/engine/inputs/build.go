@@ -14,6 +14,7 @@ package inputs
 
 import "fmt"
 
+// BuildInputs defines inputs for a build step.
 type BuildInputs struct {
 	Provider   string       `json:"provider"`
 	Workdir    string       `json:"workdir"`
@@ -25,6 +26,7 @@ type BuildInputs struct {
 	Labels     []BuildLabel `json:"labels,omitempty"`
 }
 
+// Normalize canonicalizes BuildInputs fields.
 func (in *BuildInputs) Normalize() error {
 	in.Provider = NormalizeString(in.Provider)
 	in.Workdir = NormalizeString(in.Workdir)
@@ -74,6 +76,7 @@ func (in *BuildInputs) Normalize() error {
 	return nil
 }
 
+// Validate validates BuildInputs according to v1 rules.
 func (in *BuildInputs) Validate() error {
 	if in.Provider == "" {
 		return fmt.Errorf("provider is required")

@@ -10,6 +10,7 @@ This program is free software licensed under the terms of the GNU AGPL v3 or lat
 See https://www.gnu.org/licenses/ for license details.
 */
 
+// Package engine defines core planning and execution types for Stagecraft.
 package engine
 
 import "context"

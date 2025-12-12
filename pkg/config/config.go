@@ -128,9 +128,17 @@ type MigrationConfig struct {
 
 // EnvironmentConfig describes per-environment settings.
 type EnvironmentConfig struct {
-	Driver  string `yaml:"driver"`
-	EnvFile string `yaml:"env_file,omitempty"` // Path to environment file
+	Driver  string         `yaml:"driver"`
+	EnvFile string         `yaml:"env_file,omitempty"` // Path to environment file
+	Rollout *RolloutConfig `yaml:"rollout,omitempty"`  // Rollout configuration
 	// Future: region, registry, etc.
+}
+
+// RolloutConfig describes rollout configuration for an environment.
+type RolloutConfig struct {
+	Enabled bool `yaml:"enabled"` // Opt-in flag for docker-rollout
+	// Mode deferred to v2 (default serial)
+	// Health check deferred to separate feature
 }
 
 // GetProviderConfig returns the config for the selected backend provider.

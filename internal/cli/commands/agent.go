@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -58,7 +59,8 @@ func runAgentRun(cmd *cobra.Command, args []string) error {
 	outputPath, _ := cmd.Flags().GetString("output")
 
 	// Load HostPlan with strict validation
-	data, err := os.ReadFile(hostplanPath)
+	// #nosec G304 // path is user/config selected; intentional.
+	data, err := os.ReadFile(filepath.Clean(hostplanPath))
 	if err != nil {
 		return fmt.Errorf("reading host plan file %q: %w", hostplanPath, err)
 	}
@@ -112,7 +114,7 @@ func runAgentRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if outputPath != "" {
-		if err := os.WriteFile(outputPath, reportJSON, 0o644); err != nil {
+		if err := os.WriteFile(outputPath, reportJSON, 0o600); err != nil {
 			return fmt.Errorf("writing execution report: %w", err)
 		}
 		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Execution report written to %s\n", outputPath)

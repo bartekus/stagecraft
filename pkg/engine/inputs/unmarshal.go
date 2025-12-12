@@ -18,6 +18,9 @@ import (
 	"fmt"
 )
 
+// UnmarshalStrict unmarshals JSON data with strict validation:
+// - disallows unknown fields
+// - rejects trailing tokens after the main object
 func UnmarshalStrict(data []byte, v any) error {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.DisallowUnknownFields()

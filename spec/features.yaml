@@ -366,7 +366,7 @@ features:
 
   - id: DEPLOY_COMPOSE_GEN
     title: "Per-host Compose generation"
-    status: todo
+    status: done
     spec: "deploy/compose-gen.md"
     owner: bart
     tests:
@@ -374,7 +374,7 @@ features:
 
   - id: DEPLOY_ROLLOUT
     title: "docker-rollout integration"
-    status: todo
+    status: done
     spec: "deploy/rollout.md"
     owner: bart
     tests:

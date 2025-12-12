@@ -26,6 +26,7 @@ import (
 
 	"stagecraft/internal/core"
 	"stagecraft/internal/core/state"
+	"stagecraft/internal/deploy"
 	"stagecraft/pkg/config"
 	"stagecraft/pkg/executil"
 	"stagecraft/pkg/logging"
@@ -34,6 +35,12 @@ import (
 
 // Feature: CLI_DEPLOY
 // Spec: spec/commands/deploy.md
+
+// Package-level variables for testability
+var (
+	newRunner           = executil.NewRunner
+	newComposeGenerator = deploy.NewComposeGenerator
+)
 
 // NewDeployCommand returns the `stagecraft deploy` command.
 func NewDeployCommand() *cobra.Command {
@@ -392,9 +399,15 @@ func executeMigratePrePhase(ctx context.Context, plan *core.Plan, logger logging
 
 // executeRolloutPhase deploys the application using Docker Compose.
 func executeRolloutPhase(ctx context.Context, plan *core.Plan, logger logging.Logger) error {
-	_, _, workdir, err := getDeployContext(plan)
+	configPath, _, workdir, err := getDeployContext(plan)
 	if err != nil {
 		return fmt.Errorf("getting deployment context: %w", err)
+	}
+
+	// Load config for rollout configuration
+	cfg, err := config.Load(configPath)
+	if err != nil {
+		return fmt.Errorf("loading config: %w", err)
 	}
 
 	// Get built image from plan metadata
@@ -412,45 +425,68 @@ func executeRolloutPhase(ctx context.Context, plan *core.Plan, logger logging.Lo
 		logging.NewField("image", builtImage),
 	)
 
-	// For v1 MVP: use docker compose up -d
-	// Check if docker-compose.yml exists
-	composePath := filepath.Join(workdir, "docker-compose.yml")
-	if _, err := os.Stat(composePath); err != nil {
-		return fmt.Errorf("docker-compose.yml not found at %s: %w", composePath, err)
+	// DEPLOY_COMPOSE_GEN: Generate compose file with image tag injected
+	baseComposePath := filepath.Join(workdir, "docker-compose.yml")
+	if _, err := os.Stat(baseComposePath); err != nil {
+		return fmt.Errorf("docker-compose.yml not found at %s: %w", baseComposePath, err)
 	}
 
-	// Update image tag in compose file or use override
-	// For v1, we'll use docker compose up with image override via environment variable
-	// or generate a minimal override file
-	// For now, simplest approach: docker compose up -d (assumes image is already set in compose)
-	// Future: DEPLOY_COMPOSE_GEN will handle proper image tag injection
-
-	runner := executil.NewRunner()
-	cmd := executil.NewCommand("docker", "compose", "-f", composePath, "up", "-d")
-	cmd.Env = map[string]string{
-		"IMAGE_TAG": builtImage,
-	}
-	// TODO: Future test - add test that verifies IMAGE_TAG env var propagation
-	// This ensures the environment variable is correctly passed to docker compose.
-	// Can wait until DEPLOY_COMPOSE_GEN lands for full integration test.
-	result, err := runner.Run(ctx, cmd)
+	generator := newComposeGenerator()
+	renderedPath, composeHash, err := generator.Generate(
+		cfg,
+		plan.Environment,
+		baseComposePath,
+		builtImage,
+		workdir,
+	)
 	if err != nil {
-		return fmt.Errorf("running docker compose up: %w", err)
+		return fmt.Errorf("generating compose file: %w", err)
 	}
 
-	if result.ExitCode != 0 {
-		return fmt.Errorf("docker compose up failed with exit code %d: %s", result.ExitCode, string(result.Stderr))
-	}
-
-	logger.Info("Deployment rolled out successfully",
-		logging.NewField("environment", plan.Environment),
+	logger.Debug("Compose file generated",
+		logging.NewField("path", renderedPath),
+		logging.NewField("hash", composeHash),
 	)
 
-	// Store compose path in metadata for potential cleanup/rollback
-	if plan.Metadata == nil {
-		plan.Metadata = make(map[string]interface{})
+	// Check if rollout is enabled
+	rolloutEnabled := cfg.Environments[plan.Environment].Rollout != nil &&
+		cfg.Environments[plan.Environment].Rollout.Enabled
+
+	if rolloutEnabled {
+		executor := deploy.NewRolloutExecutor()
+		available, err := executor.IsAvailable(ctx)
+		if err != nil {
+			return fmt.Errorf("checking docker-rollout availability: %w", err)
+		}
+		if !available {
+			return fmt.Errorf("%s", deploy.RolloutNotInstalledMessage)
+		}
+
+		if err := executor.Execute(ctx, renderedPath); err != nil {
+			return fmt.Errorf("rollout failed: %w", err)
+		}
+
+		logger.Info("Rollout completed successfully",
+			logging.NewField("environment", plan.Environment),
+		)
+	} else {
+		// Fallback to docker compose up (existing behavior)
+		runner := newRunner()
+		cmd := executil.NewCommand("docker", "compose", "-f", renderedPath, "up", "-d")
+		result, err := runner.Run(ctx, cmd)
+		if err != nil {
+			return fmt.Errorf("running docker compose up: %w", err)
+		}
+
+		if result.ExitCode != 0 {
+			return fmt.Errorf("docker compose up failed with exit code %d: %s", result.ExitCode, string(result.Stderr))
+		}
+
+		logger.Info("Deployment rolled out successfully",
+			logging.NewField("environment", plan.Environment),
+			logging.NewField("compose_hash", composeHash),
+		)
 	}
-	plan.Metadata["compose_path"] = composePath
 
 	return nil
 }

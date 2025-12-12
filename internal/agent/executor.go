@@ -10,6 +10,7 @@ This program is free software licensed under the terms of the GNU AGPL v3 or lat
 See https://www.gnu.org/licenses/ for license details.
 */
 
+// Package agent contains execution logic for applying host plans.
 package agent
 
 import (
@@ -44,6 +45,7 @@ func (e *Executor) RegisterExecutor(action engine.StepAction, executor StepExecu
 
 // ExecuteHostPlan executes a HostPlan step by step, respecting dependencies.
 // Steps are executed in topological order based on DependsOn relationships.
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 func (e *Executor) ExecuteHostPlan(ctx context.Context, plan engine.HostPlan) (*engine.ExecutionReport, error) {
 	report := &engine.ExecutionReport{
 		PlanID: plan.PlanID,

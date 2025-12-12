@@ -25,6 +25,7 @@ import (
 // - Cross-host dependencies are rejected (Rule A: strict validation)
 //
 // Returns an error if any step depends on a step that is not in the same HostPlan.
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 func SlicePlan(plan Plan) (SliceResult, error) {
 	result := SliceResult{
 		HostPlans:            make(map[string]HostPlan),
@@ -152,6 +153,8 @@ func SlicePlan(plan Plan) (SliceResult, error) {
 // Deprecated: Use SlicePlan instead for explicit global step handling.
 // This function ignores errors from SlicePlan for backward compatibility.
 // Once all callers migrate to SlicePlan, this function should be removed.
+//
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 //
 //nolint:staticcheck // Deprecated function kept for backward compatibility
 func SlicePlanByHost(plan Plan) map[string]HostPlan {

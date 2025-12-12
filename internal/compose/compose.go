@@ -130,11 +130,14 @@ type composeYAML struct {
 	Version  string         `yaml:"version,omitempty"`
 	Services map[string]any `yaml:"services,omitempty"`
 	Networks map[string]any `yaml:"networks,omitempty"`
+	Volumes  map[string]any `yaml:"volumes,omitempty"`
+	Configs  map[string]any `yaml:"configs,omitempty"`
+	Secrets  map[string]any `yaml:"secrets,omitempty"`
 }
 
 // ToYAML serializes the ComposeFile to YAML bytes.
 // The output is deterministic with stable key ordering.
-// Top-level keys are ordered: version first, then services.
+// Top-level keys are ordered: version, services, networks, volumes, configs, secrets, then sorted x-*.
 func (c *ComposeFile) ToYAML() ([]byte, error) {
 	// Build struct for deterministic key ordering
 	yml := composeYAML{}
@@ -157,18 +160,110 @@ func (c *ComposeFile) ToYAML() ([]byte, error) {
 		}
 	}
 
-	// Use encoder with 2-space indent to match golden file format
-	var buf bytes.Buffer
-	enc := yaml.NewEncoder(&buf)
-	enc.SetIndent(2)
-	if err := enc.Encode(yml); err != nil {
-		return nil, fmt.Errorf("encoding YAML: %w", err)
-	}
-	if err := enc.Close(); err != nil {
-		return nil, fmt.Errorf("closing YAML encoder: %w", err)
+	if volumes, ok := c.data["volumes"]; ok {
+		if v, ok := volumes.(map[string]any); ok {
+			yml.Volumes = v
+		}
 	}
 
-	result := buf.Bytes()
+	if configs, ok := c.data["configs"]; ok {
+		if cfgs, ok := configs.(map[string]any); ok {
+			yml.Configs = cfgs
+		}
+	}
+
+	if secrets, ok := c.data["secrets"]; ok {
+		if secs, ok := secrets.(map[string]any); ok {
+			yml.Secrets = secs
+		}
+	}
+
+	// Collect x-* extension fields (sorted for determinism)
+	var extKeys []string
+	extValues := make(map[string]any)
+	for k, v := range c.data {
+		if strings.HasPrefix(k, "x-") {
+			extKeys = append(extKeys, k)
+			extValues[k] = v
+		}
+	}
+	sort.Strings(extKeys)
+
+	var result []byte
+
+	if len(extKeys) > 0 {
+		// Encode the struct into a YAML node (keeps struct field order)
+		var doc yaml.Node
+		if err := doc.Encode(yml); err != nil {
+			return nil, fmt.Errorf("encoding YAML node: %w", err)
+		}
+
+		// doc.Encode() produces a DocumentNode; its first child is the top-level mapping
+		// Handle case where doc might be a MappingNode directly (rare) or DocumentNode
+		var mapping *yaml.Node
+		switch doc.Kind {
+		case yaml.DocumentNode:
+			if len(doc.Content) == 0 {
+				// Empty document - create new mapping
+				mapping = &yaml.Node{
+					Kind: yaml.MappingNode,
+				}
+			} else if doc.Content[0].Kind == yaml.MappingNode {
+				mapping = doc.Content[0]
+			} else {
+				return nil, fmt.Errorf("unexpected YAML structure; expected top-level mapping, got %v", doc.Content[0].Kind)
+			}
+		case yaml.MappingNode:
+			mapping = &doc
+		default:
+			return nil, fmt.Errorf("unexpected YAML structure; expected DocumentNode or MappingNode, got %v", doc.Kind)
+		}
+
+		// Append x-* entries in sorted order
+		for _, extKey := range extKeys {
+			keyNode := &yaml.Node{
+				Kind:  yaml.ScalarNode,
+				Tag:   "!!str",
+				Value: extKey,
+			}
+
+			// Encode extension value -> document node -> take content[0]
+			var vdoc yaml.Node
+			if err := vdoc.Encode(extValues[extKey]); err != nil {
+				return nil, fmt.Errorf("encoding extension value %q: %w", extKey, err)
+			}
+			if len(vdoc.Content) == 0 {
+				return nil, fmt.Errorf("unexpected YAML node for extension %q", extKey)
+			}
+			valNode := vdoc.Content[0]
+
+			mapping.Content = append(mapping.Content, keyNode, valNode)
+		}
+
+		// Encode ONLY the mapping node (avoids multi-doc output)
+		var buf bytes.Buffer
+		enc := yaml.NewEncoder(&buf)
+		enc.SetIndent(2)
+		if err := enc.Encode(mapping); err != nil {
+			return nil, fmt.Errorf("encoding YAML: %w", err)
+		}
+		if err := enc.Close(); err != nil {
+			return nil, fmt.Errorf("closing YAML encoder: %w", err)
+		}
+		result = buf.Bytes()
+	} else {
+		// No extensions: use simple struct encoding (existing behavior)
+		var buf bytes.Buffer
+		enc := yaml.NewEncoder(&buf)
+		enc.SetIndent(2)
+		if err := enc.Encode(yml); err != nil {
+			return nil, fmt.Errorf("encoding YAML: %w", err)
+		}
+		if err := enc.Close(); err != nil {
+			return nil, fmt.Errorf("closing YAML encoder: %w", err)
+		}
+		result = buf.Bytes()
+	}
 
 	// Add blank line after version to match golden file format
 	versionPattern := []byte("version:")
@@ -242,6 +337,27 @@ func (c *ComposeFile) ToYAML() ([]byte, error) {
 	result = append(result, '\n', '\n')
 
 	return result, nil
+}
+
+// Mutate allows safe mutation of the compose file data while preserving all fields.
+// The mutation function receives the underlying data map and can modify it in place.
+//
+// Mutate is not safe for concurrent use; callers must not mutate the same ComposeFile
+// concurrently.
+//
+// Important: Do not reassign the data parameter; mutate the map in place.
+// Example:
+//
+//	composeFile.Mutate(func(data map[string]any) error {
+//	    services := data["services"].(map[string]any)
+//	    services["api"].(map[string]any)["image"] = "new:tag"
+//	    return nil
+//	})
+func (c *ComposeFile) Mutate(fn func(data map[string]any) error) error {
+	if c.data == nil {
+		return fmt.Errorf("compose file data is nil")
+	}
+	return fn(c.data)
 }
 
 // GetServiceRoles returns the role mapping for services from config.
