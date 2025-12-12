@@ -35,6 +35,8 @@ func SlicePlan(plan Plan) (SliceResult, error) {
 
 	// Build step ID to host ID mapping for dependency validation
 	stepToHost := make(map[string]string, len(plan.Steps))
+	// globalStepIDs is a set (map[string]bool) for O(1) lookup during dependency validation.
+	// Deterministic ordering is derived from GlobalSteps (sorted below), not from this map.
 	globalStepIDs := make(map[string]bool)
 
 	// First pass: collect steps and build mappings
