@@ -41,11 +41,12 @@ func SlicePlan(plan Plan) (SliceResult, error) {
 	globalStepIDs := make(map[string]bool)
 
 	// First pass: collect steps and build mappings
-	for _, step := range plan.Steps {
+	for i := range plan.Steps {
+		step := &plan.Steps[i]
 		hostID := step.Host.LogicalID
 		if hostID == "" {
 			globalStepIDs[step.ID] = true
-			result.GlobalSteps = append(result.GlobalSteps, step)
+			result.GlobalSteps = append(result.GlobalSteps, *step)
 			continue
 		}
 		stepToHost[step.ID] = hostID
@@ -61,12 +62,13 @@ func SlicePlan(plan Plan) (SliceResult, error) {
 
 	// Build sorted GlobalStepIDs list for explicit tracking
 	result.GlobalStepIDs = make([]string, 0, len(globalStepIDs))
-	for _, step := range result.GlobalSteps {
-		result.GlobalStepIDs = append(result.GlobalStepIDs, step.ID)
+	for i := range result.GlobalSteps {
+		result.GlobalStepIDs = append(result.GlobalStepIDs, result.GlobalSteps[i].ID)
 	}
 
 	// Second pass: assign steps to host plans and validate dependencies
-	for _, step := range plan.Steps {
+	for i := range plan.Steps {
+		step := &plan.Steps[i]
 		hostID := step.Host.LogicalID
 		if hostID == "" {
 			continue // Already handled as global step
