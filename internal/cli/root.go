@@ -67,6 +67,7 @@ func NewRootCommand() *cobra.Command {
 
 	// Subcommands - keep registrations in lexicographic order by .Use
 	// to ensure deterministic help output (see Agent.md determinism rules).
+	cmd.AddCommand(commands.NewAgentCommand())
 	cmd.AddCommand(commands.NewBuildCommand())
 	cmd.AddCommand(commands.NewCommitReportCommand())
 	cmd.AddCommand(commands.NewCommitSuggestCommand())

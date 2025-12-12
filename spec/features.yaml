@@ -148,6 +148,20 @@ features:
     tests:
       - "internal/core/plan_test.go"
 
+  - id: ENGINE_PLAN_ACTIONS
+    title: "Engine Plan Actions and Inputs Schema"
+    status: draft
+    spec: "engine/plan-actions.md"
+    owner: bart
+    tests:
+      - "pkg/engine/inputs/common_test.go"
+      - "pkg/engine/inputs/build_test.go"
+      - "pkg/engine/inputs/apply_compose_test.go"
+      - "pkg/engine/inputs/health_check_test.go"
+      - "pkg/engine/inputs/unmarshal_test.go"
+    depends_on:
+      - "CORE_PLAN"
+
   - id: CORE_ENV_RESOLUTION
     title: "Environment resolution and context"
     status: done
