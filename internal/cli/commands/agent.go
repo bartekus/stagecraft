@@ -73,6 +73,7 @@ func runAgentRun(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := engine.UnmarshalStrictHostPlan(data, &hostPlan, planID); err != nil {
+		// Wrap error with file path context for debugging
 		return fmt.Errorf("unmarshaling host plan from %q: %w", hostplanPath, err)
 	}
 
