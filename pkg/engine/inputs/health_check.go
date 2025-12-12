@@ -14,6 +14,7 @@ package inputs
 
 import "fmt"
 
+// HealthCheckInputs defines inputs for a health check step.
 type HealthCheckInputs struct {
 	Environment string `json:"environment"`
 
@@ -26,6 +27,7 @@ type HealthCheckInputs struct {
 	Retries         int `json:"retries,omitempty"`
 }
 
+// Normalize canonicalizes HealthCheckInputs fields.
 func (in *HealthCheckInputs) Normalize() error {
 	in.Environment = NormalizeString(in.Environment)
 
@@ -55,6 +57,7 @@ func (in *HealthCheckInputs) Normalize() error {
 	return nil
 }
 
+// Validate validates HealthCheckInputs according to v1 rules.
 func (in *HealthCheckInputs) Validate() error {
 	if in.Environment == "" {
 		return fmt.Errorf("environment is required")

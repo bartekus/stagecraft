@@ -17,6 +17,7 @@ import (
 	"sort"
 )
 
+// RolloutInputs defines inputs for a rollout step.
 type RolloutInputs struct {
 	Mode string `json:"mode"`
 
@@ -24,6 +25,7 @@ type RolloutInputs struct {
 	Targets   []string `json:"targets,omitempty"`
 }
 
+// Normalize canonicalizes RolloutInputs fields.
 func (in *RolloutInputs) Normalize() error {
 	in.Mode = NormalizeString(in.Mode)
 	if in.Targets != nil {
@@ -35,6 +37,7 @@ func (in *RolloutInputs) Normalize() error {
 	return nil
 }
 
+// Validate validates RolloutInputs according to v1 rules.
 func (in *RolloutInputs) Validate() error {
 	if in.Mode == "" {
 		return fmt.Errorf("mode is required")
