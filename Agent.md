@@ -347,7 +347,7 @@ Before any tests or code are written for a feature, AI MUST perform a three stag
 
 > **Documentation Organization**: For how docs are organized (engine vs narrative vs governance vs archive), see `docs/README.md`. AI MUST prefer `docs/engine` docs for implementation context and treat `docs/archive` as historical only.
 >
-> **Documentation Directory Structure**: Governance docs live under `docs/governance/`, coverage docs under `docs/coverage/`, and agent briefs under `docs/agents/`. AI MUST NOT create new governance, coverage, or agent brief documents in the repository root. All planning and operational documentation belongs under `docs/`.
+> **Documentation Directory Structure**: Governance docs live under `docs/governance/`, coverage docs under `docs/coverage/`, and agent briefs under `docs/engine/agents/`. AI MUST NOT create new governance, coverage, or agent brief documents in the repository root. All planning and operational documentation belongs under `docs/`.
 
 ⸻
 
@@ -1739,6 +1739,33 @@ Build tags and compilation flags MUST be documented and kept stable across envir
 * Stagecraft is not a plugin framework or workflow engine.
 * Stagecraft is not a general-purpose YAML/JSON transformer; any structured output MUST be directly justified by the
   spec.
+
+⸻
+
+## 📚 Canonical Documentation Homes (Mandatory)
+
+To prevent documentation sprawl and preserve long-term signal, AI MUST use the following four files as the canonical homes for specific classes of information.
+
+AI MUST NOT create new standalone documents for these concerns.
+
+### Canonical Sources of Truth
+
+| Concern | Canonical File |
+|------|----------------|
+| Provider evolution, slices, coverage progression, and design decisions | `docs/engine/history/<FEATURE_ID>_EVOLUTION.md` (e.g., `PROVIDER_NETWORK_TAILSCALE_EVOLUTION.md`) |
+| Coverage snapshots, thresholds, deltas, and compliance history | `docs/coverage/COVERAGE_LEDGER.md` |
+| Governance rules, enforcement, commit discipline, coverage policy | `docs/governance/GOVERNANCE_ALMANAC.md` |
+| Multi-step task context, AI handoffs, execution continuity | `docs/context-handoff/CONTEXT_LOG.md` |
+
+### Mandatory Rules
+
+- AI MUST append to these files instead of creating new governance, coverage, evolution, or context-handoff docs.
+- Legacy documents MAY be marked as **Superseded by** one of these files, but MUST NOT be deleted.
+- New documents of these categories are forbidden unless explicitly approved by a human maintainer.
+- When unsure where information belongs, AI MUST choose one of the four files above and justify placement.
+- **When creating a new evolution log**: Use `./scripts/generate-evolution-log.sh <FEATURE_ID>` to scaffold the file with the standard structure.
+
+Failure to follow this rule is considered a governance violation.
 
 ⸻
 

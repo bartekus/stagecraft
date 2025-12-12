@@ -14,7 +14,11 @@ See https://www.gnu.org/licenses/ for license details.
 
 # Context Handoff Documents Index
 
+> **Primary Reference**: All new context handoff notes should be added to `CONTEXT_LOG.md` instead of creating new files. This index is maintained for historical reference.
+
 This index lists all context handoff documents and when to use them. These documents provide deterministic context for AI agents transitioning between feature implementations.
+
+**Note**: Individual handoff documents are being consolidated into `CONTEXT_LOG.md`. New context handoffs MUST be added to the context log rather than creating new files.
 
 ## Purpose
 
@@ -27,8 +31,8 @@ Context handoff documents ensure:
 
 ## When to Use
 
-1. **Starting a new feature** - Check if there's a handoff doc pointing to your feature
-2. **Completing a feature** - Create a handoff doc for the next feature in the chain
+1. **Starting a new feature** - Check `CONTEXT_LOG.md` for recent handoff entries, or check individual handoff docs below
+2. **Completing a feature** - Add entry to `CONTEXT_LOG.md` for the next feature in the chain
 3. **Understanding dependencies** - Handoff docs show what's ready and what's blocked
 
 ## Available Handoff Documents
@@ -112,10 +116,11 @@ For creating new handoff documents, use:
 
 ## Workflow
 
-1. **Check this index** before starting a new feature
-2. **Open the relevant handoff doc** if one exists for your feature
-3. **Follow the handoff doc's Quick Start** section
-4. **Create a new handoff doc** when completing your feature (if there's a next feature in the chain)
+1. **Check `CONTEXT_LOG.md`** first for recent handoff entries
+2. **Check this index** for historical handoff docs if needed
+3. **Open the relevant handoff doc** if one exists for your feature
+4. **Follow the handoff doc's Quick Start** section
+5. **Add entry to `CONTEXT_LOG.md`** when completing your feature (instead of creating new handoff files)
 
 ## Principles
 

@@ -175,7 +175,7 @@ func TestHistorySourceImpl_Commits(t *testing.T) {
 		t.Fatalf("failed to git add: %v", err)
 	}
 
-	cmd = exec.Command("git", "commit", "-m", "feat(CLI_DEPLOY): initial commit")
+	cmd = exec.Command("git", "commit", "-m", "feat(CLI_DEPLOY): initial commit", "--author", "Test User <test@example.com>")
 	cmd.Dir = repoPath
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("failed to git commit: %v", err)
