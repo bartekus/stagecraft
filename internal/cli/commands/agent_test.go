@@ -35,7 +35,7 @@ func TestRunAgentRun_ErrorIncludesFilePath(t *testing.T) {
 		"unknown_field": "should be rejected"
 	}`
 
-	if err := os.WriteFile(hostplanPath, []byte(invalidJSON), 0o644); err != nil {
+	if err := os.WriteFile(hostplanPath, []byte(invalidJSON), 0o600); err != nil {
 		t.Fatalf("failed to write test hostplan: %v", err)
 	}
 
@@ -74,7 +74,7 @@ func TestRunAgentRun_RejectsEmptyLogicalID(t *testing.T) {
 		t.Fatalf("failed to marshal hostplan: %v", err)
 	}
 
-	if err := os.WriteFile(hostplanPath, jsonBytes, 0o644); err != nil {
+	if err := os.WriteFile(hostplanPath, jsonBytes, 0o600); err != nil {
 		t.Fatalf("failed to write test hostplan: %v", err)
 	}
 
@@ -130,7 +130,7 @@ func TestRunAgentRun_AcceptsValidHostPlan(t *testing.T) {
 		t.Fatalf("failed to marshal hostplan: %v", err)
 	}
 
-	if err := os.WriteFile(hostplanPath, jsonBytes, 0o644); err != nil {
+	if err := os.WriteFile(hostplanPath, jsonBytes, 0o600); err != nil {
 		t.Fatalf("failed to write test hostplan: %v", err)
 	}
 

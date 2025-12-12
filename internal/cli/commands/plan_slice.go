@@ -56,7 +56,8 @@ func runPlanSlice(cmd *cobra.Command, args []string) error {
 
 	if planPath != "" {
 		// Load plan from file
-		data, err := os.ReadFile(planPath)
+		// #nosec G304 // path is user/config selected; intentional.
+		data, err := os.ReadFile(filepath.Clean(planPath))
 		if err != nil {
 			return fmt.Errorf("reading plan file: %w", err)
 		}
@@ -98,7 +99,7 @@ func runPlanSlice(cmd *cobra.Command, args []string) error {
 	// Output results
 	if outputDir != "" {
 		// Write host plans to files
-		if err := os.MkdirAll(outputDir, 0o755); err != nil {
+		if err := os.MkdirAll(outputDir, 0o750); err != nil {
 			return fmt.Errorf("creating output directory: %w", err)
 		}
 
@@ -109,7 +110,7 @@ func runPlanSlice(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("marshaling host plan for %s: %w", hostID, err)
 			}
 
-			if err := os.WriteFile(filename, jsonBytes, 0o644); err != nil {
+			if err := os.WriteFile(filename, jsonBytes, 0o600); err != nil {
 				return fmt.Errorf("writing host plan to %s: %w", filename, err)
 			}
 
@@ -124,7 +125,7 @@ func runPlanSlice(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("marshaling global steps: %w", err)
 			}
 
-			if err := os.WriteFile(filename, jsonBytes, 0o644); err != nil {
+			if err := os.WriteFile(filename, jsonBytes, 0o600); err != nil {
 				return fmt.Errorf("writing global steps: %w", err)
 			}
 

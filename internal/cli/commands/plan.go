@@ -260,6 +260,7 @@ func applyFilters(plan *core.Plan, services, roles, hosts, phases []string) (*co
 
 // operationTouchesServices checks if an operation touches any of the specified services.
 // Returns true if the operation has no service metadata (to preserve dependencies like migrations).
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 func operationTouchesServices(op core.Operation, serviceSet map[string]bool) bool {
 	// Check metadata for service information
 	if services, ok := op.Metadata["services"].([]string); ok {
@@ -585,6 +586,7 @@ func getOperationID(op core.Operation, index int) string {
 }
 
 // extractServicesFromOperation extracts services from an operation's metadata.
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 func extractServicesFromOperation(op core.Operation) []string {
 	services := []string{}
 
@@ -615,6 +617,7 @@ func extractHostsFromPlan(ops []core.Operation) map[string]bool {
 }
 
 // extractHostsFromOperation extracts hosts from an operation's metadata.
+// nolint:gocritic // passed by value intentionally; treated as immutable and keeps call sites simple.
 func extractHostsFromOperation(op core.Operation) []string {
 	hosts := []string{}
 

@@ -86,7 +86,7 @@ func runPlanDeploy(cmd *cobra.Command, args []string) error {
 	// Output
 	jsonPath, _ := cmd.Flags().GetString("json")
 	if jsonPath != "" {
-		if err := os.WriteFile(jsonPath, jsonBytes, 0o644); err != nil {
+		if err := os.WriteFile(jsonPath, jsonBytes, 0o600); err != nil {
 			return fmt.Errorf("writing plan to %s: %w", jsonPath, err)
 		}
 		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Plan written to %s\n", jsonPath)

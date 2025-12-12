@@ -83,7 +83,8 @@ func (g *ComposeGenerator) Generate(
 		}
 
 		// Parse env file (graceful if missing - log debug, continue)
-		if data, err := os.ReadFile(envFilePath); err == nil {
+		// #nosec G304 // path is user/config selected; intentional.
+		if data, err := os.ReadFile(filepath.Clean(envFilePath)); err == nil {
 			envVars = make(map[string]string)
 			parseEnvFileInto(envVars, data)
 		}
@@ -143,7 +144,7 @@ func (g *ComposeGenerator) Generate(
 
 	// 5. Write to output path
 	outputPath = filepath.Join(workdir, ".stagecraft", "rendered", envName, "docker-compose.yml")
-	if err := g.mkdirAll(filepath.Dir(outputPath), 0o755); err != nil {
+	if err := g.mkdirAll(filepath.Dir(outputPath), 0o750); err != nil {
 		return "", "", fmt.Errorf("creating output directory: %w", err)
 	}
 

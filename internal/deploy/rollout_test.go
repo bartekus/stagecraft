@@ -28,6 +28,7 @@ type mockRunner struct {
 	runFunc func(ctx context.Context, cmd executil.Command) (*executil.Result, error)
 }
 
+// nolint:gocritic // Runner interface requires value.
 func (m *mockRunner) Run(ctx context.Context, cmd executil.Command) (*executil.Result, error) {
 	if m.runFunc != nil {
 		return m.runFunc(ctx, cmd)
@@ -35,6 +36,7 @@ func (m *mockRunner) Run(ctx context.Context, cmd executil.Command) (*executil.R
 	return &executil.Result{ExitCode: 0}, nil
 }
 
+// nolint:gocritic // Runner interface requires value.
 func (m *mockRunner) RunStream(ctx context.Context, cmd executil.Command, output io.Writer) error {
 	result, err := m.Run(ctx, cmd)
 	if err != nil {

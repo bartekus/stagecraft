@@ -10,6 +10,7 @@ This program is free software licensed under the terms of the GNU AGPL v3 or lat
 See https://www.gnu.org/licenses/ for license details.
 */
 
+// Package plan provides adapters and helpers for converting plans into executable steps.
 package plan
 
 import (

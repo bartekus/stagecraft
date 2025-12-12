@@ -33,7 +33,7 @@ services:
   api:
     image: myapp:latest
 `
-	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o644); err != nil {
+	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o600); err != nil {
 		t.Fatalf("failed to write compose file: %v", err)
 	}
 
@@ -59,11 +59,13 @@ services:
 	}
 
 	// Read both files
+	// #nosec G304 // path is test-controlled under TempDir.
 	bytes1, err := os.ReadFile(path1)
 	if err != nil {
 		t.Fatalf("Failed to read first file: %v", err)
 	}
 
+	// #nosec G304 // path is test-controlled under TempDir.
 	bytes2, err := os.ReadFile(path2)
 	if err != nil {
 		t.Fatalf("Failed to read second file: %v", err)
@@ -107,7 +109,7 @@ secrets:
 x-custom-extension:
   foo: bar
 `
-	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o644); err != nil {
+	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o600); err != nil {
 		t.Fatalf("failed to write compose file: %v", err)
 	}
 
@@ -130,6 +132,7 @@ x-custom-extension:
 	}
 
 	// Read generated file
+	// #nosec G304 // path is test-controlled under TempDir.
 	outputBytes, err := os.ReadFile(outputPath)
 	if err != nil {
 		t.Fatalf("failed to read output: %v", err)
@@ -201,7 +204,7 @@ services:
     build:
       context: .
 `
-	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o644); err != nil {
+	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o600); err != nil {
 		t.Fatalf("failed to write compose file: %v", err)
 	}
 
@@ -223,6 +226,7 @@ services:
 		t.Fatalf("Generate failed: %v", err)
 	}
 
+	// #nosec G304 // path is test-controlled under TempDir.
 	outputBytes, err := os.ReadFile(outputPath)
 	if err != nil {
 		t.Fatalf("failed to read output: %v", err)
@@ -253,14 +257,14 @@ services:
     environment:
       EXISTING_VAR: existing_value
 `
-	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o644); err != nil {
+	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o600); err != nil {
 		t.Fatalf("failed to write compose file: %v", err)
 	}
 
 	envFileContent := `NEW_VAR=new_value
 EXISTING_VAR=should_not_override
 `
-	if err := os.WriteFile(envFilePath, []byte(envFileContent), 0o644); err != nil {
+	if err := os.WriteFile(envFilePath, []byte(envFileContent), 0o600); err != nil {
 		t.Fatalf("failed to write env file: %v", err)
 	}
 
@@ -285,6 +289,7 @@ EXISTING_VAR=should_not_override
 		t.Fatalf("Generate failed: %v", err)
 	}
 
+	// #nosec G304 // path is test-controlled under TempDir.
 	outputBytes, err := os.ReadFile(outputPath)
 	if err != nil {
 		t.Fatalf("failed to read output: %v", err)
@@ -317,7 +322,7 @@ services:
   api:
     image: myapp:latest
 `
-	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o644); err != nil {
+	if err := os.WriteFile(baseComposePath, []byte(composeContent), 0o600); err != nil {
 		t.Fatalf("failed to write compose file: %v", err)
 	}
 
