@@ -113,7 +113,7 @@ func runPlanSlice(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("writing host plan to %s: %w", filename, err)
 			}
 
-			fmt.Fprintf(cmd.OutOrStdout(), "Host plan for %s written to %s\n", hostID, filename)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Host plan for %s written to %s\n", hostID, filename)
 		}
 
 		// Write global steps if any
@@ -128,7 +128,7 @@ func runPlanSlice(cmd *cobra.Command, args []string) error {
 				return fmt.Errorf("writing global steps: %w", err)
 			}
 
-			fmt.Fprintf(cmd.OutOrStdout(), "Global steps written to %s\n", filename)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Global steps written to %s\n", filename)
 		}
 	} else {
 		// Output to stdout as JSON
@@ -142,7 +142,7 @@ func runPlanSlice(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("marshaling result: %w", err)
 		}
 
-		fmt.Fprintf(cmd.OutOrStdout(), "%s\n", string(jsonBytes))
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", string(jsonBytes))
 	}
 
 	return nil

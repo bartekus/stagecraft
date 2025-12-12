@@ -54,7 +54,7 @@ func runPlanDeploy(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("loading config: %w", err)
 	}
 
-	flags, err = ResolveFlags(cmd, cfg)
+	_, err = ResolveFlags(cmd, cfg)
 	if err != nil {
 		return fmt.Errorf("resolving flags: %w", err)
 	}
@@ -89,9 +89,9 @@ func runPlanDeploy(cmd *cobra.Command, args []string) error {
 		if err := os.WriteFile(jsonPath, jsonBytes, 0o644); err != nil {
 			return fmt.Errorf("writing plan to %s: %w", jsonPath, err)
 		}
-		fmt.Fprintf(cmd.OutOrStdout(), "Plan written to %s\n", jsonPath)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Plan written to %s\n", jsonPath)
 	} else {
-		fmt.Fprintf(cmd.OutOrStdout(), "%s\n", string(jsonBytes))
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", string(jsonBytes))
 	}
 
 	return nil

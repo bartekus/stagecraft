@@ -115,9 +115,9 @@ func runAgentRun(cmd *cobra.Command, args []string) error {
 		if err := os.WriteFile(outputPath, reportJSON, 0o644); err != nil {
 			return fmt.Errorf("writing execution report: %w", err)
 		}
-		fmt.Fprintf(cmd.OutOrStdout(), "Execution report written to %s\n", outputPath)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Execution report written to %s\n", outputPath)
 	} else {
-		fmt.Fprintf(cmd.OutOrStdout(), "%s\n", string(reportJSON))
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", string(reportJSON))
 	}
 
 	return nil
