@@ -13,6 +13,7 @@ See https://www.gnu.org/licenses/ for license details.
 package engine
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
 )
@@ -171,7 +172,7 @@ func TestSlicePlan_GlobalStepsDeterministicOrdering(t *testing.T) {
 	// Results should be identical
 	json1, _ := json.Marshal(result1.GlobalSteps)
 	json2, _ := json.Marshal(result2.GlobalSteps)
-	if string(json1) != string(json2) {
+	if !bytes.Equal(json1, json2) {
 		t.Error("global steps ordering must be deterministic")
 	}
 }

@@ -13,6 +13,7 @@ See https://www.gnu.org/licenses/ for license details.
 package plan
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -296,7 +297,7 @@ func TestToEnginePlan_NoTimestampsOrRandomness(t *testing.T) {
 		t.Fatalf("marshaling plan2: %v", err)
 	}
 
-	if string(json1) != string(json2) {
+	if !bytes.Equal(json1, json2) {
 		t.Errorf("plans must be identical (no timestamps/randomness):\n  plan1: %s\n  plan2: %s", string(json1), string(json2))
 	}
 }

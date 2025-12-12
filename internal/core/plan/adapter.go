@@ -209,19 +209,19 @@ type planIDResource struct {
 // The plan ID is stable across repeated runs with the same inputs.
 func generatePlanID(steps []engine.PlanStep, envName string) (string, error) {
 	psteps := make([]planIDStep, 0, len(steps))
-	for _, step := range steps {
+	for i := range steps {
 		psteps = append(psteps, planIDStep{
-			ID:     step.ID,
-			Index:  step.Index,
-			Action: string(step.Action),
+			ID:     steps[i].ID,
+			Index:  steps[i].Index,
+			Action: string(steps[i].Action),
 			Target: planIDResource{
-				Kind:     step.Target.Kind,
-				Name:     step.Target.Name,
-				Provider: step.Target.Provider,
+				Kind:     steps[i].Target.Kind,
+				Name:     steps[i].Target.Name,
+				Provider: steps[i].Target.Provider,
 			},
-			Host:      step.Host.LogicalID,
-			Inputs:    step.Inputs,
-			DependsOn: step.DependsOn,
+			Host:      steps[i].Host.LogicalID,
+			Inputs:    steps[i].Inputs,
+			DependsOn: steps[i].DependsOn,
 		})
 	}
 

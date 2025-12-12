@@ -54,12 +54,13 @@ func (e *Executor) ExecuteHostPlan(ctx context.Context, plan engine.HostPlan) (*
 	// Track completed steps
 	completed := make(map[string]bool, len(plan.Steps))
 	stepMap := make(map[string]engine.HostPlanStep, len(plan.Steps))
-	for _, step := range plan.Steps {
-		stepMap[step.ID] = step
+	for i := range plan.Steps {
+		stepMap[plan.Steps[i].ID] = plan.Steps[i]
 	}
 
 	// Execute steps in order (already sorted by Index, dependencies validated)
-	for _, step := range plan.Steps {
+	for i := range plan.Steps {
+		step := plan.Steps[i]
 		// Check dependencies are completed
 		for _, depID := range step.DependsOn {
 			if !completed[depID] {
