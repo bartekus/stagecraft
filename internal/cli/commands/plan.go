@@ -43,6 +43,10 @@ func NewPlanCommand() *cobra.Command {
 		RunE:  runPlan,
 	}
 
+	// Add subcommands
+	cmd.AddCommand(NewPlanDeployCommand())
+	cmd.AddCommand(NewPlanSliceCommand())
+
 	cmd.Flags().StringP("env", "e", "", "Target environment (e.g. staging, prod)")
 	cmd.Flags().StringP("version", "v", "", "Version to plan for (defaults to 'unknown' if omitted)")
 	cmd.Flags().String("services", "", "Comma-separated list of services to include")
@@ -554,8 +558,14 @@ type jsonProviderStep struct {
 }
 
 // getOperationID generates a deterministic ID for an operation.
+// Prefers Operation.ID (canonical) over metadata fallback.
 func getOperationID(op core.Operation, index int) string {
-	// Try to get ID from metadata
+	// Use canonical Operation.ID if present (matches engine/agent view)
+	if op.ID != "" {
+		return op.ID
+	}
+
+	// Fallback: try to get ID from metadata (legacy)
 	if id, ok := op.Metadata["id"].(string); ok && id != "" {
 		return id
 	}

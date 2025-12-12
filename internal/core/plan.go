@@ -16,6 +16,7 @@ package core
 
 import (
 	"fmt"
+	"sort"
 
 	"stagecraft/pkg/config"
 )
@@ -32,6 +33,7 @@ type Plan struct {
 
 // Operation represents a single step in a deployment plan.
 type Operation struct {
+	ID           string // Stable operation identifier for dependency references (required)
 	Type         OperationType
 	Description  string
 	Dependencies []string // IDs of operations that must complete first
@@ -78,27 +80,52 @@ func (p *Planner) PlanDeploy(envName string) (*Plan, error) {
 		Operations:  []Operation{},
 	}
 
-	// Add migration operations (pre-deploy)
-	p.addMigrationOps(plan, "pre_deploy")
+	// Track pre-deploy migration IDs for deploy dependencies
+	var preDeployMigrationIDs []string
+
+	// Add migration operations (pre-deploy) - returns sorted IDs
+	migrationIDs := p.addMigrationOps(plan, "pre_deploy")
+	preDeployMigrationIDs = append(preDeployMigrationIDs, migrationIDs...)
+	// Ensure deterministic ordering
+	sort.Strings(preDeployMigrationIDs)
 
 	// Add build operations
 	p.addBuildOps(plan)
 
-	// Add deploy operations
-	p.addDeployOps(plan)
+	// Add deploy operations (depends on build + pre-deploy migrations)
+	p.addDeployOps(plan, preDeployMigrationIDs)
 
 	// Add migration operations (post-deploy)
 	p.addMigrationOps(plan, "post_deploy")
 
-	// Add health check operations
+	// Add health check operations (depends on deploy)
 	p.addHealthCheckOps(plan)
+
+	// Defensive check: ensure all operations have IDs
+	for i, op := range plan.Operations {
+		if op.ID == "" {
+			return nil, fmt.Errorf("planner produced empty operation id at index %d", i)
+		}
+	}
 
 	return plan, nil
 }
 
 // addMigrationOps adds migration operations for the given strategy.
-func (p *Planner) addMigrationOps(plan *Plan, strategy string) {
-	for dbName, dbCfg := range p.config.Databases {
+// Returns the IDs of created operations for dependency tracking.
+// Database names are sorted to ensure deterministic operation order.
+func (p *Planner) addMigrationOps(plan *Plan, strategy string) []string {
+	var opIDs []string
+
+	// Sort database names for deterministic iteration order
+	dbNames := make([]string, 0, len(p.config.Databases))
+	for name := range p.config.Databases {
+		dbNames = append(dbNames, name)
+	}
+	sort.Strings(dbNames)
+
+	for _, dbName := range dbNames {
+		dbCfg := p.config.Databases[dbName]
 		if dbCfg.Migrations == nil {
 			continue
 		}
@@ -108,7 +135,10 @@ func (p *Planner) addMigrationOps(plan *Plan, strategy string) {
 		}
 
 		opID := fmt.Sprintf("migration_%s_%s", dbName, strategy)
+		opIDs = append(opIDs, opID)
+
 		plan.Operations = append(plan.Operations, Operation{
+			ID:           opID,
 			Type:         OpTypeMigration,
 			Description:  fmt.Sprintf("Run %s migrations for database %s", strategy, dbName),
 			Dependencies: []string{},
@@ -120,8 +150,9 @@ func (p *Planner) addMigrationOps(plan *Plan, strategy string) {
 				"conn_env": dbCfg.ConnectionEnv,
 			},
 		})
-		_ = opID // For future dependency tracking
 	}
+
+	return opIDs
 }
 
 // addBuildOps adds build operations.
@@ -129,6 +160,7 @@ func (p *Planner) addBuildOps(plan *Plan) {
 	if p.config.Backend != nil {
 		opID := "build_backend"
 		plan.Operations = append(plan.Operations, Operation{
+			ID:           opID,
 			Type:         OpTypeBuild,
 			Description:  fmt.Sprintf("Build backend using provider %s", p.config.Backend.Provider),
 			Dependencies: []string{},
@@ -136,16 +168,27 @@ func (p *Planner) addBuildOps(plan *Plan) {
 				"provider": p.config.Backend.Provider,
 			},
 		})
-		_ = opID // For future dependency tracking
 	}
 }
 
 // addDeployOps adds deployment operations.
-func (p *Planner) addDeployOps(plan *Plan) {
+// preDeployMigrationIDs are the IDs of pre-deploy migration operations that must complete first.
+// IDs are expected to be sorted for deterministic dependency ordering.
+func (p *Planner) addDeployOps(plan *Plan, preDeployMigrationIDs []string) {
+	opID := fmt.Sprintf("deploy_%s", plan.Environment)
+
+	deps := []string{}
+	if p.config.Backend != nil {
+		deps = append(deps, "build_backend")
+	}
+	// Add all pre-deploy migration dependencies (already sorted)
+	deps = append(deps, preDeployMigrationIDs...)
+
 	plan.Operations = append(plan.Operations, Operation{
+		ID:           opID,
 		Type:         OpTypeDeploy,
 		Description:  fmt.Sprintf("Deploy to environment %s", plan.Environment),
-		Dependencies: []string{}, // Will depend on builds and pre-deploy migrations
+		Dependencies: deps,
 		Metadata: map[string]interface{}{
 			"environment": plan.Environment,
 		},
@@ -154,12 +197,16 @@ func (p *Planner) addDeployOps(plan *Plan) {
 
 // addHealthCheckOps adds health check operations.
 func (p *Planner) addHealthCheckOps(plan *Plan) {
+	env := plan.Environment
+	opID := fmt.Sprintf("health_check_%s", env)
+
 	plan.Operations = append(plan.Operations, Operation{
+		ID:           opID,
 		Type:         OpTypeHealthCheck,
-		Description:  fmt.Sprintf("Health check for environment %s", plan.Environment),
-		Dependencies: []string{}, // Will depend on deployment
+		Description:  fmt.Sprintf("Health check for environment %s", env),
+		Dependencies: []string{fmt.Sprintf("deploy_%s", env)},
 		Metadata: map[string]interface{}{
-			"environment": plan.Environment,
+			"environment": env,
 		},
 	})
 }
