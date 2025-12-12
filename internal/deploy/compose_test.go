@@ -12,7 +12,6 @@ See https://www.gnu.org/licenses/ for license details.
 
 // Feature: DEPLOY_COMPOSE_GEN
 // Spec: spec/deploy/compose-gen.md
-
 package deploy
 
 import (

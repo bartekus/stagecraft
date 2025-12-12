@@ -12,7 +12,6 @@ See https://www.gnu.org/licenses/ for license details.
 
 // Feature: DEPLOY_ROLLOUT
 // Spec: spec/deploy/rollout.md
-
 package deploy
 
 import (
