@@ -16,6 +16,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 )
 
 // UnmarshalStrictPlan unmarshals a Plan with strict field validation (rejects unknown fields).
@@ -26,9 +27,10 @@ func UnmarshalStrictPlan(data []byte, plan *Plan) error {
 	if err := dec.Decode(plan); err != nil {
 		return fmt.Errorf("strict decode plan: %w", err)
 	}
-	// Ensure there's no trailing junk.
-	if dec.More() {
-		return fmt.Errorf("strict decode plan: trailing tokens")
+	// Ensure there's no trailing junk: attempt second decode, must hit EOF
+	var extra any
+	if err := dec.Decode(&extra); err != io.EOF {
+		return fmt.Errorf("strict decode plan: trailing tokens after JSON object")
 	}
 	return nil
 }
@@ -46,8 +48,9 @@ func UnmarshalStrictHostPlan(data []byte, plan *HostPlan, planID string) error {
 		}
 		return fmt.Errorf("strict decode host plan%s: %w", ctx, err)
 	}
-	// Ensure there's no trailing junk.
-	if dec.More() {
+	// Ensure there's no trailing junk: attempt second decode, must hit EOF
+	var extra any
+	if err := dec.Decode(&extra); err != io.EOF {
 		ctx := ""
 		if planID != "" {
 			ctx = fmt.Sprintf(" (planId: %q)", planID)
