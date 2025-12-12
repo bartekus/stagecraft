@@ -167,8 +167,8 @@ type SliceResult struct {
 	// They are ordered by Index then ID (stable).
 	GlobalSteps []PlanStep `json:"globalSteps,omitempty"`
 
-	// GlobalStepIDs is the set of all global step IDs (for fast lookup).
-	// This makes it explicit which steps must complete before host plans can execute.
+	// GlobalStepIDs is the ordered list of global step IDs (Index then ID).
+	// Useful for fast lookup and explicit tracking of which steps must complete before host plans can execute.
 	GlobalStepIDs []string `json:"globalStepIds,omitempty"`
 
 	// GlobalDependencyRefs maps host step IDs to the global step IDs they depend on.
