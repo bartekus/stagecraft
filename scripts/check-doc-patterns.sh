@@ -43,7 +43,6 @@ fi
 
 # Colors
 RED='\033[0;31m'
-YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
@@ -51,7 +50,7 @@ ERRORS=0
 
 error() {
     printf '%bERROR:%b %s\n' "${RED}" "${NC}" "$1" >&2
-    ((ERRORS++))
+    ((ERRORS+=1))
 }
 
 # Check for forbidden patterns in docs/
@@ -64,7 +63,16 @@ UNTRACKED=$(git ls-files --others --exclude-standard 2>/dev/null || printf '')
 WORKING_NEW=$(git diff --name-only --diff-filter=A 2>/dev/null || printf '')
 
 # Combine all new files (portable across BSD/GNU)
-ALL_NEW_FILES=$(printf '%s\n%s\n%s\n' "$STAGED_NEW" "$UNTRACKED" "$WORKING_NEW" | grep -v '^$' | sort -u)
+# Suppress grep exit code (empty input causes grep to return 1, which would exit with set -e)
+ALL_NEW_FILES=$(printf '%s\n%s\n%s\n' "$STAGED_NEW" "$UNTRACKED" "$WORKING_NEW" | grep -v '^$' || true | sort -u)
+
+# Helper function to check if file is in new files list (handles grep exit code safely)
+is_new_file() {
+    local file="$1"
+    [ -z "$ALL_NEW_FILES" ] && return 1
+    printf '%s\n' "$ALL_NEW_FILES" | grep -Fqx "$file" 2>/dev/null || return 1
+    return 0
+}
 
 # Pattern 1: *_COVERAGE_V1_COMPLETE.md
 # Collect files first (avoid subshell issues with while loop)
@@ -73,13 +81,12 @@ if [ -n "$FOUND_FILES" ]; then
     printf '%s\n' "$FOUND_FILES" | while IFS= read -r file; do
         [ -z "$file" ] && continue
         # Check if file is new (in our new files list)
-        # Use grep -F for fixed string matching (more portable)
-        if printf '%s\n' "$ALL_NEW_FILES" | grep -Fqx "$file"; then
+        if is_new_file "$file"; then
             error "Forbidden pattern found: $file"
             echo "  → Use: docs/coverage/COVERAGE_LEDGER.md and docs/engine/history/<FEATURE_ID>_EVOLUTION.md instead"
             echo "  → See: Agent.md section 'Canonical Documentation Homes'"
         fi
-    done
+    done || true
 fi
 
 # Pattern 2: *_SLICE*_PLAN.md
@@ -87,12 +94,12 @@ FOUND_FILES=$(find docs/ -name "*_SLICE*_PLAN.md" 2>/dev/null || printf '')
 if [ -n "$FOUND_FILES" ]; then
     printf '%s\n' "$FOUND_FILES" | while IFS= read -r file; do
         [ -z "$file" ] && continue
-        if printf '%s\n' "$ALL_NEW_FILES" | grep -Fqx "$file"; then
+        if is_new_file "$file"; then
             error "Forbidden pattern found: $file"
             echo "  → Use: docs/engine/history/<FEATURE_ID>_EVOLUTION.md instead"
             echo "  → See: Agent.md section 'Canonical Documentation Homes'"
         fi
-    done
+    done || true
 fi
 
 # Pattern 3: COMMIT_*_PHASE*.md (in docs/governance/ or docs/todo/)
@@ -100,12 +107,12 @@ FOUND_FILES=$(find docs/governance/ docs/todo/ -name "COMMIT_*_PHASE*.md" 2>/dev
 if [ -n "$FOUND_FILES" ]; then
     printf '%s\n' "$FOUND_FILES" | while IFS= read -r file; do
         [ -z "$file" ] && continue
-        if printf '%s\n' "$ALL_NEW_FILES" | grep -Fqx "$file"; then
+        if is_new_file "$file"; then
             error "Forbidden pattern found: $file"
             echo "  → Use: docs/governance/GOVERNANCE_ALMANAC.md instead"
             echo "  → See: Agent.md section 'Canonical Documentation Homes'"
         fi
-    done
+    done || true
 fi
 
 # Summary
