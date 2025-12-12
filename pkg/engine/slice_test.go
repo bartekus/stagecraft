@@ -91,9 +91,29 @@ func TestSlicePlan_AllowsGlobalStepDependencies(t *testing.T) {
 	if len(hp.Steps) != 1 {
 		t.Fatalf("expected 1 step in host plan, got %d", len(hp.Steps))
 	}
-	// Dependency on global step should be removed (controller handles it)
+	// Dependency on global step should be removed from DependsOn (controller handles it)
 	if len(hp.Steps[0].DependsOn) != 0 {
 		t.Errorf("expected no dependencies in host plan (global deps handled by controller), got %v", hp.Steps[0].DependsOn)
+	}
+
+	// Global dependency should be tracked explicitly
+	if len(result.GlobalStepIDs) != 1 {
+		t.Fatalf("expected 1 global step ID, got %d", len(result.GlobalStepIDs))
+	}
+	if result.GlobalStepIDs[0] != "global-step" {
+		t.Errorf("expected global step ID 'global-step', got %q", result.GlobalStepIDs[0])
+	}
+
+	// Global dependency refs should track the host step's dependency on global step
+	if len(result.GlobalDependencyRefs) != 1 {
+		t.Fatalf("expected 1 global dependency ref, got %d", len(result.GlobalDependencyRefs))
+	}
+	globalDeps, ok := result.GlobalDependencyRefs["step-host-a"]
+	if !ok {
+		t.Fatal("expected global dependency ref for step-host-a")
+	}
+	if len(globalDeps) != 1 || globalDeps[0] != "global-step" {
+		t.Errorf("expected global dependency ['global-step'], got %v", globalDeps)
 	}
 }
 

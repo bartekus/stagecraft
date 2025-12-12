@@ -60,12 +60,25 @@ func runAgentRun(cmd *cobra.Command, args []string) error {
 	// Load HostPlan with strict validation
 	data, err := os.ReadFile(hostplanPath)
 	if err != nil {
-		return fmt.Errorf("reading host plan file: %w", err)
+		return fmt.Errorf("reading host plan file %q: %w", hostplanPath, err)
 	}
 
 	var hostPlan engine.HostPlan
-	if err := engine.UnmarshalStrictHostPlan(data, &hostPlan); err != nil {
-		return fmt.Errorf("unmarshaling host plan: %w", err)
+	// Try to extract planID from JSON for better error context (best-effort)
+	var planID string
+	if tempPlan := struct {
+		PlanID string `json:"planId"`
+	}{}; json.Unmarshal(data, &tempPlan) == nil {
+		planID = tempPlan.PlanID
+	}
+
+	if err := engine.UnmarshalStrictHostPlan(data, &hostPlan, planID); err != nil {
+		return fmt.Errorf("unmarshaling host plan from %q: %w", hostplanPath, err)
+	}
+
+	// Validate HostPlan has non-empty LogicalID (required for HostPlans)
+	if hostPlan.Host.LogicalID == "" {
+		return fmt.Errorf("host plan from %q has empty host.logicalId (required for HostPlans)", hostplanPath)
 	}
 
 	// Create executor with stub executors for all actions

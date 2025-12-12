@@ -34,16 +34,25 @@ func UnmarshalStrictPlan(data []byte, plan *Plan) error {
 }
 
 // UnmarshalStrictHostPlan unmarshals a HostPlan with strict field validation (rejects unknown fields).
-func UnmarshalStrictHostPlan(data []byte, plan *HostPlan) error {
+// The planID parameter is used for error context (can be empty if not yet decoded).
+func UnmarshalStrictHostPlan(data []byte, plan *HostPlan, planID string) error {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(plan); err != nil {
-		return fmt.Errorf("strict decode host plan: %w", err)
+		ctx := ""
+		if planID != "" {
+			ctx = fmt.Sprintf(" (planId: %q)", planID)
+		}
+		return fmt.Errorf("strict decode host plan%s: %w", ctx, err)
 	}
 	// Ensure there's no trailing junk.
 	if dec.More() {
-		return fmt.Errorf("strict decode host plan: trailing tokens")
+		ctx := ""
+		if planID != "" {
+			ctx = fmt.Sprintf(" (planId: %q)", planID)
+		}
+		return fmt.Errorf("strict decode host plan%s: trailing tokens after JSON object", ctx)
 	}
 	return nil
 }

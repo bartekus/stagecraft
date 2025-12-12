@@ -166,6 +166,15 @@ type SliceResult struct {
 	// GlobalSteps are steps with empty Host.LogicalID that must be handled separately.
 	// They are ordered by Index then ID (stable).
 	GlobalSteps []PlanStep `json:"globalSteps,omitempty"`
+
+	// GlobalStepIDs is the set of all global step IDs (for fast lookup).
+	// This makes it explicit which steps must complete before host plans can execute.
+	GlobalStepIDs []string `json:"globalStepIds,omitempty"`
+
+	// GlobalDependencyRefs maps host step IDs to the global step IDs they depend on.
+	// This makes explicit which host steps require global step completion before execution.
+	// Key: host step ID, Value: list of global step IDs that step depends on.
+	GlobalDependencyRefs map[string][]string `json:"globalDependencyRefs,omitempty"`
 }
 
 // ExecutionReport is the portable execution result.

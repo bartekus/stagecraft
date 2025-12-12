@@ -27,8 +27,10 @@ import (
 // Returns an error if any step depends on a step that is not in the same HostPlan.
 func SlicePlan(plan Plan) (SliceResult, error) {
 	result := SliceResult{
-		HostPlans:   make(map[string]HostPlan),
-		GlobalSteps: nil,
+		HostPlans:            make(map[string]HostPlan),
+		GlobalSteps:          nil,
+		GlobalStepIDs:        nil,
+		GlobalDependencyRefs: make(map[string][]string),
 	}
 
 	// Build step ID to host ID mapping for dependency validation
@@ -46,13 +48,19 @@ func SlicePlan(plan Plan) (SliceResult, error) {
 		stepToHost[step.ID] = hostID
 	}
 
-	// Sort global steps deterministically
+	// Sort global steps deterministically and build GlobalStepIDs list
 	sort.SliceStable(result.GlobalSteps, func(i, j int) bool {
 		if result.GlobalSteps[i].Index != result.GlobalSteps[j].Index {
 			return result.GlobalSteps[i].Index < result.GlobalSteps[j].Index
 		}
 		return result.GlobalSteps[i].ID < result.GlobalSteps[j].ID
 	})
+
+	// Build sorted GlobalStepIDs list for explicit tracking
+	result.GlobalStepIDs = make([]string, 0, len(globalStepIDs))
+	for _, step := range result.GlobalSteps {
+		result.GlobalStepIDs = append(result.GlobalStepIDs, step.ID)
+	}
 
 	// Second pass: assign steps to host plans and validate dependencies
 	for _, step := range plan.Steps {
@@ -74,14 +82,14 @@ func SlicePlan(plan Plan) (SliceResult, error) {
 
 		// Validate dependencies: all must be in the same host plan
 		localDeps := make([]string, 0, len(step.DependsOn))
+		globalDeps := make([]string, 0)
 		for _, depID := range step.DependsOn {
 			depHostID, exists := stepToHost[depID]
 			if !exists {
 				// Check if it's a global step (allowed)
 				if globalStepIDs[depID] {
-					// Global step dependency - controller handles this
-					// For v1 strict mode, we reject cross-host but allow global deps
-					// (global steps are handled separately by controller)
+					// Global step dependency - track explicitly for controller enforcement
+					globalDeps = append(globalDeps, depID)
 					continue
 				}
 				return result, fmt.Errorf("step %q depends on unknown step %q", step.ID, depID)
@@ -92,6 +100,12 @@ func SlicePlan(plan Plan) (SliceResult, error) {
 			}
 
 			localDeps = append(localDeps, depID)
+		}
+
+		// Track global dependencies explicitly
+		if len(globalDeps) > 0 {
+			sort.Strings(globalDeps) // Deterministic ordering
+			result.GlobalDependencyRefs[step.ID] = globalDeps
 		}
 
 		// Sort dependencies deterministically
@@ -133,6 +147,8 @@ func SlicePlan(plan Plan) (SliceResult, error) {
 // Deprecated: Use SlicePlan instead for explicit global step handling.
 // This function ignores errors from SlicePlan for backward compatibility.
 // Once all callers migrate to SlicePlan, this function should be removed.
+//
+//nolint:staticcheck // Deprecated function kept for backward compatibility
 func SlicePlanByHost(plan Plan) map[string]HostPlan {
 	result, err := SlicePlan(plan)
 	if err != nil {
