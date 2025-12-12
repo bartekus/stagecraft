@@ -28,9 +28,18 @@ Tests SHOULD focus on:
 
 ## ✔️ V1 Coverage Status - Plan
 
-**Current Coverage (from recent run): ~68.2 percent**
+**Current Coverage (from recent run): 79.6 percent**
 
 Target for v1: **≥ 80 percent** coverage.
+
+**Slice 1 complete**: Extracted 4 pure helper functions and added comprehensive unit tests.
+
+**Slice 2 complete**: Added comprehensive error path tests for `EnsureInstalled()`:
+- Config validation tests (5 test cases)
+- OS compatibility tests (9 test cases)
+- Version enforcement tests (7 test cases)
+- Install flow tests (2 test cases)
+- Version parsing helper (`parseTailscaleVersion`) with 11 test cases
 
 Initial coverage is focused on:
 

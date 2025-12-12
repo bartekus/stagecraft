@@ -2,8 +2,12 @@
 
 **Status**: In Progress  
 **Feature**: PROVIDER_NETWORK_TAILSCALE  
-**Current Coverage**: ~68.2 percent  
+**Current Coverage**: 79.6 percent  
 **Target Coverage (V1)**: ≥ 80 percent
+
+**Slice 1 complete**: Helper extraction + deterministic unit tests
+
+**Slice 2 complete**: EnsureInstalled error paths + version enforcement
 
 ---
 

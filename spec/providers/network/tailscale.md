@@ -84,7 +84,16 @@ For a host that is "successfully ensured":
    - If skipped, return nil immediately
 4. SSH to host and check if Tailscale is installed:
    - Run: `tailscale version` or `which tailscale`
-   - If command succeeds and version >= min_version (if configured), return nil (already installed)
+   - If command succeeds:
+     - Parse installed version string as semantic version
+     - **Version parsing rules**:
+       - Strip build metadata (e.g., `1.44.0-123-gabcd` → `1.44.0`)
+       - Accept patch suffixes (e.g., `1.78.0-1` → `1.78.0`)
+       - If version cannot be parsed as semantic version, return `ErrInstallFailed` with message: `"tailscale provider: installation failed: cannot parse installed version {version}"`
+     - If `install.min_version` is configured and installed version < min_version:
+       - Return error: `"tailscale provider: installation failed: installed version {actual} is below minimum {min_version}"`
+       - Do not attempt automatic upgrade
+     - Otherwise, return nil (already installed at acceptable version)
 5. If not installed:
    - Run Tailscale install script: `curl -fsSL https://tailscale.com/install.sh | sh`
    - Check exit code and return error if install fails
@@ -97,9 +106,16 @@ For a host that is "successfully ensured":
 
 **Supported OS (v1):**
 
-- Linux (Debian/Ubuntu) only
+- **Target hosts**: Linux (Debian/Ubuntu) only
 - Uses Tailscale's official install script
+- **Unsupported target OS**: macOS, Windows, Alpine, CentOS, and all other Linux distributions
+  - For unsupported target OS, `EnsureInstalled` MUST return `ErrUnsupportedOS`
+- **Orchestrator OS**: Completely irrelevant - the provider operates on remote hosts via SSH, not the orchestrator machine
+  - The orchestrator (local machine running Stagecraft) MUST NOT be inspected for OS compatibility
+  - Only remote hosts are checked for OS compatibility
 - Other OS support is deferred to future versions
+
+**Note**: The orchestrator (the machine running Stagecraft) does not need Tailscale installed. The provider manages Tailscale on remote Linux hosts via SSH. You may install Tailscale on your Mac for your own network access, but this is not a requirement for provider operation.
 
 **Error Cases:**
 
@@ -107,6 +123,8 @@ For a host that is "successfully ensured":
 - SSH connection failures
 - Install script failures (non-zero exit code)
 - Unsupported OS (for v1, only Linux Debian/Ubuntu supported)
+- Installed version below minimum version requirement (if `install.min_version` is configured)
+- Installed version cannot be parsed as semantic version
 
 **Error Messages:**
 
@@ -126,9 +144,11 @@ Ensures the host is logged into the correct Tailscale tailnet with the configure
 type EnsureJoinedOptions struct {
     Config any     // Provider-specific config
     Host   string  // Hostname or logical host ID
-    Tags   []string // Tags to apply (e.g., ["tag:gateway", "tag:app"])
+    Tags   []string // Final computed tags to apply (includes default_tags, role_tags, and plan tags)
 }
 ```
+
+**Note**: The `Tags` field contains the final computed tag list. Stagecraft core computes this by combining `default_tags`, `role_tags[role]`, and any plan-specific tags before calling `EnsureJoined`. The provider does not access `role_tags` directly.
 
 **Guarantees:**
 
@@ -137,39 +157,58 @@ For a host that is "successfully joined":
 - Host is logged into the configured tailnet
 - Host has the configured tags applied
 - Host's Tailscale node is online or at least successfully configured
+- **Offline node handling**: If a node is offline but has the correct tailnet and tags configured, `EnsureJoined` considers this a success
+- The provider checks `Self.Online` from status JSON but does not fail if the node is offline, as long as configuration is correct
+- This allows deployment workflows to proceed even if nodes are temporarily offline
 
 **Flow:**
 
 1. Parse config from `opts.Config`
 2. Get auth key from environment variable (`config.AuthKeyEnv`)
    - If missing, return error
-3. Compute tags: union of:
-   - Default tags from config (`default_tags`)
-   - Role-specific tags from config (`role_tags[role]`)
-   - Tags passed in `opts.Tags` (from host role in plan)
+3. Use expected tags from `opts.Tags`:
+   - The provider receives the final tag list in `opts.Tags`
+   - Stagecraft core (the caller) is responsible for computing the union of:
+     - Default tags from config (`default_tags`)
+     - Role-specific tags from config (`role_tags[role]`) where role is determined by core
+     - Any additional tags from the deployment plan
+   - **Forbidden behavior**: The provider MUST NOT attempt to compute `role_tags` or inspect roles directly
+   - Only the final tag list in `opts.Tags` is authoritative
+   - Tags are sorted lexicographically for deterministic comparison
 4. SSH to host and check current status:
    - Run: `tailscale status --json`
    - Parse JSON to get current tailnet, tags, online status
 5. If already joined correctly:
-   - Check tailnet matches config (`TailnetName` matches `tailnet_domain` or tailnet name)
-   - Check tags match expected tags (all required tags present)
+   - Check tailnet matches config:
+     - Compare `TailnetName` from `tailscale status --json` against the expected tailnet name
+     - The `tailnet_domain` config field is used only for FQDN generation via `NodeFQDN`
+     - For status comparison, the provider compares the `TailnetName` field from status JSON
+     - **Expected tailnet name derivation**: The expected tailnet name SHALL be the portion of `tailnet_domain` before the first dot
+       - Example: `tailnet_domain = "bartekus.ts.net"` → expected `TailnetName = "bartekus"`
+       - Example: `tailnet_domain = "example.ts.net"` → expected `TailnetName = "example"`
+     - If `TailnetName` does not match the expected tailnet name (derived from config), return `ErrTailnetMismatch`
+   - Check tags match expected tags:
+     - All expected tags must be present in the actual tags (subset match)
+     - Extra tags beyond the expected set are allowed (Tailscale may add system tags)
+     - Tag comparison is case-sensitive and exact string match
+     - Tags are sorted lexicographically for deterministic comparison
    - If all match, return nil (already joined)
 6. If not joined or wrong configuration:
    - Run: `tailscale up --authkey=${AUTHKEY} --hostname=${hostname} --advertise-tags=${tags}`
    - Re-check status to verify join succeeded
 7. Validate final state:
-   - Tailnet matches config
-   - Tags match expected tags
-   - Node is online (or at least configured)
+   - Tailnet matches config (using TailnetName comparison as above)
+   - Tags match expected tags (subset match: all expected tags present, extras allowed)
+   - Node configuration is correct (online status is checked but offline nodes with correct config are acceptable)
 
 **Tag Computation:**
 
-Tags are the deterministic union of:
+Tags are computed by Stagecraft core (not the provider):
 - Default tags from config (`default_tags`)
 - Role-specific tags from config (`role_tags[role]`)
-- Tags passed in `opts.Tags`
+- Tags passed in `opts.Tags` from the deployment plan
 
-Tags are sorted lexicographically for deterministic comparison.
+The provider receives the final computed tag list in `opts.Tags` and applies it directly. Tags are sorted lexicographically for deterministic comparison.
 
 **Idempotency:**
 
@@ -291,6 +330,9 @@ network:
 
 - List of tags applied to all nodes
 - Tags must start with `tag:` prefix
+- Tags without the `tag:` prefix are considered invalid config and cause `ErrConfigInvalid`
+- **Validation timing**: Tag validation occurs during provider config parsing inside `EnsureInstalled` and `EnsureJoined`
+- Config with invalid tags MUST fail before any remote operations (SSH or Tailscale calls)
 - Example: `["tag:stagecraft", "tag:stagecraft-env-prod"]`
 
 **role_tags** (optional):
@@ -298,7 +340,8 @@ network:
 - Map of role-specific tags
 - Key is host role (e.g., "app", "db", "gateway")
 - Value is list of tags for that role
-- Tags are combined with default_tags and opts.Tags
+- Tags must start with `tag:` prefix (same validation as `default_tags`)
+- Tags are combined with default_tags and opts.Tags by Stagecraft core (not the provider)
 
 **install.method** (optional):
 
@@ -318,10 +361,18 @@ network:
 - `auth_key_env`: Must be non-empty string
 - `tailnet_domain`: Must be non-empty string
 
+**Tag Validation:**
+
+- All tags in `default_tags` and `role_tags` must start with `tag:` prefix
+- Tags without prefix cause: `"tailscale provider: invalid config: tag {tag} must start with tag: prefix"`
+- Validation is strict: invalid tags cause config parsing to fail
+- Validation occurs during provider config parsing, before any remote operations
+
 **Validation Errors:**
 
 - Missing required field: `"tailscale provider: invalid config: {field} is required"`
 - Invalid YAML: `"tailscale provider: invalid config: {error}"`
+- Invalid tag format: `"tailscale provider: invalid config: tag {tag} must start with tag: prefix"`
 
 ⸻
 
@@ -358,11 +409,12 @@ For a host that is "successfully ensured" by the Tailscale provider:
 
 - Tailscale is installed and `tailscale version` returns a version >= configured minimum
 - `tailscale status --json`:
-  - Reports being logged into the configured tailnet
-  - Shows tags that match the union of:
-    - `default_tags`
-    - Role-specific tags for the host
-    - Tags passed in EnsureJoinedOptions
+  - Reports being logged into the configured tailnet (TailnetName matches expected tailnet name derived from config)
+  - Shows tags where all expected tags are present (subset match: expected tags must be present, extras allowed)
+    - Expected tags are the union of:
+      - `default_tags`
+      - Role-specific tags for the host (computed by core)
+      - Tags passed in EnsureJoinedOptions
 - `NodeFQDN(host)` returns a string that resolves in MagicDNS to that host's Tailscale IP
 
 ### 5.2 Idempotency Invariants
@@ -410,6 +462,8 @@ All errors must be clear and actionable:
 - Config errors: Include field name and reason
 - Install errors: Include OS and install script output
 - Join errors: Include actual vs expected values (tailnet, tags)
+- Version too old: `"tailscale provider: installation failed: installed version {actual} is below minimum {min_version}"`
+- Version parse failure: `"tailscale provider: installation failed: cannot parse installed version {version}"`
 
 ### 6.3 Error Types
 
@@ -620,6 +674,8 @@ Production implementation uses `executil` + SSH.
 
 - Managing Tailscale ACLs or tailnet configuration (handled by Tailscale admin console)
 - Supporting every OS (Linux Debian/Ubuntu only)
+- Supporting macOS or Windows as target hosts (Linux Debian/Ubuntu only)
+- Requiring Tailscale to be installed on the orchestrator machine
 - Managing auth key creation or rotation (user responsibility)
 - Dynamic network reconfiguration (static configuration only)
 - Multiple network providers per project (single provider only)
