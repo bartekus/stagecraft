@@ -270,14 +270,34 @@ See also: `docs/coverage/COVERAGE_LEDGER.md` and `docs/governance/GOV_V1_TEST_RE
 
 ---
 
-## 9. Migration Notes
+## 9. Archived Source Documents
 
-> Temporary section while folding in legacy governance content.
+The following sections contain references to previously scattered governance documentation files, preserved here for historical reference. Original files have been moved to `docs/archive/`.
+
+- **CI Provider Coverage Enforcement**: `docs/governance/CI_PROVIDER_COVERAGE_ENFORCEMENT.md` → `docs/archive/governance/`
+- **Commit Guidance Provider Governance**: `docs/governance/COMMIT_GUIDANCE_PROVIDER_GOVERNANCE.md` → `docs/archive/governance/`
+- **Commit Message Analysis**: `docs/governance/COMMIT_MESSAGE_ANALYSIS.md` → `docs/archive/governance/`
+- **Commit Ready Summary**: `docs/governance/COMMIT_READY_SUMMARY.md` → `docs/archive/governance/`
+- **Phase 5 Violation Fix Checklist**: `docs/governance/PHASE5_VIOLATION_FIX_CHECKLIST.md` → `docs/archive/governance/`
+- **PR Template Provider Coverage**: `docs/governance/PR_TEMPLATE_PROVIDER_COVERAGE.md` → `docs/archive/governance/`
+- **Provider Governance Summary**: `docs/governance/PROVIDER_GOVERNANCE_SUMMARY.md` → `docs/archive/governance/`
+- **Strategic Doc Migration**: `docs/governance/STRATEGIC_DOC_MIGRATION.md` → `docs/archive/governance/`
+- **GOV V1 Test Requirements**: `docs/governance/GOV_V1_TEST_REQUIREMENTS.md` → `docs/archive/governance/`
+- **INFRA UP Spec Fix**: `docs/governance/INFRA_UP_SPEC_FIX.md` → `docs/archive/governance/`
+- **Commit Message Enforcement Phase 1**: `docs/todo/COMMIT_MESSAGE_ENFORCEMENT_PHASE1.md` → `docs/archive/todo/`
+- **Commit Message Enforcement Phase 2**: `docs/todo/COMMIT_MESSAGE_ENFORCEMENT_PHASE2.md` → `docs/archive/todo/`
+
+[Full content preserved in archived files - see relevant sections above for summaries]
+
+---
+
+## 10. Migration Notes
 
 - [x] Migrate commit message enforcement docs
 - [x] Migrate provider governance summary
 - [x] Migrate coverage enforcement docs
 - [x] Migrate violation fix checklist and status
 - [x] Link evolution logs and coverage ledger
+- [x] Archived all source files to `docs/archive/`
 
-Once complete, this checklist can be removed or marked as done.
+Migration complete. All governance documentation is now consolidated in this almanac.

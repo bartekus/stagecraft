@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/agents/AGENT_BRIEF_GOV_V1_CORE.md` section "Phase 4: Feature Mapping Invariant Enforcement". Kept for historical reference. New GOV_V1_CORE execution notes MUST go into the merged agent brief.
+
 # AGENT BRIEF — GOV_V1_CORE — Phase 4
 
 ## Multi-Feature Cross-Validation & Feature Mapping Invariant Enforcement

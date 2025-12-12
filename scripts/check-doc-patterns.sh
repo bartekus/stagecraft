@@ -74,12 +74,33 @@ is_new_file() {
     return 0
 }
 
+# Exclude docs/archive/** and .DS_Store from pattern checks
+# Helper function to check if file should be excluded (safety net for other find scopes)
+should_exclude_file() {
+    local file="$1"
+    # Exclude docs/archive/** (including all subdirectories) and .DS_Store
+    # Use prefix check for archive (handles nested paths)
+    if [[ "$file" == docs/archive/* ]] || [[ "$file" == */.DS_Store ]] || [[ "$file" == *.DS_Store ]]; then
+        return 0  # Exclude
+    fi
+    return 1  # Don't exclude
+}
+
+# Helper function: find docs/ excluding docs/archive/** using -prune (faster, cleaner)
+# Prune both the directory and anything under it (explicit intent for future readers)
+find_docs_pruned() {
+    local pattern="$1"
+    find docs/ \( -path docs/archive -o -path 'docs/archive/*' \) -prune -o -name "$pattern" -print 2>/dev/null || printf ''
+}
+
 # Pattern 1: *_COVERAGE_V1_COMPLETE.md
-# Collect files first (avoid subshell issues with while loop)
-FOUND_FILES=$(find docs/ -name "*_COVERAGE_V1_COMPLETE.md" 2>/dev/null || printf '')
+# Use pruned find to exclude docs/archive/** at the source
+FOUND_FILES=$(find_docs_pruned "*_COVERAGE_V1_COMPLETE.md")
 if [ -n "$FOUND_FILES" ]; then
     printf '%s\n' "$FOUND_FILES" | while IFS= read -r file; do
         [ -z "$file" ] && continue
+        # Safety net: double-check exclusion (shouldn't be needed, but defensive)
+        should_exclude_file "$file" && continue
         # Check if file is new (in our new files list)
         if is_new_file "$file"; then
             error "Forbidden pattern found: $file"
@@ -90,10 +111,13 @@ if [ -n "$FOUND_FILES" ]; then
 fi
 
 # Pattern 2: *_SLICE*_PLAN.md
-FOUND_FILES=$(find docs/ -name "*_SLICE*_PLAN.md" 2>/dev/null || printf '')
+# Use pruned find to exclude docs/archive/** at the source
+FOUND_FILES=$(find_docs_pruned "*_SLICE*_PLAN.md")
 if [ -n "$FOUND_FILES" ]; then
     printf '%s\n' "$FOUND_FILES" | while IFS= read -r file; do
         [ -z "$file" ] && continue
+        # Safety net: double-check exclusion (shouldn't be needed, but defensive)
+        should_exclude_file "$file" && continue
         if is_new_file "$file"; then
             error "Forbidden pattern found: $file"
             echo "  → Use: docs/engine/history/<FEATURE_ID>_EVOLUTION.md instead"
@@ -107,6 +131,8 @@ FOUND_FILES=$(find docs/governance/ docs/todo/ -name "COMMIT_*_PHASE*.md" 2>/dev
 if [ -n "$FOUND_FILES" ]; then
     printf '%s\n' "$FOUND_FILES" | while IFS= read -r file; do
         [ -z "$file" ] && continue
+        # Skip archived files
+        should_exclude_file "$file" && continue
         if is_new_file "$file"; then
             error "Forbidden pattern found: $file"
             echo "  → Use: docs/governance/GOVERNANCE_ALMANAC.md instead"

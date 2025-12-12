@@ -208,14 +208,42 @@ All new context handoff notes should be added here as dated entries.
 
 ---
 
-## 5. Migration Notes
+## 5. Archived Source Documents
 
-> Use this section while moving existing context handoff docs into this log.
+The following sections contain references to previously scattered context handoff documentation files, preserved here for historical reference. Original files have been moved to `docs/archive/context-handoff/`.
+
+### 5.1 Commit Discipline Phase 3 Documents
+
+- **Phase 3**: `docs/context-handoff/COMMIT_DISCIPLINE_PHASE3.md` → `docs/archive/context-handoff/`
+- **Phase 3A**: `docs/context-handoff/COMMIT_REPORT_TYPES_PHASE3.md` → `docs/archive/context-handoff/`
+- **Phase 3B**: `docs/context-handoff/COMMIT_DISCIPLINE_PHASE3B.md` → `docs/archive/context-handoff/`
+- **Phase 3C**: `docs/context-handoff/COMMIT_DISCIPLINE_PHASE3C.md` → `docs/archive/context-handoff/`
+
+[Full content preserved in archived files - see section 4.3 for summary]
+
+### 5.2 Feature Handoff Chains
+
+- **CORE_STATE to CLI_DEPLOY**: `docs/context-handoff/CORE_STATE-to-CLI_DEPLOY.md` → `docs/archive/context-handoff/`
+- **CORE_STATE_TEST_ISOLATION to CORE_STATE_CONSISTENCY**: `docs/context-handoff/CORE_STATE_TEST_ISOLATION-to-CORE_STATE_CONSISTENCY.md` → `docs/archive/context-handoff/`
+- **CLI_DEPLOY to CLI_RELEASES**: `docs/context-handoff/CLI_DEPLOY-to-CLI_RELEASES.md` → `docs/archive/context-handoff/`
+- **CLI_RELEASES to CLI_ROLLBACK**: `docs/context-handoff/CLI_RELEASES-to-CLI_ROLLBACK.md` → `docs/archive/context-handoff/`
+- **CLI_ROLLBACK to CLI_BUILD**: `docs/context-handoff/CLI_ROLLBACK-to-CLI_BUILD.md` → `docs/archive/context-handoff/`
+- **CLI_ROLLBACK to CLI_PHASE_EXECUTION_COMMON**: `docs/context-handoff/CLI_ROLLBACK-to-CLI_PHASE_EXECUTION_COMMON.md` → `docs/archive/context-handoff/`
+- **CLI_PHASE_EXECUTION_COMMON to CORE_STATE_TEST_ISOLATION**: `docs/context-handoff/CLI_PHASE_EXECUTION_COMMON-to-CORE_STATE_TEST_ISOLATION.md` → `docs/archive/context-handoff/`
+- **CLI_ROLLBACK-CLI_RELEASES-CORE_STATE_CONSISTENCY to CLI_DEPLOY**: `docs/context-handoff/CLI_ROLLBACK-CLI_RELEASES-CORE_STATE_CONSISTENCY-to-CLI_DEPLOY.md` → `docs/archive/context-handoff/`
+- **GOV_STATUS_ROADMAP Complete**: `docs/context-handoff/GOV_STATUS_ROADMAP_COMPLETE.md` → `docs/archive/context-handoff/`
+- **GOV_V1_CORE to FRONTMATTER**: `docs/context-handoff/GOV_V1_CORE-to-FRONTMATTER.md` → `docs/archive/context-handoff/`
+
+[Full content preserved in archived files - see relevant sections above for summaries]
+
+---
+
+## 6. Migration Notes
 
 - [x] Migrated COMMIT_DISCIPLINE_PHASE3*.md
 - [x] Migrated GOV_STATUS_ROADMAP_COMPLETE.md
-- [ ] Migrated CLI_* to CLI_* chains (partial - CORE_STATE-to-CLI_DEPLOY done)
-- [ ] Migrated CORE_STATE_* chains (partial - CORE_STATE-to-CLI_DEPLOY done)
-- [ ] Updated `docs/context-handoff/INDEX.md` to point to this log
+- [x] Migrated CLI_* to CLI_* chains
+- [x] Migrated CORE_STATE_* chains
+- [x] Archived all source files to `docs/archive/context-handoff/`
 
-Once migration is complete, this checklist can be removed or marked as done.
+Migration complete. All context handoff documentation is now consolidated in this log.

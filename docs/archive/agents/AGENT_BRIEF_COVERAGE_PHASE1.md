@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/agents/AGENT_BRIEF_COVERAGE.md` section "Phase 1: Compliance Unblock". Kept for historical reference. New coverage execution notes MUST go into the merged agent brief.
+
 # Agent Brief: Test Coverage Compliance - Phase 1
 
 **Feature ID**: GOV_V1_CORE  

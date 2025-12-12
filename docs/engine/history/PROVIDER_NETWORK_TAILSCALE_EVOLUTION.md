@@ -302,9 +302,41 @@ All future Tailscale evolution notes should be added here instead of creating ne
 
 ---
 
-## 10. Migration Notes
+## 10. Archived Source Documents
 
-> Use this section temporarily while consolidating existing docs into this log.
+The following sections contain references to previously scattered documentation files, preserved here for historical reference. Original files have been moved to `docs/archive/`.
+
+### 10.1 Slice 1 Documents
+
+- **Slice 1 Plan**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SLICE1_PLAN.md` → `docs/archive/governance/`
+- **Slice 1 Checklist**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SLICE1_CHECKLIST.md` → `docs/archive/governance/`
+- **Slice 1 Ready**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SLICE1_READY.md` → `docs/archive/governance/`
+- **Slice 1 Agent**: `docs/engine/agents/PROVIDER_NETWORK_TAILSCALE_SLICE1_AGENT.md` → `docs/archive/agents/`
+
+[Full content preserved in archived files - see section 5 for summary]
+
+### 10.2 Slice 2 Documents
+
+- **Slice 2 Plan**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SLICE2_PLAN.md` → `docs/archive/governance/`
+- **Slice 2 Checklist**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SLICE2_CHECKLIST.md` → `docs/archive/governance/`
+- **Slice 2 Completeness**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SLICE2_COMPLETENESS.md` → `docs/archive/governance/`
+- **Slice 2 Dependencies**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SLICE2_DEPENDENCIES.md` → `docs/archive/governance/`
+- **Slice 2 Coverage Expectations**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SLICE2_COVERAGE_EXPECTATIONS.md` → `docs/archive/governance/`
+- **Slice 2 Agent**: `docs/engine/agents/PROVIDER_NETWORK_TAILSCALE_SLICE2_AGENT.md` → `docs/archive/agents/`
+
+[Full content preserved in archived files - see section 6 for summary]
+
+### 10.3 Other Documents
+
+- **PR Description**: `docs/coverage/PROVIDER_NETWORK_TAILSCALE_PR_DESCRIPTION.md` → `docs/archive/coverage/`
+- **Coverage Plan**: `docs/engine/status/PROVIDER_NETWORK_TAILSCALE_COVERAGE_PLAN.md` → `docs/archive/status/`
+- **Spec Updates**: `docs/governance/PROVIDER_NETWORK_TAILSCALE_SPEC_UPDATES.md` → `docs/archive/governance/`
+
+[Full content preserved in archived files - see sections 6-8 for summary]
+
+---
+
+## 11. Migration Notes
 
 - [x] Migrated SLICE1 plan content
 - [x] Migrated SLICE1 checklist and ready content
@@ -313,5 +345,6 @@ All future Tailscale evolution notes should be added here instead of creating ne
 - [x] Migrated SLICE2 checklist and completeness content
 - [x] Migrated SLICE2 dependencies and coverage expectations
 - [x] Migrated Tailscale specific coverage and PR description notes
+- [x] Archived all source files to `docs/archive/`
 
-Once migration is complete this checklist can be removed or marked as complete.
+Migration complete. All feature-specific documentation is now consolidated in this evolution log.

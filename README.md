@@ -13,7 +13,7 @@ Stagecraft is a Go-based CLI that orchestrates local-first development and scala
 - **Provider model** – Generic or Encore.ts backend, Generic or Vite, DigitalOcean, GitHub Actions and others plug in cleanly.
 - **Configuration-driven** – one `stagecraft.yml` plus a canonical `docker-compose.yml`.
 
-> ⚠️ **Status**: Early WIP / experimental. Core commands (`dev`, `migrate`) are functional. See [Implementation Status](docs/implementation-status.md) for details.
+> ⚠️ **Status**: Early WIP / experimental. Core commands (`dev`, `migrate`, `build`, `deploy`, `plan`, `rollback`, `releases`, `init`, `infra up`) are functional. See [Implementation Status](docs/engine/status/implementation-status.md) for details.
 
 ---
 
@@ -31,7 +31,7 @@ Stagecraft is a Go-based CLI that orchestrates local-first development and scala
     - local dev → staging → production,
     - without switching tools or mental models.
 
-For full details, see [`docs/stagecraft-spec.md`](docs/stagecraft-spec.md).
+For full details, see [`docs/narrative/stagecraft-spec.md`](docs/narrative/stagecraft-spec.md).
 
 ---
 
@@ -41,7 +41,7 @@ The easiest way to get started is with the `examples/basic-node` example:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/stagecraft.git
+git clone https://github.com/bartekus/stagecraft.git
 cd stagecraft
 
 # Build Stagecraft
@@ -115,9 +115,9 @@ Stagecraft is built around a few core ideas:
 
 ## Commands
 
-### Implemented
+### Implemented ✅
 
-- `stagecraft dev` ✅  
+- `stagecraft dev`  
   Start development environment using the configured backend provider.
   - Loads `stagecraft.yml` and resolves backend provider from registry
   - Delegates to provider's `Dev()` method
@@ -125,17 +125,46 @@ Stagecraft is built around a few core ideas:
   - Supports `--config` flag to specify config file path
   - Supports `--verbose` flag for detailed logging
 
-- `stagecraft migrate` ✅  
+- `stagecraft migrate`  
   Run database migrations using the configured migration engine.
   - Supports `--plan` flag for dry-run mode
   - Supports `--database <name>` to select database
   - Supports `--config` flag to specify config file path
   - Delegates to engine's `Plan()` or `Run()` methods
 
-- `stagecraft init` (partial)  
-  Bootstrap Stagecraft into the current project (currently stub).
+- `stagecraft init`  
+  Bootstrap Stagecraft into the current project.
+  - Creates `stagecraft.yml` configuration file
+  - Sets up project structure
 
-### Planned
+- `stagecraft build`  
+  Build Docker images using backend/frontend providers and push to registry.
+
+- `stagecraft deploy`  
+  Deploy a given version to an environment:
+    - Generate per-host Compose configs based on roles
+    - Roll out containers using docker-rollout
+    - Track release history
+
+- `stagecraft plan`  
+  Show the deployment plan without executing it (dry-run mode).
+
+- `stagecraft rollback`  
+  Roll back an environment to a previous version (based on tracked release history).
+
+- `stagecraft releases`  
+  List and show deployment release history.
+
+- `stagecraft infra up`  
+  Create infrastructure for an environment using CloudProvider (DigitalOcean CLI).
+
+- `stagecraft commit suggest`  
+  Generate commit discipline suggestions based on governance rules.
+
+- `stagecraft gov`  
+  Governance checks for Stagecraft (feature mapping, validation, etc.).
+
+### Planned / In Progress
 
 - `stagecraft dev` (full feature set)  
   Run full local dev:
@@ -144,20 +173,8 @@ Stagecraft is built around a few core ideas:
     - Frontend dev server (e.g. Vite).
     - Local HTTPS via mkcert + Traefik.
 
-- `stagecraft build`  
-  Build Docker images (primarily in CI) using backend/frontend providers and push to registry.
-
-- `stagecraft deploy`  
-  Deploy a given version to an environment:
-    - Ensure hosts are reachable and on the mesh.
-    - Generate per-host Compose configs.
-    - Roll out containers using docker-rollout.
-
-- `stagecraft rollback`  
-  Roll back an environment to a previous version (based on tracked release history).
-
-- `stagecraft infra up` / `stagecraft infra down`  
-  Create/destroy infrastructure for an environment using a CloudProvider (DigitalOcean CLI first).
+- `stagecraft infra down`  
+  Destroy infrastructure for an environment using CloudProvider.
 
 - `stagecraft ci init` / `stagecraft ci run`  
   Initialize CI pipelines (e.g. GitHub Actions) and trigger runs from the CLI.
@@ -180,54 +197,78 @@ See the spec for deeper behavior of each command.
 
 ## Project structure
 
-Current:
+Current structure:
 
 ```text
 stagecraft/
   cmd/
-    root.go                # Cobra root command
-  docs/
-    stagecraft-spec.md     # Design/spec document
-  main.go                  # Entry point: calls cmd.Execute()
-  go.mod
-  go.sum
-  LICENSE
-  README.md
-```
-
-Target (as features are implemented):
-```text
-stagecraft/
-  cmd/
-    root.go
-    dev.go
-    deploy.go
-    init.go
-    infra.go
-    ci.go
-    status.go
-    logs.go
-    ssh.go
-    rollback.go
-  docs/
-    stagecraft-spec.md
+    stagecraft/            # Main CLI entry point
+    feature-dashboard/     # Feature governance dashboard tool
+    spec-reference-check/ # Spec reference validation tool
+    gen-features-overview/ # Feature overview generator
+    ...                    # Other utility tools
+  internal/
+    cli/commands/          # CLI command implementations
+      dev.go
+      migrate.go
+      build.go
+      deploy.go
+      plan.go
+      rollback.go
+      releases.go
+      init.go
+      infra_up.go
+      commit_suggest.go
+      gov.go
+      ...
+    core/                  # Core planning and state management
+    providers/             # Provider implementations
+      backend/generic/
+      backend/encorets/
+      frontend/generic/
+      network/tailscale/
+      cloud/digitalocean/
+      migration/raw/
+      ...
   pkg/
-    config/                # Load & validate stagecraft.yml
-    compose/               # Compose helpers and override generation
-    dev/                   # `stagecraft dev` orchestration
-    deploy/                # build/deploy/rollback orchestration
-    infra/                 # infra up/down workflows
-    ci/                    # CI provider coordination
-    providers/
+    config/                # Config loading and validation
+    providers/             # Provider interfaces and registries
       backend/
       frontend/
       network/
       cloud/
       ci/
+      migration/
       secrets/
-    executil/              # process execution/log streaming helpers
-    logging/               # structured logging helpers
+    executil/              # Process execution helpers
+    logging/               # Structured logging helpers
+  spec/                    # Feature specifications (source of truth)
+    commands/
+    core/
+    providers/
+    features.yaml          # Feature registry
+  docs/                    # Documentation
+    engine/                # Implementation-aligned technical docs
+      analysis/            # Feature analysis briefs
+      outlines/            # Implementation outlines
+      status/              # Generated status tracking
+      history/             # Feature evolution logs
+      agents/              # Agent briefs
+    narrative/             # Human-facing planning docs
+    governance/            # Process and workflow docs
+    coverage/              # Coverage tracking
+    archive/               # Historical, archived docs
+  scripts/                 # Utility scripts
+  examples/                # Example projects
+    basic-node/
+  test/e2e/                # End-to-end tests
+  go.mod
+  LICENSE
+  README.md
+  Agent.md                 # Development guidelines
 ```
+
+For detailed documentation structure, see [`docs/README.md`](docs/README.md).
 
 ## Building & running
 
@@ -238,7 +279,7 @@ stagecraft/
 
 ### Build from source
 ```bash
-git clone https://github.com/your-org/stagecraft.git
+git clone https://github.com/bartekus/stagecraft.git
 cd stagecraft
 go build ./cmd/stagecraft
 ```
@@ -255,58 +296,54 @@ cd examples/basic-node
 
 ## Implementation roadmap & status
 
-This section is meant to stay in sync with the spec and act as a high-level checklist.
+For detailed feature status, see:
+- **[Implementation Status](docs/engine/status/implementation-status.md)** - Auto-generated from `spec/features.yaml`
+- **[Implementation Roadmap](docs/narrative/implementation-roadmap.md)** - Detailed feature catalog and phases
+- **[Feature Overview](docs/features/OVERVIEW.md)** - Generated feature summary
 
-Scaffolding & core
-    •	Cobra root command (stagecraft). []
-    •	Global flags (--env, --config, --verbose, --dry-run). []
-    •	Config loader for stagecraft.yml (pkg/config). []
-    •	Basic structured logging helper (pkg/logging). []
-    •	Exec utilities for running external commands (pkg/executil). []
+### Key Completed Features
 
-Providers
-    •	BackendProvider interface + Encore.ts implementation. []
-    •	FrontendProvider interface + generic dev command implementation. []
-    •	NetworkProvider interface + Tailscale implementation. []
-    •	CloudProvider interface + DigitalOcean implementation. []
-    •	CIProvider interface + GitHub Actions implementation. []
-    •	SecretsProvider abstraction (env, Encore dev secrets, etc.). []
+**Core Infrastructure:**
+- ✅ Cobra root command with global flags (`--env`, `--config`, `--verbose`, `--dry-run`)
+- ✅ Config loader for `stagecraft.yml` (`pkg/config`)
+- ✅ Structured logging (`pkg/logging`)
+- ✅ Process execution utilities (`pkg/executil`)
 
-Local dev (stagecraft dev)
-    •	mkcert integration / local HTTPS setup. []
-    •	/etc/hosts management for local dev domains. []
-    •	Traefik dev config generation (file provider, dynamic config). []
-    •	Compose infra up/down for dev environment. []
-    •	Encore dev flow:
-        •	Load .env.local. []
-        •	Sync secrets via encore secret set. []
-        •	Run encore run --watch --listen 0.0.0.0:4000. []
-    •	Frontend dev process (Vite or other). []
-    •	Connected dev mode via Tailscale (optional). []
+**Providers:**
+- ✅ BackendProvider interface + Generic and Encore.ts implementations
+- ✅ FrontendProvider interface + Generic implementation
+- ✅ NetworkProvider interface + Tailscale implementation
+- ✅ CloudProvider interface + DigitalOcean implementation
+- ✅ Migration engine interface + Raw SQL implementation
 
-Build & deploy
-    •	stagecraft build:
-        •	Backend Docker image via encore build docker. []
-        •	Frontend image build (optional). []
-        •	Push to registry. []
-    •	stagecraft deploy:
-        •	Per-host Compose generation based on roles. []
-        •	Tailscale join/verification on hosts. []
-        •	docker-rollout integration. []
-        •	Simple release history tracking (version per env). []
-    •	stagecraft rollback:
-        •	Lookup previous version. []
-        •	Re-deploy that version. []
+**Commands:**
+- ✅ `stagecraft dev` - Development environment
+- ✅ `stagecraft migrate` - Database migrations
+- ✅ `stagecraft build` - Docker image builds
+- ✅ `stagecraft deploy` - Environment deployment
+- ✅ `stagecraft plan` - Dry-run planning
+- ✅ `stagecraft rollback` - Rollback to previous version
+- ✅ `stagecraft releases` - Release history
+- ✅ `stagecraft init` - Project bootstrap
+- ✅ `stagecraft infra up` - Infrastructure provisioning
+- ✅ `stagecraft commit suggest` - Commit discipline suggestions
+- ✅ `stagecraft gov` - Governance checks
 
-Infra & CI
-    •	stagecraft infra up / infra down using DO CLI. []
-    •	stagecraft ci init to scaffold GitHub Actions workflow. []
-    •	stagecraft ci run to trigger CI runs. []
+**Governance:**
+- ✅ Feature mapping validation
+- ✅ Spec reference checking
+- ✅ Provider coverage enforcement
+- ✅ Commit message discipline
 
-Ops UX
-    •	stagecraft status (per env/host/service). []
-    •	stagecraft logs (per service/env). []
-    •	stagecraft ssh (per host/role). []
+### In Progress / Planned
+
+- 🔄 Full `stagecraft dev` feature set (Docker Compose infra, HTTPS, frontend dev server)
+- 📋 `stagecraft infra down` - Infrastructure teardown
+- 📋 `stagecraft ci init` / `stagecraft ci run` - CI pipeline management
+- 📋 `stagecraft status` - Container/health status
+- 📋 `stagecraft logs` - Service log tailing
+- 📋 `stagecraft ssh` - Host access
+- 📋 `stagecraft secrets sync` - Secret synchronization
 
 
 ## Contributing / Development
@@ -317,7 +354,7 @@ Right now this is experimental and evolving quickly.
 
 1. **Clone and build:**
    ```bash
-   git clone https://github.com/your-org/stagecraft.git
+   git clone https://github.com/bartekus/stagecraft.git
    cd stagecraft
    go build ./cmd/stagecraft
    ```
@@ -359,20 +396,28 @@ Right now this is experimental and evolving quickly.
 
 ### Documentation
 
-- **Specs**: `spec/` - Feature specifications
-- **Architecture**: `docs/architecture.md` - System design
-- **ADRs**: `docs/adr/` - Architecture Decision Records
-- **Implementation Status**: `docs/implementation-status.md` - Feature progress
-- **Getting Started**: `docs/guides/getting-started.md` - User guide
+- **Specs**: `spec/` - Feature specifications (source of truth)
+- **Architecture**: [`docs/narrative/architecture.md`](docs/narrative/architecture.md) - System design
+- **ADRs**: `spec/adr/` - Architecture Decision Records
+- **Implementation Status**: [`docs/engine/status/implementation-status.md`](docs/engine/status/implementation-status.md) - Feature progress (auto-generated)
+- **Getting Started**: [`docs/guides/getting-started.md`](docs/guides/getting-started.md) - User guide
 
 **Further Documentation**:
 - **[docs/README.md](docs/README.md)** - Complete documentation index and navigation guide
-- **[docs/engine-index.md](docs/engine-index.md)** - Quick reference for which docs to open per feature type
+- **[docs/engine/engine-index.md](docs/engine/engine-index.md)** - Quick reference for which docs to open per feature type
 - **[scripts/README.md](scripts/README.md)** - Utility scripts reference and usage guide
+- **[docs/narrative/stagecraft-spec.md](docs/narrative/stagecraft-spec.md)** - Specification index
+- **[docs/narrative/implementation-roadmap.md](docs/narrative/implementation-roadmap.md)** - Detailed implementation roadmap
+
+**Canonical Documentation**:
+- **[docs/governance/GOVERNANCE_ALMANAC.md](docs/governance/GOVERNANCE_ALMANAC.md)** - Governance rules and processes
+- **[docs/coverage/COVERAGE_LEDGER.md](docs/coverage/COVERAGE_LEDGER.md)** - Test coverage tracking
+- **[docs/context-handoff/CONTEXT_LOG.md](docs/context-handoff/CONTEXT_LOG.md)** - Context handoff log
+- **[docs/engine/history/*_EVOLUTION.md](docs/engine/history/)** - Feature evolution logs
 
 For more details, see:
-- [Agent.md](Agent.md) - Development guidelines
-- [docs/implementation-status.md](docs/implementation-status.md) - Feature tracking
+- [Agent.md](Agent.md) - Development guidelines and protocol
+- [docs/engine/status/implementation-status.md](docs/engine/status/implementation-status.md) - Feature tracking
 
 
 

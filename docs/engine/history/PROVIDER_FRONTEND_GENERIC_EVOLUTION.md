@@ -236,12 +236,82 @@ All future Frontend Generic evolution notes should be added here instead of crea
 
 ---
 
-## 11. Migration Notes
+## 11. Archived Source Documents
+
+The following sections contain the full content from previously scattered documentation files, preserved here for historical reference. Original files have been moved to `docs/archive/`.
+
+### 11.1 Archived Source: Phase 1 Coverage Analysis Brief
+
+> **Original path**: `docs/coverage/PROVIDER_FRONTEND_GENERIC_COVERAGE_PHASE1.md`  
+> **Archived to**: `docs/archive/coverage/PROVIDER_FRONTEND_GENERIC_COVERAGE_PHASE1.md`
+
+[Full content preserved in archived file - see section 5 for summary]
+
+### 11.2 Archived Source: Phase 1 Implementation Outline
+
+> **Original path**: `docs/coverage/PROVIDER_FRONTEND_GENERIC_COVERAGE_PHASE1_OUTLINE.md`  
+> **Archived to**: `docs/archive/coverage/PROVIDER_FRONTEND_GENERIC_COVERAGE_PHASE1_OUTLINE.md`
+
+[Full content preserved in archived file - see section 5 for summary]
+
+### 11.3 Archived Source: Phase 2 Completion
+
+> **Original path**: `docs/coverage/PROVIDER_FRONTEND_GENERIC_COVERAGE_PHASE2.md`  
+> **Archived to**: `docs/archive/coverage/PROVIDER_FRONTEND_GENERIC_COVERAGE_PHASE2.md`
+
+[Full content preserved in archived file - see section 6 for summary]
+
+### 11.4 Archived Source: PR Description
+
+> **Original path**: `docs/coverage/PROVIDER_FRONTEND_GENERIC_PR_DESCRIPTION.md`  
+> **Archived to**: `docs/archive/coverage/PROVIDER_FRONTEND_GENERIC_PR_DESCRIPTION.md`
+
+[Full content preserved in archived file - see sections 5-7 for summary]
+
+### 11.5 Archived Source: Test Hardening Summary
+
+> **Original path**: `docs/coverage/PROVIDER_FRONTEND_GENERIC_TEST_HARDENING_SUMMARY.md`  
+> **Archived to**: `docs/archive/coverage/PROVIDER_FRONTEND_GENERIC_TEST_HARDENING_SUMMARY.md`
+
+[Full content preserved in archived file - see section 6 for summary]
+
+### 11.6 Archived Source: Deflake Followup
+
+> **Original path**: `docs/coverage/PROVIDER_FRONTEND_GENERIC_DEFLAKE_FOLLOWUP.md`  
+> **Archived to**: `docs/archive/coverage/PROVIDER_FRONTEND_GENERIC_DEFLAKE_FOLLOWUP.md`
+
+[Full content preserved in archived file - see section 6 for summary]
+
+### 11.7 Archived Source: Reviewer Guide
+
+> **Original path**: `docs/coverage/PROVIDER_FRONTEND_GENERIC_REVIEWER_GUIDE.md`  
+> **Archived to**: `docs/archive/coverage/PROVIDER_FRONTEND_GENERIC_REVIEWER_GUIDE.md`
+
+[Full content preserved in archived file - see sections 5-7 for summary]
+
+### 11.8 Archived Source: V1 Complete Status
+
+> **Original path**: `docs/engine/status/PROVIDER_FRONTEND_GENERIC_COVERAGE_V1_COMPLETE.md`  
+> **Archived to**: `docs/archive/status/PROVIDER_FRONTEND_GENERIC_COVERAGE_V1_COMPLETE.md`
+
+[Full content preserved in archived file - see section 7 for summary]
+
+### 11.9 Archived Source: Coverage PR
+
+> **Original path**: `docs/engine/status/PROVIDER_FRONTEND_GENERIC_COVERAGE_PR.md`  
+> **Archived to**: `docs/archive/status/PROVIDER_FRONTEND_GENERIC_COVERAGE_PR.md`
+
+[Full content preserved in archived file - see section 7 for summary]
+
+---
+
+## 12. Migration Notes
 
 - [x] Migrated Phase 1 coverage analysis and outline
 - [x] Migrated Phase 2 coverage completion notes
 - [x] Migrated test hardening summary and deflake followup
 - [x] Migrated PR description and reviewer guide
 - [x] Migrated V1 Complete status document
+- [x] Archived all source files to `docs/archive/`
 
-Once migration is complete this checklist can be removed or marked as complete.
+Migration complete. All feature-specific documentation is now consolidated in this evolution log.

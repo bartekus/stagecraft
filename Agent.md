@@ -347,7 +347,7 @@ Before any tests or code are written for a feature, AI MUST perform a three stag
 
 > **Documentation Organization**: For how docs are organized (engine vs narrative vs governance vs archive), see `docs/README.md`. AI MUST prefer `docs/engine` docs for implementation context and treat `docs/archive` as historical only.
 >
-> **Documentation Directory Structure**: Governance docs live under `docs/governance/`, coverage docs under `docs/coverage/`, and agent briefs under `docs/agents/`. AI MUST NOT create new governance, coverage, or agent brief documents in the repository root. All planning and operational documentation belongs under `docs/`.
+> **Documentation Directory Structure**: Governance docs live under `docs/governance/`, coverage docs under `docs/coverage/`, and agent briefs under `docs/engine/agents/`. AI MUST NOT create new governance, coverage, or agent brief documents in the repository root. All planning and operational documentation belongs under `docs/`.
 
 ⸻
 

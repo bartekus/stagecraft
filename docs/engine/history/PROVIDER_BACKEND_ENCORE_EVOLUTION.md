@@ -137,9 +137,21 @@ All future Backend Encore evolution notes should be added here instead of creati
 
 ---
 
-## 9. Migration Notes
+## 9. Archived Source Documents
+
+The following sections contain references to previously scattered documentation files, preserved here for historical reference. Original files have been moved to `docs/archive/`.
+
+- **Coverage Plan**: `docs/governance/PROVIDER_BACKEND_ENCORE_COVERAGE_PLAN.md` → `docs/archive/governance/`
+- **V1 Complete Status**: `docs/engine/status/PROVIDER_BACKEND_ENCORE_COVERAGE_V1_COMPLETE.md` → `docs/archive/status/`
+
+[Full content preserved in archived files - see sections 4-7 for summary]
+
+---
+
+## 10. Migration Notes
 
 - [x] Migrated coverage plan content
 - [x] Migrated V1 Complete status document
+- [x] Archived all source files to `docs/archive/`
 
-Once migration is complete this checklist can be removed or marked as complete.
+Migration complete. All feature-specific documentation is now consolidated in this evolution log.

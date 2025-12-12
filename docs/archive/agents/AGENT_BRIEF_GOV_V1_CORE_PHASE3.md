@@ -1,3 +1,5 @@
+> **Superseded by** `docs/engine/agents/AGENT_BRIEF_GOV_V1_CORE.md` section "Phase 3: Spec Reference Checker Hardening". Kept for historical reference. New GOV_V1_CORE execution notes MUST go into the merged agent brief.
+
 # Agent Brief: Spec Reference Checker Hardening - Phase 3
 
 **Feature ID**: GOV_V1_CORE  

@@ -166,14 +166,25 @@ All future coverage snapshots and deltas should be recorded here.
 
 ---
 
-## 7. Migration Notes
+## 7. Archived Source Documents
 
-> Use while consolidating legacy coverage docs into this ledger.
+The following sections contain references to previously scattered coverage documentation files, preserved here for historical reference. Original files have been moved to `docs/archive/`.
+
+- **Coverage Compliance Plan**: `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` → `docs/archive/coverage/`
+- **Coverage Compliance Plan Phase 2**: `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` → `docs/archive/coverage/`
+- **Test Coverage Analysis**: `docs/coverage/TEST_COVERAGE_ANALYSIS.md` → `docs/archive/coverage/`
+- **CLI DEV Complete Phase 3 PR Description**: `docs/coverage/CLI_DEV_COMPLETE_PHASE3_PR_DESCRIPTION.md` → `docs/archive/coverage/`
+
+[Full content preserved in archived files - see sections 3-4 for summaries]
+
+---
+
+## 8. Migration Notes
 
 - [x] Migrated latest numbers from TEST_COVERAGE_ANALYSIS.md
 - [x] Migrated provider coverage plans into provider summaries
 - [x] Recorded all major coverage events in the timeline
 - [x] Linked provider evolution logs where relevant
-- [ ] Marked older coverage docs as superseded where appropriate
+- [x] Archived all source files to `docs/archive/`
 
-Once complete, remove or mark this checklist as done.
+Migration complete. All coverage documentation is now consolidated in this ledger.
