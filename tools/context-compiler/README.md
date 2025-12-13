@@ -2,6 +2,21 @@
 
 Local-only deterministic repo context builder for Stagecraft. Builds a searchable context snapshot from your repository documentation and specifications.
 
+## Two paradigms: Agent vs AI-Agent
+
+This README is about the **AI-Agent** paradigm, not the Stagecraft runtime **Agent**.
+
+- **Agent**: Stagecraft runtime paradigm: CLI -> engine (lib) -> agent (daemon). This README does not cover that runtime agent.
+- **AI-Agent**: Repo-analysis tooling paradigm: XRAY -> context-compiler -> AI-Agent (AI consumption layer). This tool lives in that pipeline.
+
+## What Context Compiler does
+
+Context Compiler deterministically packages declared repo knowledge (docs/spec/selected JSON artifacts) into `.ai-context/`:
+
+- **Local-only**: No embedding or uploading
+- **Deterministic digest**: Timestamps excluded from digest
+- **Output**: Writes `.ai-context/` directory at repo root
+
 ## Installation
 
 From the Stagecraft repo root:
@@ -24,6 +39,10 @@ This will:
 - Scan `docs/`, `spec/`, `README.md`, and `Agent.md` by default
 - Process `.md` and `.json` files
 - Write output to `.ai-context/` at the repo root
+
+**Intended consumers:**
+- Primary: AI-Agent pipeline and LLM workflows
+- Secondary: Humans for debugging/audit
 
 **Output structure:**
 ```
@@ -51,9 +70,9 @@ npm --prefix tools/context-compiler run context:build -- --include "docs,spec,cu
 npm --prefix tools/context-compiler run context:build -- --ext ".md,.txt,.json"
 ```
 
-### XRAY Scanning (Optional)
+### XRAY Scanning (Optional but complementary)
 
-XRAY is a multi-language reverse-engineering scanner that can analyze your codebase:
+XRAY is a structural reverse-engineering scanner that can analyze your codebase:
 
 ```bash
 # Full scan with all features
@@ -66,7 +85,16 @@ npm --prefix tools/context-compiler run xray:scan
 npm --prefix tools/context-compiler run xray:docs
 ```
 
-XRAY outputs are cached in `.xraycache/` at the repo root.
+XRAY outputs are cached in `.xraycache/` at the repo root (and optional generated docs if supported by scripts). XRAY output is separate from `.ai-context/`.
+
+### Context Compiler vs XRAY
+
+| Aspect | Context Compiler | XRAY |
+|--------|------------------|------|
+| Input | Declared repo knowledge (docs/spec/selected JSON) | Codebase structure (reverse-engineering) |
+| Purpose | Deterministic packaging for AI consumption | Structural analysis and documentation generation |
+| Output | `.ai-context/` | `.xraycache/` (and optional generated docs) |
+| Role in AI-Agent pipeline | Packages declared knowledge | Provides structural insights (complementary) |
 
 ## Output Format
 
@@ -159,3 +187,4 @@ XRAY uses ignore rules from `tools/context-compiler/xray/ignore.rules` (if prese
 - Old embedding/uploader code is kept but unused
 - XRAY cache is stored in `.xraycache/` at repo root
 - Both `.ai-context/` and `.xraycache/` are gitignored
+- `.xraycache/` is separate from `.ai-context/` to maintain determinism: Context Compiler's digest must be deterministic and only include declared knowledge, while XRAY's structural analysis may vary
