@@ -55,6 +55,7 @@ func NewContextXrayCommand() *cobra.Command {
 		Short: "Run XRAY scan",
 		Long:  "Runs XRAY scan to analyze repository structure and dependencies",
 		RunE:  runContextXray,
+		Args:  cobra.RangeArgs(0, 1),
 	}
 }
 
@@ -87,7 +88,7 @@ func runContextBuild(cmd *cobra.Command, _ []string) error {
 }
 
 // runContextXray executes the xray:scan npm script.
-func runContextXray(cmd *cobra.Command, _ []string) error {
+func runContextXray(cmd *cobra.Command, args []string) error {
 	repoRoot, err := FindRepoRoot(".")
 	if err != nil {
 		return fmt.Errorf("finding repo root: %w", err)
@@ -100,7 +101,28 @@ func runContextXray(cmd *cobra.Command, _ []string) error {
 		ctx = context.Background()
 	}
 
-	npmCmd := exec.CommandContext(ctx, "npm", "run", "xray:scan")
+	// Determine scan target
+	var scanTarget string
+	if len(args) > 0 {
+		scanTarget = args[0]
+	} else {
+		scanTarget = repoRoot
+	}
+	// Normalize "." and similar to repo root
+	if scanTarget == "." || scanTarget == "./." || scanTarget == "./" {
+		scanTarget = repoRoot
+	}
+	// Resolve relative paths to absolute
+	if !filepath.IsAbs(scanTarget) {
+		abs, err := filepath.Abs(scanTarget)
+		if err == nil {
+			scanTarget = abs
+		}
+	}
+
+	// Run XRAY from tools/context-compiler, but scan the chosen target.
+	// `npm run <script> -- <args>` forwards args to the underlying command.
+	npmCmd := exec.CommandContext(ctx, "npm", "run", "xray:scan", "--", scanTarget)
 	npmCmd.Dir = filepath.Join(repoRoot, "tools", "context-compiler")
 	npmCmd.Stdout = cmd.OutOrStdout()
 	npmCmd.Stderr = cmd.ErrOrStderr()
@@ -109,7 +131,7 @@ func runContextXray(cmd *cobra.Command, _ []string) error {
 		return fmt.Errorf("xray scan failed: %w", err)
 	}
 
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] XRAY scan complete → .xraycache/\n")
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] XRAY scan complete → .ai-context/xray/\n")
 
 	return nil
 }

@@ -170,7 +170,9 @@ const DEEP = (takeFlag("--deep", "") || "")
 
 const DEFAULT_IGNORES = new Set([
     ".git", "node_modules", "dist", "build", "out", "vendor", "target",
-    ".cache", ".tmp", "coverage"
+    ".cache", ".tmp", "coverage",
+    // XRAY outputs/cache (avoid self-scan & churn)
+    ".xraycache", ".ai-context"
 ]);
 const DEFAULT_GENERATED_HINTS = [
     "**/*.gen.*", "**/*.pb.*", "**/*.pb.*.go", "**/*.g.dart", "**/__generated__/**",
@@ -202,8 +204,8 @@ function globToRegExp(glob: string): RegExp {
 
 async function collectIgnoreSpecs(scanRoot: string): Promise<IgnoreSpec[]> {
     const specs: IgnoreSpec[] = [];
-    // tools/context-compiler/xray/ignore.rules at project running directory, if present
-    const localRules = path.join(process.cwd(), "tools", "context-compiler", "xray", "ignore.rules");
+    // Resolve relative to the repo root so this works no matter where XRAY is invoked from.
+    const localRules = path.join(REPO_ROOT || process.cwd(), "tools", "context-compiler", "xray", "ignore.rules");
     if (await exists(localRules)) {
         const t = await fs.readFile(localRules, "utf8");
         const patterns = t.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
@@ -1231,8 +1233,16 @@ async function writeExportsDocs(docsDir: string, nodeE: NodeExports[], goE: GoEx
 // ------------------------- Main commands -----------------------------
 
 async function cmdScan(targetDir: string) {
-    if (!targetDir) throw new Error("scan requires <targetDir>");
-    const scanRoot = path.resolve(process.cwd(), targetDir);
+    // If caller didn't pass a targetDir, default to repo root.
+    const effective = (targetDir && targetDir.trim()) ? targetDir.trim() : ".";
+
+    // Anchor all relative resolution to the detected repo root.
+    // Special-case '.' so invoking from tools/context-compiler still scans the Stagecraft repo.
+    const scanRoot = (effective === "." || effective === "")
+        ? REPO_ROOT
+        : (path.isAbsolute(effective) ? effective : path.resolve(REPO_ROOT, effective));
+
+    if (!scanRoot) throw new Error("scan requires a resolved repo root");
 
     // Build ignore tester
     const specs = await collectIgnoreSpecs(scanRoot);
@@ -1386,7 +1396,7 @@ async function cmdDocs(index?: Index, pkgFiles?: { pkg: PackageSummary; files: F
             console.log(`[xray] repo: ${REPO_SLUG}`);
             console.log(`[xray] json: ${JSON_DIR}`);
             console.log(`[xray] docs: ${DOCS_DIR}`);
-            await cmdScan(scanTarget);
+            await cmdScan(scanTarget || ".");
         } else if (cmd === "docs") {
             console.log(`[xray] repo: ${REPO_SLUG}`);
             console.log(`[xray] json: ${JSON_DIR}`);
@@ -1397,7 +1407,7 @@ async function cmdDocs(index?: Index, pkgFiles?: { pkg: PackageSummary; files: F
             console.log(`[xray] repo: ${REPO_SLUG}`);
             console.log(`[xray] json: ${JSON_DIR}`);
             console.log(`[xray] docs: ${DOCS_DIR}`);
-            const { index, pkgFiles } = await cmdScan(scanTarget);
+            const { index, pkgFiles } = await cmdScan(scanTarget || ".");
             await cmdDocs(index, pkgFiles);
         } else {
             throw new Error(`unknown command: ${cmd}`);

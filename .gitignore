@@ -52,9 +52,6 @@ feature-dashboard
 stagecraft
 coverage.out
 
-# Internal strategy documents (DO NOT COMMIT)
-internal-strategy/
-
 # Context compiler outputs
 .ai-context/
 .xraycache/

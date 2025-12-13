@@ -3,3 +3,7 @@
 pnpm-*.yaml
 **/*.gen.*
 **/__generated__/**
+tools/**
+.ai-context/**
+**/context-compiler/**
+.xraycache/**

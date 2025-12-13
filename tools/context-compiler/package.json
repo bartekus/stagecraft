@@ -8,8 +8,9 @@
   "author": "Bartekus [bartekus@gmail.com]",
   "scripts": {
     "context:build": "npx tsx cli/cli.ts build",
-    "xray:all": "npx tsx xray/xray.ts all . --cache on",
-    "xray:scan": "npx tsx xray/xray.ts scan . --cache on",
+    "xray:all": "npx tsx xray/xray.ts all",
+    "xray:scan": "npx tsx xray/xray.ts scan",
+    "xray:scan:repo": "npx tsx xray/xray.ts scan ../.. --cache on",
     "xray:docs": "npx tsx xray/xray.ts docs",
     "test": "vitest"
   },
