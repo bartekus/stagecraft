@@ -12,7 +12,7 @@
     "xray:scan": "npx tsx xray/xray.ts scan",
     "xray:scan:repo": "npx tsx xray/xray.ts scan ../.. --cache on",
     "xray:docs": "npx tsx xray/xray.ts docs",
-    "test": "vitest"
+    "test": "vitest --watch=false"
   },
   "devDependencies": {
     "@types/react": "^19.1.12",

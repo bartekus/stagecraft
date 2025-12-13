@@ -33,6 +33,7 @@ import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import * as path from "node:path";
 import { createHash } from "node:crypto";
+import { computeLocSummary, LOC_BIG_FILE_CAP_BYTES, type FileEntry as LocFileEntry } from "./loc";
 
 // ----------------------------- Types ---------------------------------
 
@@ -64,7 +65,16 @@ type Index = {
     scannedAt: string;
     target: string;
     packages: PackageSummary[];
-    stats: { files: number; bytes: number; languages: Record<string, number> };
+    stats: {
+        files: number;
+        bytes: number;
+        languages: Record<string, number>;
+        loc?: {
+            scannedFiles: number;
+            skippedFiles: number;
+            skippedBytes: number;
+        };
+    };
     digest: string;
 };
 
@@ -179,7 +189,8 @@ const DEFAULT_GENERATED_HINTS = [
     "**/generated/**", "**/gen/**"
 ];
 
-const BIG_FILE_CAP_BYTES = 2 * 1024 * 1024; // 2 MB: above this, skip LOC count
+// Use LOC_BIG_FILE_CAP_BYTES from ./loc for consistency
+const BIG_FILE_CAP_BYTES = LOC_BIG_FILE_CAP_BYTES; // 2 MB: above this, skip LOC count
 
 function toPosix(p: string) { return p.split(path.sep).join("/"); }
 function fmtBytes(n: number) {
@@ -754,6 +765,8 @@ async function fileEntry(abs: string, base: string, cache: CacheDB): Promise<Fil
         if (prev && prev.size === st.size && Math.floor(prev.mtimeMs) === Math.floor(st.mtimeMs)) {
             lines = prev.lines;
         } else {
+            // Large binaries showing lines: 0 is expected and desirable.
+            // It avoids scanning huge files and makes results stable across environments.
             if (st.size > 0 && st.size <= BIG_FILE_CAP_BYTES) {
                 const txt = await fs.readFile(abs, "utf8").catch(() => "");
                 lines = txt ? (txt.match(/\n/g)?.length ?? 0) + 1 : 0;
@@ -780,6 +793,7 @@ function summarize(files: FileEntry[]) {
     }
     return { files: files.length, bytes, languages, topDirs };
 }
+
 
 function largestFiles(files: FileEntry[], limit: number) {
     return [...files].sort((a,b)=>b.size-a.size).slice(0, limit).map(f => ({ path: f.path, size: f.size }));
@@ -1278,11 +1292,23 @@ async function cmdScan(targetDir: string) {
         await fs.writeFile(out, JSON.stringify(pub, null, 2), "utf8");
     }
 
+    // Compute LOC summary from all file entries across all packages
+    // Map full FileEntry objects to simple { size } entries for computeLocSummary
+    const allFileEntries: LocFileEntry[] = pkgFiles.flatMap(({ files }) => 
+        files.map(f => ({ size: f.size }))
+    );
+    const locSummary = computeLocSummary(allFileEntries);
+
     const index: Index = {
         scannedAt: new Date().toISOString(),
         target: scanRoot,
         packages: summaries.sort((a,b)=>a.root.localeCompare(b.root)),
-        stats: { files: totalFiles, bytes: totalBytes, languages: langTotals },
+        stats: {
+            files: totalFiles,
+            bytes: totalBytes,
+            languages: langTotals,
+            loc: locSummary
+        },
         digest: ""
     };
 
