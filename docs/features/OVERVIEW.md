@@ -63,9 +63,9 @@ go run ./cmd/gen-features-overview
 | INFRA_FIREWALL | infra | todo | Firewall configuration | - |
 | INFRA_HOST_BOOTSTRAP | infra | done | Host bootstrap (Docker, Tailscale, etc.) | - |
 | INFRA_VOLUME_MGMT | infra | todo | Volume management | - |
-| MIGRATION_CONFIG | migrations | todo | Migration config schema in stagecraft.yml | - |
+| MIGRATION_CONFIG | migrations | done | Migration config schema in stagecraft.yml | - |
 | MIGRATION_CONTAINER_RUNNER | migrations | todo | ContainerRunner interface | - |
-| MIGRATION_INTERFACE | migrations | todo | Migrator interface | - |
+| MIGRATION_INTERFACE | migrations | done | Migrator interface | - |
 | MIGRATION_POST_DEPLOY | migrations | todo | Post-deploy migration execution | - |
 | MIGRATION_PRE_DEPLOY | migrations | todo | Pre-deploy migration execution | - |
 | ARCH_OVERVIEW | overview | todo | Architecture documentation and project overview | - |
@@ -151,10 +151,10 @@ digraph feature_dependencies {
   "INFRA_FIREWALL" [label="INFRA_FIREWALL\\n[todo]" fillcolor="lightgray" style=filled];
   "INFRA_HOST_BOOTSTRAP" [label="INFRA_HOST_BOOTSTRAP\\n[done]" fillcolor="lightgreen" style=filled];
   "INFRA_VOLUME_MGMT" [label="INFRA_VOLUME_MGMT\\n[todo]" fillcolor="lightgray" style=filled];
-  "MIGRATION_CONFIG" [label="MIGRATION_CONFIG\\n[todo]" fillcolor="lightgray" style=filled];
+  "MIGRATION_CONFIG" [label="MIGRATION_CONFIG\\n[done]" fillcolor="lightgreen" style=filled];
   "MIGRATION_CONTAINER_RUNNER" [label="MIGRATION_CONTAINER_RUNNER\\n[todo]" fillcolor="lightgray" style=filled];
   "MIGRATION_ENGINE_RAW" [label="MIGRATION_ENGINE_RAW\\n[done]" fillcolor="lightgreen" style=filled];
-  "MIGRATION_INTERFACE" [label="MIGRATION_INTERFACE\\n[todo]" fillcolor="lightgray" style=filled];
+  "MIGRATION_INTERFACE" [label="MIGRATION_INTERFACE\\n[done]" fillcolor="lightgreen" style=filled];
   "MIGRATION_POST_DEPLOY" [label="MIGRATION_POST_DEPLOY\\n[todo]" fillcolor="lightgray" style=filled];
   "MIGRATION_PRE_DEPLOY" [label="MIGRATION_PRE_DEPLOY\\n[todo]" fillcolor="lightgray" style=filled];
   "PROVIDER_BACKEND_ENCORE" [label="PROVIDER_BACKEND_ENCORE\\n[done]" fillcolor="lightgreen" style=filled];
@@ -191,6 +191,6 @@ digraph feature_dependencies {
 
 | Status | Count |
 |--------|-------|
-| done | 47 |
+| done | 49 |
 | wip | 0 |
-| todo | 27 |
+| todo | 25 |

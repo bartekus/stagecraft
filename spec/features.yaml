@@ -383,7 +383,7 @@ features:
   # Phase 6: Migration System
   - id: MIGRATION_CONFIG
     title: "Migration config schema in stagecraft.yml"
-    status: todo
+    status: done
     spec: "migrations/config.md"
     owner: bart
     tests:
@@ -391,11 +391,11 @@ features:
 
   - id: MIGRATION_INTERFACE
     title: "Migrator interface"
-    status: todo
+    status: done
     spec: "migrations/interface.md"
     owner: bart
     tests:
-      - "pkg/migrations/migrator_test.go"
+      - "pkg/migrations/interface_test.go"
 
   - id: MIGRATION_ENGINE_RAW
     title: "Raw SQL migration engine implementation"
