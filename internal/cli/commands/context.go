@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -113,15 +114,29 @@ func runContextXray(cmd *cobra.Command, args []string) error {
 		scanTarget = repoRoot
 	}
 	// Resolve relative paths to absolute
-	if !filepath.IsAbs(scanTarget) {
-		abs, err := filepath.Abs(scanTarget)
-		if err == nil {
-			scanTarget = abs
-		}
+	scanTargetAbs, err := filepath.Abs(scanTarget)
+	if err != nil {
+		return fmt.Errorf("resolving scan target: %w", err)
 	}
+
+	// Validate that scanTarget is within repoRoot to prevent path traversal
+	// FindRepoRoot already returns an absolute path, so we can use it directly
+	// Check if scanTarget is within repoRoot using filepath.Rel
+	// If the relative path starts with "..", it's outside the repo root
+	rel, err := filepath.Rel(repoRoot, scanTargetAbs)
+	if err != nil {
+		return fmt.Errorf("validating scan target: %w", err)
+	}
+	if strings.HasPrefix(rel, "..") {
+		return fmt.Errorf("scan target %q is outside repository root %q", scanTarget, repoRoot)
+	}
+
+	// Use the validated absolute path
+	scanTarget = scanTargetAbs
 
 	// Run XRAY from tools/context-compiler, but scan the chosen target.
 	// `npm run <script> -- <args>` forwards args to the underlying command.
+	// #nosec G204 - scanTarget validated to be within repoRoot above
 	npmCmd := exec.CommandContext(ctx, "npm", "run", "xray:scan", "--", scanTarget)
 	npmCmd.Dir = filepath.Join(repoRoot, "tools", "context-compiler")
 	npmCmd.Stdout = cmd.OutOrStdout()
