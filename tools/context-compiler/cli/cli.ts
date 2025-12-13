@@ -17,9 +17,10 @@ import { promises as fs } from "node:fs";
 import { createHash } from "node:crypto";
 import { buildPayloadForFile } from "./chunkers";
 import { SCHEMA_VERSION, type ContextMeta, type FileManifestEntry, type ChunkEntry } from "./types";
+import { cmdDocs } from "./docs";
 
 interface Args { [k: string]: string | boolean | undefined }
-type Cmd = "build";
+type Cmd = "build" | "docs";
 
 function parseArgs(): { cmd: Cmd; args: Args } {
     const [cmd, ...rest] = process.argv.slice(2);
@@ -35,7 +36,10 @@ function parseArgs(): { cmd: Cmd; args: Args } {
         }
         return { cmd: "build", args };
     }
-    console.error(`Usage:\n  build [--target <path>] [--out <path>] [--include <csv>] [--ext <csv>]`);
+    if (cmd === "docs") {
+        return { cmd: "docs", args: {} };
+    }
+    console.error(`Usage:\n  build [--target <path>] [--out <path>] [--include <csv>] [--ext <csv>]\n  docs`);
     process.exit(1);
 }
 
@@ -250,7 +254,21 @@ function sanitizeSlug(s: string): string {
     return s.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "repo";
 }
 
+async function cmdDocsHandler() {
+    // Default target: if we're in tools/context-compiler, go up to repo root
+    let defaultTarget = ".";
+    const cwd = process.cwd();
+    if (basename(cwd) === "context-compiler" && basename(resolve(cwd, "..")) === "tools") {
+        defaultTarget = resolve(cwd, "../..");
+    } else {
+        defaultTarget = ".";
+    }
+    const repoRoot = resolve(defaultTarget);
+    return cmdDocs(repoRoot);
+}
+
 (async function main() {
     const { cmd, args } = parseArgs();
     if (cmd === "build") return cmdBuild(args);
+    if (cmd === "docs") return cmdDocsHandler();
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -90,4 +90,12 @@ func TestNewContextCommand(t *testing.T) {
 	if xrayCmd.Use != "xray" {
 		t.Errorf("expected 'xray' command Use to be 'xray', got %q", xrayCmd.Use)
 	}
+
+	docsCmd, _, err := cmd.Find([]string{"docs"})
+	if err != nil {
+		t.Fatalf("expected to find 'docs' subcommand, got error: %v", err)
+	}
+	if docsCmd.Use != "docs" {
+		t.Errorf("expected 'docs' command Use to be 'docs', got %q", docsCmd.Use)
+	}
 }

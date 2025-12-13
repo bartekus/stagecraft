@@ -20,7 +20,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -35,6 +34,7 @@ func NewContextCommand() *cobra.Command {
 
 	cmd.AddCommand(NewContextBuildCommand())
 	cmd.AddCommand(NewContextXrayCommand())
+	cmd.AddCommand(NewContextDocsCommand())
 
 	return cmd
 }
@@ -54,9 +54,20 @@ func NewContextXrayCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "xray",
 		Short: "Run XRAY scan",
-		Long:  "Runs XRAY scan to analyze repository structure and dependencies",
+		Long:  "Runs XRAY scan (always against repository root) to analyze repository structure and dependencies",
 		RunE:  runContextXray,
-		Args:  cobra.RangeArgs(0, 1),
+		Args:  cobra.NoArgs,
+	}
+}
+
+// NewContextDocsCommand returns the `stagecraft context docs` command.
+func NewContextDocsCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "docs",
+		Short: "Generate AI-Agent documentation",
+		Long:  "Generates human-readable documentation from AI-Agent outputs (chunks.ndjson, manifest.json, XRAY index.json)",
+		RunE:  runContextDocs,
+		Args:  cobra.NoArgs,
 	}
 }
 
@@ -95,6 +106,10 @@ func runContextXray(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("finding repo root: %w", err)
 	}
 
+	if len(args) != 0 {
+		return fmt.Errorf("xray does not accept a scan target; it always scans the repository root to avoid overwriting .ai-context/xray outputs")
+	}
+
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] running XRAY scan...\n")
 
 	ctx := cmd.Context()
@@ -102,41 +117,14 @@ func runContextXray(cmd *cobra.Command, args []string) error {
 		ctx = context.Background()
 	}
 
-	// Determine scan target
-	var scanTarget string
-	if len(args) > 0 {
-		scanTarget = args[0]
-	} else {
-		scanTarget = repoRoot
-	}
-	// Normalize "." and similar to repo root
-	if scanTarget == "." || scanTarget == "./." || scanTarget == "./" {
-		scanTarget = repoRoot
-	}
-	// Resolve relative paths to absolute
-	scanTargetAbs, err := filepath.Abs(scanTarget)
-	if err != nil {
-		return fmt.Errorf("resolving scan target: %w", err)
-	}
-
-	// Validate that scanTarget is within repoRoot to prevent path traversal
-	// FindRepoRoot already returns an absolute path, so we can use it directly
-	// Check if scanTarget is within repoRoot using filepath.Rel
-	// If the relative path starts with "..", it's outside the repo root
-	rel, err := filepath.Rel(repoRoot, scanTargetAbs)
-	if err != nil {
-		return fmt.Errorf("validating scan target: %w", err)
-	}
-	if strings.HasPrefix(rel, "..") {
-		return fmt.Errorf("scan target %q is outside repository root %q", scanTarget, repoRoot)
-	}
-
-	// Use the validated absolute path
-	scanTarget = scanTargetAbs
+	// Always scan the repository root.
+	// XRAY writes to a stable location under .ai-context/, so scanning subdirectories
+	// would overwrite the primary scan output.
+	scanTarget := repoRoot
 
 	// Run XRAY from tools/context-compiler, but scan the chosen target.
 	// `npm run <script> -- <args>` forwards args to the underlying command.
-	// #nosec G204 - scanTarget validated to be within repoRoot above
+	// #nosec G204 - scanTarget is repoRoot derived from FindRepoRoot and not user-controlled
 	npmCmd := exec.CommandContext(ctx, "npm", "run", "xray:scan", "--", scanTarget)
 	npmCmd.Dir = filepath.Join(repoRoot, "tools", "context-compiler")
 	npmCmd.Stdout = cmd.OutOrStdout()
@@ -147,6 +135,34 @@ func runContextXray(cmd *cobra.Command, args []string) error {
 	}
 
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] XRAY scan complete → .ai-context/xray/\n")
+
+	return nil
+}
+
+// runContextDocs executes the context:docs npm script.
+func runContextDocs(cmd *cobra.Command, _ []string) error {
+	repoRoot, err := FindRepoRoot(".")
+	if err != nil {
+		return fmt.Errorf("finding repo root: %w", err)
+	}
+
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] generating AI-Agent docs...\n")
+
+	ctx := cmd.Context()
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	npmCmd := exec.CommandContext(ctx, "npm", "run", "context:docs")
+	npmCmd.Dir = filepath.Join(repoRoot, "tools", "context-compiler")
+	npmCmd.Stdout = cmd.OutOrStdout()
+	npmCmd.Stderr = cmd.ErrOrStderr()
+
+	if err := npmCmd.Run(); err != nil {
+		return fmt.Errorf("context docs generation failed: %w", err)
+	}
+
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] AI-Agent docs ready → docs/generated/ai-agent/\n")
 
 	return nil
 }
