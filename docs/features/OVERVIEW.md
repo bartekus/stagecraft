@@ -57,7 +57,6 @@ go run ./cmd/gen-features-overview
 | DEV_MKCERT | dev | done | mkcert integration for local HTTPS | - |
 | DEV_PROCESS_MGMT | dev | done | Process lifecycle management | - |
 | DEV_TRAEFIK | dev | done | Traefik dev config generation | - |
-| DRIVER_DO | drivers | cancelled | DigitalOcean driver | - |
 | ENGINE_PLAN_ACTIONS | engine | draft | Engine Plan Actions and Inputs Schema | CORE_PLAN |
 | GOV_CLI_EXIT_CODES | governance | todo | CLI exit code governance and standardization | GOV_V1_CORE |
 | GOV_V1_CORE | governance | done | Governance Core for v1 | CORE_STATE, CLI_PHASE_EXECUTION_COMMON |
@@ -69,7 +68,7 @@ go run ./cmd/gen-features-overview
 | MIGRATION_INTERFACE | migrations | todo | Migrator interface | - |
 | MIGRATION_POST_DEPLOY | migrations | todo | Post-deploy migration execution | - |
 | MIGRATION_PRE_DEPLOY | migrations | todo | Pre-deploy migration execution | - |
-| ARCH_OVERVIEW | overview.md | todo | Architecture documentation and project overview | - |
+| ARCH_OVERVIEW | overview | todo | Architecture documentation and project overview | - |
 | MIGRATION_ENGINE_RAW | providers | done | Raw SQL migration engine implementation | - |
 | PROVIDER_BACKEND_ENCORE | providers | done | Encore.ts BackendProvider implementation | - |
 | PROVIDER_BACKEND_GENERIC | providers | done | Generic command-based BackendProvider implementation | - |
@@ -87,6 +86,7 @@ go run ./cmd/gen-features-overview
 | CLI_INIT_TEMPLATE | scaffold | todo | Template system for stagecraft init | - |
 | SCAFFOLD_STAGECRAFT_DIR | scaffold | todo | .stagecraft/ directory generation | - |
 | TEMPLATE_PLATFORM | scaffold | todo | Platform template (embedded) | - |
+| DRIVER_DO | unknown | cancelled | DigitalOcean driver | - |
 
 ## Dependency Graph
 

@@ -319,7 +319,7 @@ features:
   - id: DRIVER_DO
     title: "DigitalOcean driver"
     status: cancelled
-    spec: "drivers/do.md"
+    spec: ""
     owner: bart
     tests:
       - "internal/drivers/do/do_test.go"

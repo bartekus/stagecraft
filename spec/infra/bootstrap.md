@@ -1,3 +1,14 @@
+---
+feature: INFRA_HOST_BOOTSTRAP
+version: v1
+status: done
+domain: infra
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
+---
+
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 # Feature: INFRA_HOST_BOOTSTRAP
