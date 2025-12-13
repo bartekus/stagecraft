@@ -53,6 +53,10 @@ Additional generated pages:
 10. **GOVERNANCE_INDEX.md**: governance and ADR documentation index
 11. **ENGINE_ANALYSIS_INDEX.md**: engineering analysis document index
 12. **ENGINE_OUTLINE_INDEX.md**: implementation outline index
+13. **CONTEXT_HANDOFF_INDEX.md**: traceability index of context handoff docs
+14. **COVERAGE_INDEX.md**: coverage planning and reports index
+15. **ARCHIVE_INDEX.md**: index of archived and historical docs
+16. **GUIDES_AND_NARRATIVES_INDEX.md**: guides and narratives discovery index
 
 ## Intended Audience
 

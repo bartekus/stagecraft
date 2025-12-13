@@ -153,6 +153,10 @@ Additional generated pages:
 10. **GOVERNANCE_INDEX.md**: governance and ADR documentation index
 11. **ENGINE_ANALYSIS_INDEX.md**: engineering analysis document index
 12. **ENGINE_OUTLINE_INDEX.md**: implementation outline index
+13. **CONTEXT_HANDOFF_INDEX.md**: traceability index of context handoff docs
+14. **COVERAGE_INDEX.md**: coverage planning and reports index
+15. **ARCHIVE_INDEX.md**: index of archived and historical docs
+16. **GUIDES_AND_NARRATIVES_INDEX.md**: guides and narratives discovery index
 
 ## Intended Audience
 
@@ -530,6 +534,193 @@ Inventory of implementation outlines.
     await writeDeterministicFile(join(outDir, "ENGINE_OUTLINE_INDEX.md"), content);
 }
 
+/**
+ * Writes CONTEXT_HANDOFF_INDEX.md
+ * - docs/context-handoff/
+ */
+async function generateContextHandoffIndex(
+    repoRoot: string,
+    outDir: string,
+    manifest: FileManifestEntry[],
+    chunks: ChunkEntry[]
+): Promise<void> {
+    let content = `# Context Handoff Index
+
+Traceable index of context handoff documents.
+
+| Path | Chunks | Primary Topics |
+|------|--------|----------------|
+`;
+    const files = manifest
+        .filter(f => f.path.startsWith("docs/context-handoff/"))
+        .sort((a, b) => a.path.localeCompare(b.path));
+
+    for (const file of files) {
+        const fileChunks = chunks.filter(c => c.path === file.path);
+        const headings = extractHeadingsFromChunks(fileChunks);
+        const topics = headings
+            .filter(h => {
+                const lower = h.toLowerCase();
+                return !["overview", "introduction", "table of contents", "contents"].includes(lower);
+            })
+            .slice(0, 5)
+            .join(", ") || "General";
+        content += `| \`${file.path}\` | ${file.chunks} | ${mdEscapeTableCell(topics)} |\n`;
+    }
+    await writeDeterministicFile(join(outDir, "CONTEXT_HANDOFF_INDEX.md"), content);
+}
+
+/**
+ * Writes COVERAGE_INDEX.md
+ * - docs/coverage/
+ */
+async function generateCoverageIndex(
+    repoRoot: string,
+    outDir: string,
+    manifest: FileManifestEntry[],
+    chunks: ChunkEntry[]
+): Promise<void> {
+    let content = `# Coverage Index
+
+Aggregated index of coverage planning and reports.
+
+| Path | Chunks | Primary Topics |
+|------|--------|----------------|
+`;
+    const files = manifest
+        .filter(f => f.path.startsWith("docs/coverage/"))
+        .sort((a, b) => a.path.localeCompare(b.path));
+
+    for (const file of files) {
+        const fileChunks = chunks.filter(c => c.path === file.path);
+        const headings = extractHeadingsFromChunks(fileChunks);
+        const topics = headings
+            .filter(h => {
+                const lower = h.toLowerCase();
+                return !["overview", "introduction", "table of contents", "contents"].includes(lower);
+            })
+            .slice(0, 5)
+            .join(", ") || "General";
+        content += `| \`${file.path}\` | ${file.chunks} | ${mdEscapeTableCell(topics)} |\n`;
+    }
+    await writeDeterministicFile(join(outDir, "COVERAGE_INDEX.md"), content);
+}
+
+/**
+ * Writes ARCHIVE_INDEX.md
+ * - docs/archive/
+ * - docs/engine/history/
+ */
+async function generateArchiveIndex(
+    repoRoot: string,
+    outDir: string,
+    manifest: FileManifestEntry[],
+    chunks: ChunkEntry[]
+): Promise<void> {
+    let content = `# Archive Index
+
+Visibility into archived and historical documents.
+
+`;
+    const relevantFiles = manifest.filter(f =>
+        f.path.startsWith("docs/archive/") || f.path.startsWith("docs/engine/history/")
+    );
+
+    const byDir: Record<string, FileManifestEntry[]> = {};
+    for (const file of relevantFiles) {
+        // Determine group directory
+        // Task says "Group by directory". docs/archive/foo.md -> docs/archive/
+        // We will group by the known source directories: docs/archive/ or docs/engine/history/
+        // Or strictly by directory name? "Group by directory" usually means immediate parent or the top-level grouping asked.
+        // Given the inputs are docs/archive/ and docs/engine/history/, let's group by those prefixes/folders.
+        let dir = "";
+        if (file.path.startsWith("docs/archive/")) dir = "docs/archive/";
+        else if (file.path.startsWith("docs/engine/history/")) dir = "docs/engine/history/";
+        else dir = "other/"; // Should not happen based on filter
+
+        if (!byDir[dir]) byDir[dir] = [];
+        byDir[dir].push(file);
+    }
+
+    const sortedDirs = Object.keys(byDir).sort();
+
+    for (const dir of sortedDirs) {
+        content += `## \`${dir}\`\n\n`;
+        content += `| Path | Chunks | Primary Topics |\n`;
+        content += `|------|--------|----------------|\n`;
+        const files = byDir[dir].sort((a, b) => a.path.localeCompare(b.path));
+        for (const file of files) {
+            const fileChunks = chunks.filter(c => c.path === file.path);
+            const headings = extractHeadingsFromChunks(fileChunks);
+            const topics = headings
+                .filter(h => {
+                    const lower = h.toLowerCase();
+                    return !["overview", "introduction", "table of contents", "contents"].includes(lower);
+                })
+                .slice(0, 5)
+                .join(", ") || "General";
+            content += `| \`${file.path}\` | ${file.chunks} | ${mdEscapeTableCell(topics)} |\n`;
+        }
+        content += `\n`;
+    }
+    await writeDeterministicFile(join(outDir, "ARCHIVE_INDEX.md"), content);
+}
+
+/**
+ * Writes GUIDES_AND_NARRATIVES_INDEX.md
+ * - docs/guides/
+ * - docs/narrative/
+ */
+async function generateGuidesAndNarrativesIndex(
+    repoRoot: string,
+    outDir: string,
+    manifest: FileManifestEntry[],
+    chunks: ChunkEntry[]
+): Promise<void> {
+    let content = `# Guides and Narratives Index
+
+Discovery index for guides and narrative documentation.
+
+`;
+    const relevantFiles = manifest.filter(f =>
+        f.path.startsWith("docs/guides/") || f.path.startsWith("docs/narrative/")
+    );
+
+    const byDir: Record<string, FileManifestEntry[]> = {};
+    for (const file of relevantFiles) {
+        let dir = "";
+        if (file.path.startsWith("docs/guides/")) dir = "docs/guides/";
+        else if (file.path.startsWith("docs/narrative/")) dir = "docs/narrative/";
+        else dir = "other/";
+
+        if (!byDir[dir]) byDir[dir] = [];
+        byDir[dir].push(file);
+    }
+
+    const sortedDirs = Object.keys(byDir).sort();
+
+    for (const dir of sortedDirs) {
+        content += `## \`${dir}\`\n\n`;
+        content += `| Path | Chunks | Primary Topics |\n`;
+        content += `|------|--------|----------------|\n`;
+        const files = byDir[dir].sort((a, b) => a.path.localeCompare(b.path));
+        for (const file of files) {
+            const fileChunks = chunks.filter(c => c.path === file.path);
+            const headings = extractHeadingsFromChunks(fileChunks);
+            const topics = headings
+                .filter(h => {
+                    const lower = h.toLowerCase();
+                    return !["overview", "introduction", "table of contents", "contents"].includes(lower);
+                })
+                .slice(0, 5)
+                .join(", ") || "General";
+            content += `| \`${file.path}\` | ${file.chunks} | ${mdEscapeTableCell(topics)} |\n`;
+        }
+        content += `\n`;
+    }
+    await writeDeterministicFile(join(outDir, "GUIDES_AND_NARRATIVES_INDEX.md"), content);
+}
+
 async function generateRepoIndex(repoRoot: string, outDir: string, xrayIndex: XrayIndex | null): Promise<void> {
     let content = `# Repository Index
 
@@ -814,6 +1005,10 @@ export async function cmdDocs(repoRoot: string): Promise<void> {
     await generateGovernanceIndex(repoRoot, outDir, manifest, chunks);
     await generateEngineAnalysisIndex(repoRoot, outDir, manifest, chunks);
     await generateEngineOutlineIndex(repoRoot, outDir, manifest, chunks);
+    await generateContextHandoffIndex(repoRoot, outDir, manifest, chunks);
+    await generateCoverageIndex(repoRoot, outDir, manifest, chunks);
+    await generateArchiveIndex(repoRoot, outDir, manifest, chunks);
+    await generateGuidesAndNarrativesIndex(repoRoot, outDir, manifest, chunks);
 
     console.log(`✅ Generated AI-Agent docs → ${outDir}`);
 }

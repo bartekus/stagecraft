@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Docs Determinism
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  check-determinism:
+    name: Verify Docs Determinism
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build stagecraft binary
+        run: go build -o stagecraft ./cmd/stagecraft
+
+      - name: Add stagecraft to PATH
+        run: |
+          echo "$(pwd)" >> $GITHUB_PATH
+
+      - name: Install context-compiler dependencies
+        working-directory: tools/context-compiler
+        run: npm ci
+
+      - name: Generate AI-Agent docs
+        run: stagecraft context docs
+
+      - name: Verify checksums
+        run: |
+          cd docs/generated/ai-agent
+          shasum -a 256 -c CHECKSUMS.sha256
