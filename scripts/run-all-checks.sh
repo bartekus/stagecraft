@@ -26,6 +26,46 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+# Shared exclusions (used across tools)
+# - Keep this list conservative; only exclude generated/third-party/vendor dirs.
+EXCLUDE_DIRS=(
+    "node_modules"
+    ".git"
+    "dist"
+    "build"
+    "out"
+    "vendor"
+    "target"
+    ".idea"
+    ".bin"
+    "tools"
+    ".stagecraft"
+)
+
+# Regex for path-based exclusion. Matches dir boundaries.
+EXCLUDE_JOINED=$(IFS='|'; printf '%s' "${EXCLUDE_DIRS[*]}")
+EXCLUDE_REGEX="(^|/)(${EXCLUDE_JOINED})(/|$)"
+
+# Filter tracked files through the shared exclusions.
+# Prints newline-delimited paths.
+tracked_files_filtered() {
+    # git ls-files respects .gitignore and only returns tracked paths.
+    git ls-files | grep -vE "$EXCLUDE_REGEX" || true
+}
+
+# Filter tracked Go files.
+tracked_go_files_filtered() {
+    tracked_files_filtered | grep -E '\.go$' || true
+}
+
+# Build addlicense -ignore args from the same exclusion list.
+# Prints shell-escaped args (one per line) to be consumed into an array.
+addlicense_ignore_args() {
+    for d in "${EXCLUDE_DIRS[@]}"; do
+        echo "-ignore"; echo "${d}/**"
+    done
+}
+
 info() {
     echo -e "${GREEN}✓${NC} $1"
 }
@@ -48,14 +88,20 @@ info "Checking Go formatting..."
 if [ -x ./scripts/goformat.sh ]; then
     # Check formatting (dry run)
     if command -v gofumpt &> /dev/null; then
-        format_out=$(gofumpt -l .)
-        if [ -n "$format_out" ]; then
-            error "The following files are not gofumpt'ed:"
-            echo "$format_out"
-            error "Run ./scripts/goformat.sh to fix formatting"
-            exit 1
+        # Only check tracked Go files (prevents scanning node_modules, vendor trees, etc.)
+        go_files=$(tracked_go_files_filtered)
+        if [ -z "$go_files" ]; then
+            info "No tracked Go files found"
+        else
+            format_out=$(printf '%s\n' "$go_files" | xargs gofumpt -l)
+            if [ -n "$format_out" ]; then
+                error "The following files are not gofumpt'ed:"
+                echo "$format_out"
+                error "Run ./scripts/goformat.sh to fix formatting"
+                exit 1
+            fi
+            info "All files are properly formatted"
         fi
-        info "All files are properly formatted"
     else
         error "gofumpt not found. Install with: go install mvdan.cc/gofumpt@v0.6.0"
         exit 1
@@ -205,12 +251,25 @@ if ! command -v addlicense &> /dev/null; then
     exit 1
 fi
 
-addlicense -ignore 'internal/providers/backend/generic/test_script.sh' \
-          -ignore '.bin/vendor/**' \
-          -ignore '**/testdata/**' \
-          -ignore '.idea/**' \
-          -ignore '**/.stagecraft/**' \
-          -check .
+# Build shared ignore args + project-specific ignores
+ADDLICENSE_ARGS=(
+    -ignore 'internal/providers/backend/generic/test_script.sh' \
+    -ignore  'internal/dev/compose/testdata/dev_compose_backend_frontend_traefik.yaml'
+)
+
+# Add shared ignores derived from EXCLUDE_DIRS
+while IFS= read -r arg; do
+    ADDLICENSE_ARGS+=("$arg")
+done < <(addlicense_ignore_args)
+
+# Only check tracked files (deterministic, avoids walking the filesystem)
+tracked=$(tracked_files_filtered)
+if [ -z "$tracked" ]; then
+    info "No tracked files found for addlicense check"
+else
+    # shellcheck disable=SC2086
+    addlicense "${ADDLICENSE_ARGS[@]}" -check $tracked
+fi
 info "License headers check passed"
 
 # === Provider Governance Checks ===

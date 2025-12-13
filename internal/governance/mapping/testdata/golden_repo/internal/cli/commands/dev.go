@@ -20,4 +20,3 @@ package commands
 func DevCommand() {
 	// Implementation for dev command
 }
-

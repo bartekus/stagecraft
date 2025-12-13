@@ -1,0 +1,5 @@
+# add project-specific heavy dirs/globs here
+*.lock
+pnpm-*.yaml
+**/*.gen.*
+**/__generated__/**

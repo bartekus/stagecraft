@@ -58,6 +58,7 @@ linters:
     warn-unused: true
     paths:
       - vendor
+      - tools
       - test/e2e
       - ".*\\.pb\\.go$"
     rules:

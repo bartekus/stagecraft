@@ -164,6 +164,12 @@ Stagecraft is built around a few core ideas:
 - `stagecraft gov`  
   Governance checks for Stagecraft (feature mapping, validation, etc.).
 
+- `stagecraft context build`  
+  Build AI-readable context representation in `.ai-context/`
+
+- `stagecraft context xray`  
+  Run XRAY scan to analyze repository structure and dependencies
+
 ### Planned / In Progress
 
 - `stagecraft dev` (full feature set)  
@@ -192,6 +198,27 @@ Stagecraft is built around a few core ideas:
   Sync secrets between `.env`/config and providers (Encore dev secrets, `/etc/platform/env`, etc.).
 
 See the spec for deeper behavior of each command.
+
+---
+
+## AI Context Pipeline
+
+Stagecraft uses a deterministic local context compiler to build AI-readable
+representations of the repository.
+
+**Commands:**
+- `stagecraft context build` - Builds `.ai-context/` directory
+- `stagecraft context xray` - Runs XRAY scan for repository analysis
+
+**Outputs:**
+- `.ai-context/` - Gitignored, deterministic AI context representation
+- `.xraycache/` - Gitignored, cache only
+
+**Important:**
+- No data leaves the machine
+- No embeddings or vector databases
+- No backend or network calls
+- Pure local processing
 
 ---
 

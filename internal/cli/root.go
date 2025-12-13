@@ -71,6 +71,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(commands.NewBuildCommand())
 	cmd.AddCommand(commands.NewCommitReportCommand())
 	cmd.AddCommand(commands.NewCommitSuggestCommand())
+	cmd.AddCommand(commands.NewContextCommand())
 	cmd.AddCommand(commands.NewDeployCommand())
 	cmd.AddCommand(commands.NewDevCommand())
 	cmd.AddCommand(commands.NewFeatureTraceabilityCommand())

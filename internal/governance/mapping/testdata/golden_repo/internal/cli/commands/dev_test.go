@@ -20,4 +20,3 @@ import "testing"
 func TestDevCommand(t *testing.T) {
 	// Test implementation for dev command
 }
-
