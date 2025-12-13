@@ -1,270 +1,128 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 
 <!--
-
-Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
-
+Stagecraft - Human Contribution Guidelines
 Copyright (C) 2025  Bartek Kus
-
-This program is free software licensed under the terms of the GNU AGPL v3 or later.
-
-See https://www.gnu.org/licenses/ for license details.
-
+Licensed under the GNU AGPL v3 or later.
 -->
 
 # Contributing to Stagecraft
 
-Thank you for your interest in contributing to Stagecraft! This document outlines the contribution process and requirements.
+> [!IMPORTANT]
+> **This document defines the human contribution workflow.**
+>
+> It does **not** define enforcement rules for AI agents.
+> *   **AI Agents**: STOP. Read [`Agent.md`](Agent.md) immediately.
+> *   **Humans using AI**: Read [`Agent.md`](Agent.md) to understand the protocol your tool must follow.
+
+## Core Principles
+
+1.  **Spec-First**: No code without a spec. Update `spec/` before strictly implementing.
+2.  **Test-First**: Write tests that fail before writing code that passes.
+3.  **Deterministic**: No race conditions, no random outputs, no unseeded timestamps.
+4.  **Governance-Aligned**: All features must be tracked in `spec/features.yaml`.
+
+---
 
 ## License Requirements
 
-Stagecraft is licensed under the **GNU Affero General Public License v3 or later (AGPL-3.0-or-later)**. All contributions must comply with this license.
+Stagecraft is licensed under the **GNU Affero General Public License v3 or later (AGPL-3.0-or-later)**.
 
-### License Header Requirements
+### License Headers
 
-Every source file in Stagecraft **must** include proper licensing and attribution. This is enforced automatically and is a requirement for all pull requests.
+Every source file **must** include the SPDX header.
+*   **Go**: `// SPDX-License-Identifier: AGPL-3.0-or-later`
+*   **Shell/YAML**: `# SPDX-License-Identifier: AGPL-3.0-or-later`
+*   **Markdown**: `<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->`
 
-#### Required Elements
+We use [`addlicense`](https://github.com/google/addlicense) and CI checks to enforce this.
 
-1. **SPDX License Identifier** (mandatory for all files)
-   - Must be the first non-empty line in every source file
-   - Format: `// SPDX-License-Identifier: AGPL-3.0-or-later` (for Go files)
-   - Format: `# SPDX-License-Identifier: AGPL-3.0-or-later` (for shell scripts, YAML)
-   - Format: `<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->` (for Markdown)
-
-2. **Short Header** (for most source files)
-   - Required for all `.go`, `.sh`, `.yaml`, `.yml`, `.json`, `.ts`, `.tsx` files
-   - See examples below
-
-3. **Full Header** (for entry files only)
-   - Required only for:
-     - `/cmd/stagecraft/main.go`
-     - `/cmd/stagecraftd/main.go` (if exists)
-     - `/internal/version/version.go` (if exists)
-     - Any root-level entry point files
-
-#### Examples
-
-**Short Header (for most Go files):**
-```go
-// SPDX-License-Identifier: AGPL-3.0-or-later
-
-/*
-
-Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
-
-Copyright (C) 2025  Bartek Kus
-
-This program is free software licensed under the terms of the GNU AGPL v3 or later.
-
-See https://www.gnu.org/licenses/ for license details.
-
-*/
-
-package mypackage
-```
-
-**Full Header (for entry files):**
-```go
-// SPDX-License-Identifier: AGPL-3.0-or-later
-
-/*
-
-Stagecraft is a Go-based CLI for orchestrating local development and deployment of multi-service
-
-applications. It aims to be "A local-first tool that scales from single-host to multi-host deployments
-
-like Kamal, but for Docker Compose".
-
-Copyright (C) 2025  Bartek Kus
-
-This program is free software: you can redistribute it and/or modify it under the terms of the
-
-GNU Affero General Public License as published by the Free Software Foundation, either version 3
-
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-
-even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-
-Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License along with this program.
-
-If not, see <https://www.gnu.org/licenses/>.
-
-*/
-
-package main
-```
-
-**Shell Script Header:**
-```bash
-#!/bin/bash
-# SPDX-License-Identifier: AGPL-3.0-or-later
-#
-# Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
-#
-# Copyright (C) 2025  Bartek Kus
-#
-# This program is free software licensed under the terms of the GNU AGPL v3 or later.
-#
-# See https://www.gnu.org/licenses/ for license details.
-#
-```
-
-**Markdown Header:**
-```markdown
-<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
-
-<!--
-
-Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
-
-Copyright (C) 2025  Bartek Kus
-
-This program is free software licensed under the terms of the GNU AGPL v3 or later.
-
-See https://www.gnu.org/licenses/ for license details.
-
--->
-```
-
-### Automated License Checking
-
-We use the [`addlicense`](https://github.com/google/addlicense) tool to enforce license headers:
-
-1. **Pre-commit Hook**: Automatically checks license headers before each commit
-2. **CI/CD**: GitHub Actions workflow validates all files on every PR
-3. **Manual Check**: Run `addlicense -check .` to verify locally
-
-### Adding Headers to New Files
-
-Before committing new files:
-
-1. **Install addlicense** (if not already installed):
-   ```bash
-   go install github.com/google/addlicense@latest
-   ```
-
-2. **Add headers automatically**:
-   ```bash
-   addlicense -c "Bartek Kus" -l agpl -y 2025 .
-   ```
-
-   Or use our helper script:
-   ```bash
-   ./scripts/add-headers.sh
-   ```
-
-3. **For entry files**, manually update to use the full header format (see examples above)
-
-4. **Verify**:
-   ```bash
-   addlicense -check .
-   ```
-
-### PR Requirements
-
-Every pull request must satisfy:
-
-1. ✅ All files include the SPDX license identifier
-2. ✅ Go/TS/YAML/etc files include the short header
-3. ✅ Entry files include the full header
-4. ✅ CI license-check workflow passes
-5. ✅ No contributor may remove or alter the copyright holder
-6. ✅ New files have headers added before commit
-
-**PRs that fail the license check will not be merged.**
+---
 
 ## Development Setup
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-org/stagecraft.git
-   cd stagecraft
-   ```
+### 1. Prerequisites
+*   Go 1.22+
+*   Docker (for integration tests)
+*   PostgreSQL (optional, for migration tests)
 
-2. **Install dependencies**:
-   ```bash
-   go mod download
-   ```
+### 2. Clone & Build
+```bash
+git clone https://github.com/bartekus/stagecraft.git
+cd stagecraft
+go build ./cmd/stagecraft
+```
 
-3. **Install git hooks** (required):
-   ```bash
-   ./scripts/install-hooks.sh
-   ```
-   
-   The pre-commit hook runs gofumpt and basic checks, and will block commits on formatting errors. See the "Git Hooks" section below for details.
-   
-   For a complete list of scripts and their usage, see [scripts/README.md](scripts/README.md).
+### 3. Install Git Hooks (Mandatory)
+We strictly enforce formatting and linting via git hooks.
 
-4. **Run tests**:
-   ```bash
-   go test ./...
-   ```
-
-## Git Hooks
-
-Stagecraft requires git hooks to be installed for all contributors. The pre-commit hook:
-
-- Automatically formats Go files with gofumpt
-- Organizes imports with goimports
-- Adds license headers to new files
-- Runs basic build checks
-
-**Installation:**
 ```bash
 ./scripts/install-hooks.sh
 ```
 
-**Verification:**
+**What the hook does:**
+*   Runs `gofumpt` (stricter gofmt)
+*   Runs `goimports`
+*   Checks license headers
+*   Blocks commits if checks fail
+
+### 4. Verify Environment
 ```bash
-ls -la .git/hooks/pre-commit
+./scripts/run-all-checks.sh
 ```
+This runs the full CI suite locally (Tests, Lint, Build, Licenses).
 
-If the hook is missing, formatting or basic checks may fail in CI and PRs will be blocked.
+---
 
-## Code Style
+## Workflow: Spec-First Development
 
-- Follow Go standard formatting (`gofmt`)
-- Run `golangci-lint` before committing
-- Write tests for new features
-- Update documentation as needed
+**Do not start coding until you have updated the specification.**
 
-See [docs/README.md](docs/README.md) for a map of all project documentation.
+### 1. Feature Registry
+Check `spec/features.yaml`. Every non-trivial change must map to a `FEATURE_ID`.
+
+### 2. Update Specs
+*   **Existing Feature**: Update `spec/<domain>/<feature>.md`.
+*   **New Feature**:
+    1.  Create `docs/engine/analysis/<FEATURE_ID>.md`
+    2.  Create `spec/<domain>/<feature>.md`
+    3.  Register in `spec/features.yaml`
+
+### 3. Branching Strategy
+Naming convention: `type/feature-name` or `type/FEATURE_ID-name`
+*   `feature/cli-dev-hot-reload`
+*   `fix/deployment-race-condition`
+*   `docs/update-readme`
+
+### 4. Implementation
+1.  Write failing tests in `internal/<pkg>/..._test.go`.
+2.  Implement minimal code to pass tests.
+3.  Ensure 100% determinism (no `map` iteration without sorting).
+
+---
+
+## Testing & Verification
+
+*   **Unit Tests**: `go test ./...`
+*   **Coverage**: `./scripts/check-coverage.sh` (Enforced strict thresholds)
+*   **Specs**: `./scripts/validate-spec.sh` (Ensures `features.yaml` is valid)
+
+---
 
 ## Submitting Changes
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/your-feature-name`
-3. **Make your changes** (remember to add license headers!)
-4. **Run tests and linters**: `go test ./... && golangci-lint run ./...`
-5. **Commit your changes**: `git commit -m "Add feature: description"`
-6. **Push to your fork**: `git push origin feature/your-feature-name`
-7. **Open a Pull Request**
+1.  **Commit**: descriptive messages.
+2.  **Push**: `git push origin feature/...`
+3.  **PR**: Open Pull Request against `main`.
+    *   CI will run `run-all-checks.sh`.
+    *   License check must pass.
 
-## AI-Assisted Development with Cursor
+---
 
-If you're using Cursor or other AI coding assistants, we have a dedicated guide for efficient AI workflows:
+## For AI Agents
 
-📖 **[Cursor Contributor Workflow Guide](docs/CONTRIBUTING_CURSOR.md)**
+If you are an AI agent (Cursor, Windsurf, Cline, etc.) operating on this repository:
 
-This guide covers:
-- Thread hygiene (one feature per thread)
-- File hygiene (what to open vs. attach)
-- Using STRUC-C/L methodology in Cursor
-- Cost-efficient AI usage patterns
-- Examples of good vs. bad AI interactions
+**You are bound by the [Agent Protocol](Agent.md).**
 
-For a quick reference on which specs and docs to open for different feature types, see:
-
-📖 **[Engine Documentation Index](docs/engine-index.md)**
-
-## Questions?
-
-If you have questions about contributing or the license requirements, please open an issue or contact the maintainers.
-
-Thank you for contributing to Stagecraft! 🎭
-
+Do not guess. Do not hallucinate specs. Follow the strict execution loop defined in `Agent.md`.
