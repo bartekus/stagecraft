@@ -1,9 +1,9 @@
-> **Superseded by** `docs/engine/agents/AGENT_BRIEF_GOV_V1_CORE.md` section "Phase 3: Spec Reference Checker Hardening". Kept for historical reference. New GOV_V1_CORE execution notes MUST go into the merged agent brief.
+> **Superseded by** `docs/engine/agents/AGENT_BRIEF_GOV_CORE.md` section "Phase 3: Spec Reference Checker Hardening". Kept for historical reference. New GOV_CORE execution notes MUST go into the merged agent brief.
 
 # Agent Brief: Spec Reference Checker Hardening - Phase 3
 
-**Feature ID**: GOV_V1_CORE  
-**Spec**: `spec/governance/GOV_V1_CORE.md`  
+**Feature ID**: GOV_CORE  
+**Spec**: `spec/governance/GOV_CORE.md`  
 **Context**: Hardening governance tooling to eliminate false positives in spec reference validation. See `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` Phase 3 section.
 
 **Status**: ✅ Phase 3 implemented and merged. `Spec:` is now reserved for `spec/*.md` files and enforced by `cmd/spec-reference-check`. All non-spec references converted to `Docs:` comments.
@@ -144,11 +144,11 @@ Phase 3 is complete when **all** of the following hold:
 
 ---
 
-## Constraints (From Agent.md & GOV_V1_CORE)
+## Constraints (From Agent.md & GOV_CORE)
 
 ### You MUST:
 
-- Treat **GOV_V1_CORE** as the single Feature ID for this work
+- Treat **GOV_CORE** as the single Feature ID for this work
 - Follow spec-first, test-first where any behavioural ambiguity is encountered
 - Keep diffs **minimal and deterministic**
 - Keep changes scoped strictly to:
@@ -171,10 +171,10 @@ Phase 3 is complete when **all** of the following hold:
 
 ### Setup
 
-- [ ] Confirm Feature ID: `GOV_V1_CORE`
+- [ ] Confirm Feature ID: `GOV_CORE`
 - [ ] Verify hooks (`./scripts/install-hooks.sh` if needed)
 - [ ] Ensure clean working directory
-- [ ] On appropriate feature branch (e.g. `test/GOV_V1_CORE-phase3-spec-checker`)
+- [ ] On appropriate feature branch (e.g. `test/GOV_CORE-phase3-spec-checker`)
 
 ### Implementation
 
@@ -206,7 +206,7 @@ Phase 3 is complete when **all** of the following hold:
 
 ## Reference Documents
 
-- `spec/governance/GOV_V1_CORE.md` – Governance feature specification
+- `spec/governance/GOV_CORE.md` – Governance feature specification
 - `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Phase 2 plan (Phase 3 section)
 - `scripts/run-all-checks.sh` – Current implementation (lines 128-151)
 - `Agent.md` – Development protocol and constraints

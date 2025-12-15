@@ -56,7 +56,7 @@ This directory contains all project documentation organized by purpose and lifec
 - **`engine/analysis/`** - Feature implementation analysis
   - `CLI_PLAN_ANALYSIS.md`
   - `PROJECT_STRUCTURE_ANALYSIS.md`
-  - `GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md`
+  - `GOV_CORE_IMPLEMENTATION_ANALYSIS.md`
   - `TEMPLATE.md`
 
 - **`engine/outlines/`** - Implementation outlines and templates
@@ -111,7 +111,7 @@ Stagecraft enforces provider-level coverage governance to ensure all providers m
 **Reference Model:**
 - `internal/providers/frontend/generic/COVERAGE_STRATEGY.md` - V1 Complete example
 
-#### Feature Mapping Check (GOV_V1_CORE Phase 4)
+#### Feature Mapping Check (GOV_CORE Phase 4)
 
 Stagecraft enforces a **Feature Mapping Invariant** to keep specs, code, and tests aligned.
 
@@ -178,7 +178,7 @@ This provides a snapshot view of:
 - Missing specs, implementations, or tests
 - Dangling feature IDs and orphan specs
 
-Use this when planning or reviewing GOV_V1_CORE to get a governance overview.
+Use this when planning or reviewing GOV_CORE to get a governance overview.
 
 ### 📦 Archive (`archive/`)
 

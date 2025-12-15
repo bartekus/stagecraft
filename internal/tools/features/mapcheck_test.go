@@ -74,9 +74,9 @@ func TestLoadFeaturesYAML(t *testing.T) {
 		t.Fatal("expected at least one feature, got 0")
 	}
 
-	// Check that GOV_V1_CORE exists
-	if _, exists := featureMap["GOV_V1_CORE"]; !exists {
-		t.Error("expected GOV_V1_CORE feature to exist")
+	// Check that GOV_CORE exists
+	if _, exists := featureMap["GOV_CORE"]; !exists {
+		t.Error("expected GOV_CORE feature to exist")
 	}
 }
 

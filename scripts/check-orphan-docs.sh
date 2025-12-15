@@ -47,19 +47,19 @@ if [ -d "$ANALYSIS_DIR" ]; then
     for ANALYSIS_FILE in "$ANALYSIS_DIR"/*.md; do
         # Skip if no files match the pattern
         [ -f "$ANALYSIS_FILE" ] || continue
-        
+
         # Skip TEMPLATE.md
         if [ "$(basename "$ANALYSIS_FILE")" = "TEMPLATE.md" ]; then
             continue
         fi
-        
+
         # Extract FEATURE_ID from filename
-        # Handle patterns: CLI_PLAN.md, CLI_PLAN_ANALYSIS.md, GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md
+        # Handle patterns: CLI_PLAN.md, CLI_PLAN_ANALYSIS.md, GOV_CORE_IMPLEMENTATION_ANALYSIS.md
         FILENAME=$(basename "$ANALYSIS_FILE" .md)
         # Remove _IMPLEMENTATION_ANALYSIS suffix first, then _ANALYSIS if present
         FEATURE_ID="${FILENAME%_IMPLEMENTATION_ANALYSIS}"
         FEATURE_ID="${FEATURE_ID%_ANALYSIS}"
-        
+
         # Check if this FEATURE_ID exists in features.yaml
         if ! echo "$FEATURE_IDS" | grep -q "^${FEATURE_ID}$"; then
             echo "❌ Orphan analysis file: ${ANALYSIS_FILE}"
@@ -76,15 +76,15 @@ if [ -d "$OUTLINE_DIR" ]; then
     for OUTLINE_FILE in "$OUTLINE_DIR"/*_IMPLEMENTATION_OUTLINE.md; do
         # Skip if no files match the pattern
         [ -f "$OUTLINE_FILE" ] || continue
-        
+
         # Skip IMPLEMENTATION_OUTLINE_TEMPLATE.md
         if [ "$(basename "$OUTLINE_FILE")" = "IMPLEMENTATION_OUTLINE_TEMPLATE.md" ]; then
             continue
         fi
-        
+
         # Extract FEATURE_ID from filename (e.g., CLI_PLAN_IMPLEMENTATION_OUTLINE.md -> CLI_PLAN)
         FEATURE_ID=$(basename "$OUTLINE_FILE" _IMPLEMENTATION_OUTLINE.md)
-        
+
         # Check if this FEATURE_ID exists in features.yaml
         if ! echo "$FEATURE_IDS" | grep -q "^${FEATURE_ID}$"; then
             echo "❌ Orphan outline file: ${OUTLINE_FILE}"

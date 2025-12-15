@@ -196,7 +196,7 @@ else
     exit 1
 fi
 
-# === Governance Checks (GOV_V1_CORE) ===
+# === Governance Checks (GOV_CORE) ===
 section "Governance Checks"
 
 info "Validating spec frontmatter..."

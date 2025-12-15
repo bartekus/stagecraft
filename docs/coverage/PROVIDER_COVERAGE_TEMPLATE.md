@@ -157,7 +157,7 @@ These MUST be documented as "post-v1" so they don't blur the v1 completion crite
 All major branches, edge cases, and lifecycle transitions SHOULD be validated through deterministic tests that align with:
 
 - Stagecraft governance
-- GOV_V1_CORE
+- GOV_CORE
 - `docs/governance/GOV_V1_TEST_REQUIREMENTS.md`
 - AATSE design standards
 

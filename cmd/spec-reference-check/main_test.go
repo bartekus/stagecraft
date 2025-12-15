@@ -10,8 +10,8 @@
 
 package main
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 import (
 	"os"
@@ -25,8 +25,8 @@ func TestExtractSpecReferences_ValidComment(t *testing.T) {
 
 	content := []byte(`package main
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 func main() {
 }
@@ -37,8 +37,8 @@ func main() {
 		t.Fatalf("expected 1 reference, got %d", len(refs))
 	}
 
-	if refs[0].Path != "spec/governance/GOV_V1_CORE.md" {
-		t.Errorf("expected path 'spec/governance/GOV_V1_CORE.md', got %q", refs[0].Path)
+	if refs[0].Path != "spec/governance/GOV_CORE.md" {
+		t.Errorf("expected path 'spec/governance/GOV_CORE.md', got %q", refs[0].Path)
 	}
 	if refs[0].Line != 4 {
 		t.Errorf("expected line 4, got %d", refs[0].Line)
@@ -123,7 +123,7 @@ func TestExtractSpecReferences_EmptyPath(t *testing.T) {
 	content := []byte(`package main
 
 // Spec:
-// Spec: 
+// Spec:
 `)
 
 	refs := extractSpecReferences("test.go", content)
@@ -144,7 +144,7 @@ func TestValidateSpecPath_ValidPaths(t *testing.T) {
 	validPaths := []string{
 		"spec/commands/deploy.md",
 		"spec/core/state.md",
-		"spec/governance/GOV_V1_CORE.md",
+		"spec/governance/GOV_CORE.md",
 		"spec/providers/backend.md",
 	}
 

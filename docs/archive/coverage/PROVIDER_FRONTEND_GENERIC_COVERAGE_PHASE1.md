@@ -17,7 +17,7 @@ The PROVIDER_FRONTEND_GENERIC provider currently has **70.2% test coverage**, wh
 - **Error handling gaps**: Invalid regex patterns, pipe creation failures, command start errors, and signal handling edge cases lack test coverage
 - **Shutdown edge cases**: Timeout scenarios, force kill paths, and process state transitions are not fully exercised
 - **Ready pattern edge cases**: Scanner errors, context cancellation after pattern detection, and process exit scenarios need coverage
-- **Governance compliance**: Coverage thresholds must be met to satisfy GOV_V1_CORE requirements
+- **Governance compliance**: Coverage thresholds must be met to satisfy GOV_CORE requirements
 
 This creates operational risk: production failures may occur in untested code paths, and CI coverage checks may fail as coverage requirements tighten.
 
@@ -27,7 +27,7 @@ This creates operational risk: production failures may occur in untested code pa
 
 ### Governance Compliance
 
-- **GOV_V1_CORE Requirement**: Coverage thresholds are enforced in CI and MUST be maintained locally. Phase 1 targets 75%+ coverage to meet minimum acceptable thresholds.
+- **GOV_CORE Requirement**: Coverage thresholds are enforced in CI and MUST be maintained locally. Phase 1 targets 75%+ coverage to meet minimum acceptable thresholds.
 - **Coverage Strategy Alignment**: This work implements Phase 1 of the coverage strategy defined in `internal/providers/frontend/generic/COVERAGE_STRATEGY.md`.
 - **Deterministic Testing**: All tests must be deterministic, hermetic, and aligned with spec-defined behaviors.
 
@@ -178,7 +178,7 @@ This creates operational risk: production failures may occur in untested code pa
 ### Required Features
 
 - **PROVIDER_FRONTEND_GENERIC**: The provider implementation must exist (✅ done)
-- **GOV_V1_CORE**: Coverage governance framework (✅ done)
+- **GOV_CORE**: Coverage governance framework (✅ done)
 - **CORE_EXECUTIL**: Process execution utilities (✅ done)
 
 ### Blocking Features

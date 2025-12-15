@@ -1,14 +1,14 @@
-# GOV_V1_CORE Implementation Analysis
+# GOV_CORE Implementation Analysis
 
 **Date**: 2025-12-07  
 **Status**: Phase 1 Complete (WIP)  
-**Feature**: GOV_V1_CORE
+**Feature**: GOV_CORE
 
 ---
 
 ## Executive Summary
 
-GOV_V1_CORE Phase 1 is **substantially complete** and represents a real governance spine, not just scaffolding. The implementation delivers the "thin slice" required for v1 with solid test coverage, deterministic behavior, and full CI integration.
+GOV_CORE Phase 1 is **substantially complete** and represents a real governance spine, not just scaffolding. The implementation delivers the "thin slice" required for v1 with solid test coverage, deterministic behavior, and full CI integration.
 
 **Verdict**: ✅ Ready for Phase 2/3 rollout (soft-fail → hard-fail CI enforcement)
 
@@ -142,7 +142,7 @@ GOV_V1_CORE Phase 1 is **substantially complete** and represents a real governan
 
 ---
 
-## 2. Alignment with GOV_V1_CORE Spec
+## 2. Alignment with GOV_CORE Spec
 
 ### 2.1 Spec Requirements vs Implementation
 
@@ -197,7 +197,7 @@ GOV_V1_CORE Phase 1 is **substantially complete** and represents a real governan
 
 #### b) Exit Code Alignment Unimplemented ⚠️
 
-**Issue**: GOV_V1_CORE spec section 4.2 requires exit code alignment, but:
+**Issue**: GOV_CORE spec section 4.2 requires exit code alignment, but:
 - Specs can define `outputs.exit_codes` (schema exists) ✅
 - No shared exit-code constants package exists ❌
 - `spec-vs-cli` doesn't compare exit codes ❌
@@ -211,7 +211,7 @@ GOV_V1_CORE Phase 1 is **substantially complete** and represents a real governan
 - Create `pkg/cli/exitcodes/` package with shared constants
 - Update core commands to use constants
 - Extend `spec-vs-cli` to compare exit codes
-- Add to GOV_V1_CORE Phase 2 or create separate feature: `GOV_V1_CORE_EXITCODES`
+- Add to GOV_CORE Phase 2 or create separate feature: `GOV_CORE_EXITCODES`
 
 **Priority**: Medium (spec mentions it, but not blocking Phase 2/3)
 
@@ -259,7 +259,7 @@ func inferFeatureID(commandUse string) string {
 
 **Impact**: Low - This is a "nice to have" enhancement, not required for v1.
 
-**Recommendation**: Create separate feature `GOV_V1_CORE_HEADERS` for Phase 2+ if desired.
+**Recommendation**: Create separate feature `GOV_CORE_HEADERS` for Phase 2+ if desired.
 
 **Priority**: Low (explicitly marked as future work)
 
@@ -272,13 +272,13 @@ func inferFeatureID(commandUse string) string {
 **Issue**: `docs/FUTURE_ENHANCEMENTS.md` still says:
 > **Status**: Future work - not required for v1
 
-But GOV_V1_CORE now implements the "thin slice" of what's described there.
+But GOV_CORE now implements the "thin slice" of what's described there.
 
 **Recommendation**: 
 1. Update FUTURE_ENHANCEMENTS.md to clarify:
-   - Thin slice (GOV_V1_CORE) is implemented and required for v1
+   - Thin slice (GOV_CORE) is implemented and required for v1
    - Full-blown portal/behavioral diff/changelog remains future work
-2. Or move implemented parts to GOV_V1_CORE spec and keep FUTURE_ENHANCEMENTS.md for remaining upgrades only
+2. Or move implemented parts to GOV_CORE spec and keep FUTURE_ENHANCEMENTS.md for remaining upgrades only
 
 **Priority**: Low (documentation clarity, not functional issue)
 
@@ -343,12 +343,12 @@ But GOV_V1_CORE now implements the "thin slice" of what's described there.
 
 ### Future Enhancements (Post-v1)
 
-1. **GOV_V1_CORE_EXITCODES** (separate feature)
+1. **GOV_CORE_EXITCODES** (separate feature)
    - Centralized exit code constants
    - Spec ↔ implementation alignment
    - Integration with spec-vs-cli
 
-2. **GOV_V1_CORE_HEADERS** (separate feature)
+2. **GOV_CORE_HEADERS** (separate feature)
    - Header comment validation
    - Comment ↔ spec ↔ features.yaml alignment
 
@@ -361,7 +361,7 @@ But GOV_V1_CORE now implements the "thin slice" of what's described there.
 
 ## 6. Overall Verdict
 
-**GOV_V1_CORE Phase 1**: ✅ **Successfully Delivered**
+**GOV_CORE Phase 1**: ✅ **Successfully Delivered**
 
 **Strengths**:
 - Complete thin-slice implementation
@@ -381,7 +381,7 @@ But GOV_V1_CORE now implements the "thin slice" of what's described there.
 - ⚠️ **Add specvscli tests** before Phase 3 (recommended)
 - 📝 **Document exit code alignment** as separate feature for post-v1
 
-**GOV_V1_CORE is now a legitimate governance spine, not just scaffolding.**
+**GOV_CORE is now a legitimate governance spine, not just scaffolding.**
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-feature: GOV_V1_CORE
+feature: GOV_CORE
 version: v1
 status: todo
 domain: commands
@@ -24,7 +24,7 @@ outputs:
 ---
 # CLI_COMMIT_SUGGEST - Commit suggestion command
 
-- **Feature ID**: `GOV_V1_CORE`
+- **Feature ID**: `GOV_CORE`
 - **Domain**: `commands`
 - **Status**: `todo`
 - **Related features**:

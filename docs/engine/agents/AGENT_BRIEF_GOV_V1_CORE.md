@@ -1,7 +1,7 @@
-# Agent Brief: GOV_V1_CORE Governance Hardening
+# Agent Brief: GOV_CORE Governance Hardening
 
-**Feature ID**: GOV_V1_CORE  
-**Spec**: `spec/governance/GOV_V1_CORE.md`  
+**Feature ID**: GOV_CORE  
+**Spec**: `spec/governance/GOV_CORE.md`  
 **Canonical Governance**: `docs/governance/GOVERNANCE_ALMANAC.md`  
 **Coverage Ledger**: `docs/coverage/COVERAGE_LEDGER.md`
 
@@ -9,7 +9,7 @@
 
 ## Purpose
 
-This brief provides execution playbooks for implementing GOV_V1_CORE governance hardening phases. GOV_V1_CORE establishes deterministic, spec-driven governance tooling that enforces repository integrity and traceability.
+This brief provides execution playbooks for implementing GOV_CORE governance hardening phases. GOV_CORE establishes deterministic, spec-driven governance tooling that enforces repository integrity and traceability.
 
 **This document is an execution guide, not a canonical source of truth.** For authoritative governance rules, see `docs/governance/GOVERNANCE_ALMANAC.md`. For coverage history, see `docs/coverage/COVERAGE_LEDGER.md`.
 
@@ -17,7 +17,7 @@ This brief provides execution playbooks for implementing GOV_V1_CORE governance 
 
 ## Invariants (Never Changes)
 
-- **Single Feature ID**: All governance work uses `GOV_V1_CORE` as the Feature ID
+- **Single Feature ID**: All governance work uses `GOV_CORE` as the Feature ID
 - **Spec-first, test-first**: No behavioral changes without spec alignment
 - **Deterministic**: All tooling produces identical outputs on repeated runs
 - **Minimal diffs**: Changes are surgical and scoped to governance tooling only
@@ -25,14 +25,14 @@ This brief provides execution playbooks for implementing GOV_V1_CORE governance 
 
 ---
 
-## How to Run GOV_V1_CORE Work
+## How to Run GOV_CORE Work
 
 ### Pre-Work Checklist
 
-- [ ] Confirm Feature ID: `GOV_V1_CORE`
+- [ ] Confirm Feature ID: `GOV_CORE`
 - [ ] Verify hooks: `./scripts/install-hooks.sh`
 - [ ] Ensure clean working directory: `git status`
-- [ ] Create feature branch: `feature/GOV_V1_CORE-<phase>-<short-desc>`
+- [ ] Create feature branch: `feature/GOV_CORE-<phase>-<short-desc>`
 - [ ] Read relevant phase section below
 
 ### During Work
@@ -47,7 +47,7 @@ This brief provides execution playbooks for implementing GOV_V1_CORE governance 
 
 - [ ] Run `./scripts/goformat.sh` (if Go changes)
 - [ ] Run `./scripts/run-all-checks.sh` (must pass)
-- [ ] Commit with format: `feat(GOV_V1_CORE): <summary>` or `fix(GOV_V1_CORE): <summary>`
+- [ ] Commit with format: `feat(GOV_CORE): <summary>` or `fix(GOV_CORE): <summary>`
 - [ ] Create PR with spec reference and test coverage summary
 - [ ] Update phase section below (append-only) with implementation notes
 
@@ -79,7 +79,7 @@ This brief provides execution playbooks for implementing GOV_V1_CORE governance 
 - Path normalization handles both `spec/path.md` and `path.md` formats
 
 **Links**:
-- Spec: `spec/governance/GOV_V1_CORE.md`
+- Spec: `spec/governance/GOV_CORE.md`
 - Implementation: `cmd/spec-reference-check/main.go`
 - Integration: `scripts/run-all-checks.sh` (lines 128-151)
 - Coverage: `docs/coverage/COVERAGE_LEDGER.md` section 4.2
@@ -111,7 +111,7 @@ This brief provides execution playbooks for implementing GOV_V1_CORE governance 
 - Status rules differ: todo allows missing artifacts, wip/done require them
 
 **Links**:
-- Spec: `spec/governance/GOV_V1_CORE.md`
+- Spec: `spec/governance/GOV_CORE.md`
 - Implementation: `cmd/feature-map-check/main.go`, `internal/tools/features/`
 - Integration: `scripts/run-all-checks.sh` (pending)
 - Coverage: `docs/coverage/COVERAGE_LEDGER.md` section 4.2
@@ -128,13 +128,13 @@ This brief provides execution playbooks for implementing GOV_V1_CORE governance 
 
 **Status**: 📋 Planned
 
-**Context**: Turn GOV_V1_CORE from "enforced tooling" into a fully stabilized, authoritative governance layer by cleaning up all remaining violations, aligning metadata, and adding golden tests for governance reports.
+**Context**: Turn GOV_CORE from "enforced tooling" into a fully stabilized, authoritative governance layer by cleaning up all remaining violations, aligning metadata, and adding golden tests for governance reports.
 
 **What will be implemented**:
 - Fix all Feature Mapping violations
 - Align `spec/features.yaml` with reality
 - Add governance golden tests
-- Mark GOV_V1_CORE as Phase 5 complete
+- Mark GOV_CORE as Phase 5 complete
 
 **Decisions to lock in**:
 - Golden tests live in `internal/governance/mapping/testdata/`
@@ -146,7 +146,7 @@ This brief provides execution playbooks for implementing GOV_V1_CORE governance 
 - Must maintain deterministic ordering in all reports
 
 **Links**:
-- Spec: `spec/governance/GOV_V1_CORE.md`
+- Spec: `spec/governance/GOV_CORE.md`
 - Coverage: `docs/coverage/COVERAGE_LEDGER.md` section 4.2
 - Governance: `docs/governance/GOVERNANCE_ALMANAC.md` section 8
 
@@ -154,9 +154,9 @@ This brief provides execution playbooks for implementing GOV_V1_CORE governance 
 
 ## Migration Notes
 
-- ✅ Phase 3 brief merged from `docs/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE3.md`
-- ✅ Phase 4 brief merged from `docs/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE4.md`
-- ✅ Phase 5 brief merged from `docs/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE5.md`
+- ✅ Phase 3 brief merged from `docs/agents/AGENT_BRIEF_GOV_CORE_PHASE3.md`
+- ✅ Phase 4 brief merged from `docs/agents/AGENT_BRIEF_GOV_CORE_PHASE4.md`
+- ✅ Phase 5 brief merged from `docs/agents/AGENT_BRIEF_GOV_CORE_PHASE5.md`
 - ✅ Moved from `docs/agents/` to `docs/engine/agents/` (aligned with engine docs structure)
 
 ---

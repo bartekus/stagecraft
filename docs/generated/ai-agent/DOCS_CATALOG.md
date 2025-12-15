@@ -44,20 +44,20 @@ This catalog lists all documentation files processed by the context compiler, gr
 - **Chunks**: 19
 - **Headings**: 1. `internal/git` (Target ≥ 70%), 2. `internal/tools/docs` (Target ≥ 60%), 3. `internal/providers/migration/raw` (Target ≥ 70%), Agent Brief: Test Coverage Quality Lift - Phase 2, Common Setup...
 
-#### `docs/archive/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE3.md`
+#### `docs/archive/agents/AGENT_BRIEF_GOV_CORE_PHASE3.md`
 
 - **Chunks**: 20
-- **Headings**: Agent Brief: Spec Reference Checker Hardening - Phase 3, Alternative: Shell Script Hardening, Approach, Constraints (From Agent.md & GOV_V1_CORE), Current Problem...
+- **Headings**: Agent Brief: Spec Reference Checker Hardening - Phase 3, Alternative: Shell Script Hardening, Approach, Constraints (From Agent.md & GOV_CORE), Current Problem...
 
-#### `docs/archive/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE4.md`
+#### `docs/archive/agents/AGENT_BRIEF_GOV_CORE_PHASE4.md`
 
 - **Chunks**: 20
-- **Headings**: AGENT BRIEF — GOV_V1_CORE — Phase 4, Follow-up Work (Enforcement & Rollout), Golden Tests (optional but recommended), Implementation (Scaffold — Complete), Integration Tests (via run-all-checks.sh)...
+- **Headings**: AGENT BRIEF — GOV_CORE — Phase 4, Follow-up Work (Enforcement & Rollout), Golden Tests (optional but recommended), Implementation (Scaffold — Complete), Integration Tests (via run-all-checks.sh)...
 
-#### `docs/archive/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE5.md`
+#### `docs/archive/agents/AGENT_BRIEF_GOV_CORE_PHASE5.md`
 
 - **Chunks**: 18
-- **Headings**: AGENT BRIEF — GOV_V1_CORE — Phase 5, Behavior, Governance Golden Tests, Must do, Pre work...
+- **Headings**: AGENT BRIEF — GOV_CORE — Phase 5, Behavior, Governance Golden Tests, Must do, Pre work...
 
 #### `docs/archive/agents/PROVIDER_NETWORK_TAILSCALE_SLICE1_AGENT.md`
 
@@ -133,10 +133,10 @@ This catalog lists all documentation files processed by the context compiler, gr
 - **Chunks**: 14
 - **Headings**: 1. GOV_STATUS_ROADMAP Enhancements (v2), 2. PROVIDER_FRONTEND_GENERIC Coverage Phase 2, 3. DEV_PROCESS_MGMT Feature Mapping Issue, Code Quality Fixes, Coverage Improvements...
 
-#### `docs/archive/context-handoff/GOV_V1_CORE-to-FRONTMATTER.md`
+#### `docs/archive/context-handoff/GOV_CORE-to-FRONTMATTER.md`
 
 - **Chunks**: 16
-- **Headings**: Add Frontmatter to All Existing Spec Files, Complete GOV_V1_CORE (Phase 2 & 3), Feature Complete: GOV_V1_CORE (Phase 1), What Now Exists, ⚡ Quick Start for Next Agent...
+- **Headings**: Add Frontmatter to All Existing Spec Files, Complete GOV_CORE (Phase 2 & 3), Feature Complete: GOV_CORE (Phase 1), What Now Exists, ⚡ Quick Start for Next Agent...
 
 #### `docs/archive/coverage/CLI_DEV_COMPLETE_PHASE3_PR_DESCRIPTION.md`
 
@@ -223,7 +223,7 @@ This catalog lists all documentation files processed by the context compiler, gr
 - **Chunks**: 6
 - **Headings**: 1. Quick Follow-Up: infra-up Spec Fix, 2. Provider Coverage Improvements, Commit, Governance Commit - Ready Summary, Next Steps After Commit...
 
-#### `docs/archive/governance/GOV_V1_CORE_PHASE3_PLAN.md`
+#### `docs/archive/governance/GOV_CORE_PHASE3_PLAN.md`
 
 - **Chunks**: 28
 - **Headings**: Alternative: Shell Script Hardening, Approach: Go-Based Validator, Comment Pattern, Current Implementation, False Positive Scenarios...
@@ -241,7 +241,7 @@ This catalog lists all documentation files processed by the context compiler, gr
 #### `docs/archive/governance/PHASE5_VIOLATION_FIX_CHECKLIST.md`
 
 - **Chunks**: 22
-- **Headings**: 1.1 GOV_V1_CORE → Wrong Spec Path (4 files), 1.2 MIGRATION_INTERFACE → Wrong Spec Path (1 file), 1.3 PROVIDER_FRONTEND_GENERIC → Wrong Spec Path (2 files), 2.1 CLI_GLOBAL_FLAGS, 2.2 CORE_STATE_TEST_ISOLATION...
+- **Headings**: 1.1 GOV_CORE → Wrong Spec Path (4 files), 1.2 MIGRATION_INTERFACE → Wrong Spec Path (1 file), 1.3 PROVIDER_FRONTEND_GENERIC → Wrong Spec Path (2 files), 2.1 CLI_GLOBAL_FLAGS, 2.2 CORE_STATE_TEST_ISOLATION...
 
 #### `docs/archive/governance/PR_TEMPLATE_PROVIDER_COVERAGE.md`
 
@@ -413,10 +413,10 @@ This catalog lists all documentation files processed by the context compiler, gr
 - **Chunks**: 11
 - **Headings**: Agent Brief: Test Coverage Compliance, During Work, How to Run Coverage Work, Invariants (Never Changes), Migration Notes...
 
-#### `docs/engine/agents/AGENT_BRIEF_GOV_V1_CORE.md`
+#### `docs/engine/agents/AGENT_BRIEF_GOV_CORE.md`
 
 - **Chunks**: 12
-- **Headings**: Agent Brief: GOV_V1_CORE Governance Hardening, During Work, How to Run GOV_V1_CORE Work, Invariants (Never Changes), Migration Notes...
+- **Headings**: Agent Brief: GOV_CORE Governance Hardening, During Work, How to Run GOV_CORE Work, Invariants (Never Changes), Migration Notes...
 
 #### `docs/engine/agents/GOV_PRE_COMMIT_INTEGRATION.md`
 
@@ -473,7 +473,7 @@ This catalog lists all documentation files processed by the context compiler, gr
 - **Chunks**: 27
 - **Headings**: 1. Problem Statement, 10. Approval, 2. Motivation, 3. Goals, 4. Constraints...
 
-#### `docs/engine/analysis/GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md`
+#### `docs/engine/analysis/GOV_CORE_IMPLEMENTATION_ANALYSIS.md`
 
 - **Chunks**: 24
 - **Headings**: 1. What Was Actually Completed, 1.1 Spec Schema + Validation ✅, 1.2 Feature Dependency Graph + Impact + DOT ✅, 1.3 CLI Introspection ✅, 1.4 Feature Overview Generator ✅...
@@ -572,12 +572,12 @@ This catalog lists all documentation files processed by the context compiler, gr
 - **Chunks**: 50
 - **Headings**: 1. Feature Summary, 10. Dependencies, 11. Implementation Phases, 12. Success Metrics, 13. Approval...
 
-#### `docs/engine/outlines/GOV_V1_CORE_IMPLEMENTATION_OUTLINE.md`
+#### `docs/engine/outlines/GOV_CORE_IMPLEMENTATION_OUTLINE.md`
 
 - **Chunks**: 24
 - **Headings**: 1. Summary & v1 Scope, 1.1 Problem, 1.2 v1 Goal, 2. In / Out of Scope, 2.1 In Scope (v1)...
 
-#### `docs/engine/outlines/GOV_V1_CORE_PHASE5_OUTLINE.md`
+#### `docs/engine/outlines/GOV_CORE_PHASE5_OUTLINE.md`
 
 - **Chunks**: 20
 - **Headings**: 1. Summary and v1 Scope, 1.1 Problem, 1.2 v1 Goal, 2. In / Out of Scope, 2.1 In Scope...
@@ -695,7 +695,7 @@ This catalog lists all documentation files processed by the context compiler, gr
 #### `docs/README.md`
 
 - **Chunks**: 15
-- **Headings**: Documentation Lifecycle, Documentation Structure, Documentation Workflow, Feature Governance Dashboard, Feature Mapping Check (GOV_V1_CORE Phase 4)...
+- **Headings**: Documentation Lifecycle, Documentation Structure, Documentation Workflow, Feature Governance Dashboard, Feature Mapping Check (GOV_CORE Phase 4)...
 
 #### `docs/reference/cli.md`
 
@@ -885,7 +885,7 @@ This catalog lists all documentation files processed by the context compiler, gr
 - **Chunks**: 14
 - **Headings**: Common Exit Code Semantics, Determinism, Excluded (v1), Exit Code Documentation Rules, Exit Codes...
 
-#### `spec/governance/GOV_V1_CORE.md`
+#### `spec/governance/GOV_CORE.md`
 
 - **Chunks**: 15
 - **Headings**: 1. Summary, 2. Goals, 3. Non-Goals, 4. Design, 4.1 Spec Schema (Frontmatter)...

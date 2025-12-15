@@ -2,7 +2,7 @@
 
 # Commit Guidance: Provider Coverage Governance
 
-**Feature**: GOV_V1_CORE  
+**Feature**: GOV_CORE  
 **Type**: Governance enhancement  
 **Scope**: Provider coverage enforcement and tooling
 
@@ -11,7 +11,7 @@
 ## Suggested Commit Message
 
 ```
-chore(GOV_V1_CORE): enforce provider coverage governance
+chore(GOV_CORE): enforce provider coverage governance
 
 - Add provider coverage strategy validation script
 - Add provider coverage completion planner

@@ -12,7 +12,7 @@ Index of engineering problem analysis documents.
 | `docs/engine/analysis/DEV_PROCESS_MGMT.md` | 21 | 1. Problem Statement, 2. Motivation, 3. Users and User Stories, 4. Success Criteria (v1), 5. Risks and Constraints |
 | `docs/engine/analysis/DEV_TRAEFIK.md` | 21 | 1. Problem Statement, 2. Motivation, 3. Users and User Stories, 4. Success Criteria (v1), 5. Risks and Constraints |
 | `docs/engine/analysis/GOV_STATUS_ROADMAP.md` | 27 | 1. Problem Statement, 10. Approval, 2. Motivation, 3. Goals, 4. Constraints |
-| `docs/engine/analysis/GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md` | 24 | 1. What Was Actually Completed, 1.1 Spec Schema + Validation ✅, 1.2 Feature Dependency Graph + Impact + DOT ✅, 1.3 CLI Introspection ✅, 1.4 Feature Overview Generator ✅ |
+| `docs/engine/analysis/GOV_CORE_IMPLEMENTATION_ANALYSIS.md` | 24 | 1. What Was Actually Completed, 1.1 Spec Schema + Validation ✅, 1.2 Feature Dependency Graph + Impact + DOT ✅, 1.3 CLI Introspection ✅, 1.4 Feature Overview Generator ✅ |
 | `docs/engine/analysis/INFRA_HOST_BOOTSTRAP.md` | 32 | Alternative 1: Include Bootstrap in CloudProvider, Alternative 2: Include Bootstrap in CLI_INFRA_UP, Alternative 3: Use Cloud-Init or User Data Scripts, Alternative 4: Skip Bootstrap, Require Pre-Configured Hosts, Alternatives Considered |
 | `docs/engine/analysis/PROVIDER_CLOUD_DO.md` | 28 | 1. Problem Statement, 2. Motivation, 3. Users and User Stories, 4. Success Criteria (v1), 5. Risks and Constraints |
 | `docs/engine/analysis/PROVIDER_NETWORK_TAILSCALE.md` | 26 | 1. Problem Statement, 2. Motivation, 3. Users and User Stories, 4. Success Criteria (v1), 5. Risks and Constraints |

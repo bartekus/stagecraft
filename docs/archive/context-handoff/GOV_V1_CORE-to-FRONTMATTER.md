@@ -2,15 +2,15 @@
 
 ---
 
-## 📋 NEXT AGENT CONTEXT — After Completing Feature GOV_V1_CORE (Phase 1)
+## 📋 NEXT AGENT CONTEXT — After Completing Feature GOV_CORE (Phase 1)
 
 ---
 
 ## 🎉 LAYER 1: What Just Happened
 
-### Feature Complete: GOV_V1_CORE (Phase 1)
+### Feature Complete: GOV_CORE (Phase 1)
 
-**Feature ID**: `GOV_V1_CORE`
+**Feature ID**: `GOV_CORE`
 
 **Status**: ✅ Phase 1 implemented, fully tested, in `wip` status
 
@@ -18,9 +18,9 @@
 
 **Commits**: 
 
-- `7d96eff` - `feat: implement GOV_V1_CORE governance feature` (initial implementation)
+- `7d96eff` - `feat: implement GOV_CORE governance feature` (initial implementation)
 
-- `be02194` - `test: add comprehensive tests and strengthen GOV_V1_CORE validators` (tests & enhancements)
+- `be02194` - `test: add comprehensive tests and strengthen GOV_CORE validators` (tests & enhancements)
 
 ### What Now Exists
 
@@ -74,7 +74,7 @@ specvscli.CompareAllCommands(specs []Spec, cliCommands []CommandInfo) []DiffResu
 
 **Files Created**:
 
-- `spec/governance/GOV_V1_CORE.md` - Full specification with YAML frontmatter
+- `spec/governance/GOV_CORE.md` - Full specification with YAML frontmatter
 
 - `internal/tools/specschema/model.go`
 
@@ -120,7 +120,7 @@ specvscli.CompareAllCommands(specs []Spec, cliCommands []CommandInfo) []DiffResu
 
 **Files Updated**:
 
-- `spec/features.yaml` - Added `GOV_V1_CORE` entry (status: `wip`)
+- `spec/features.yaml` - Added `GOV_CORE` entry (status: `wip`)
 
 - `scripts/run-all-checks.sh` - Integrated governance checks with `--check-integrity` flag
 
@@ -168,13 +168,13 @@ specvscli.CompareAllCommands(specs []Spec, cliCommands []CommandInfo) []DiffResu
 
 **Dependencies**:
 
-- ✅ `GOV_V1_CORE` Phase 1 (ready - tools exist)
+- ✅ `GOV_CORE` Phase 1 (ready - tools exist)
 
 - ✅ Spec files exist (ready)
 
 **⚠️ SCOPE REMINDER**: Add frontmatter ONLY. Do not modify spec content, behavior, or structure. Only add the YAML frontmatter block at the top of each file.
 
-**Reference Spec**: `spec/governance/GOV_V1_CORE.md` section 4.1
+**Reference Spec**: `spec/governance/GOV_CORE.md` section 4.1
 
 ---
 
@@ -223,11 +223,11 @@ specvscli.CompareAllCommands(specs []Spec, cliCommands []CommandInfo) []DiffResu
    go run ./cmd/spec-validate --check-integrity
    ```
 
-**Frontmatter Requirements** (from `spec/governance/GOV_V1_CORE.md`):
+**Frontmatter Requirements** (from `spec/governance/GOV_CORE.md`):
 
 - ✅ Required: `feature`, `version`, `status`, `domain`
 
-- ✅ `feature` must match filename (e.g., `GOV_V1_CORE.md` → `GOV_V1_CORE`)
+- ✅ `feature` must match filename (e.g., `GOV_CORE.md` → `GOV_CORE`)
 
 - ✅ `domain` must match path directory (e.g., `spec/commands/` → `commands`)
 
@@ -319,7 +319,7 @@ outputs:
 
 **5. Required Files**:
 
-- All `spec/**/*.md` files (except `spec/governance/GOV_V1_CORE.md` which already has it)
+- All `spec/**/*.md` files (except `spec/governance/GOV_CORE.md` which already has it)
 
 - `spec/features.yaml` (reference for status values)
 
@@ -369,9 +369,9 @@ outputs:
 
 ## 📌 LAYER 3: Secondary Tasks
 
-### Complete GOV_V1_CORE (Phase 2 & 3)
+### Complete GOV_CORE (Phase 2 & 3)
 
-**Feature ID**: `GOV_V1_CORE`
+**Feature ID**: `GOV_CORE`
 
 **Status**: `wip` (Phase 1 complete, Phase 2 complete, Phase 3 active)
 
@@ -399,7 +399,7 @@ outputs:
 
 **Important**: Phase 3 (hard-fail mode) is already active. CI will fail until all specs have frontmatter. This is expected behavior and provides pressure to complete the frontmatter rollout. The ideal rollout order (frontmatter first, then hard-fail) was not followed, but the system is coherent: hard-fail is on, failures are expected until frontmatter is complete, and frontmatter addition is the immediate next task.
 
-**Reference Spec**: `spec/governance/GOV_V1_CORE.md` section 6 (Rollout)
+**Reference Spec**: `spec/governance/GOV_CORE.md` section 6 (Rollout)
 
 ---
 
@@ -458,7 +458,7 @@ outputs:
 2. **Commit Message** (follow this format):
 
 ```
-feat(GOV_V1_CORE): add frontmatter to all spec files
+feat(GOV_CORE): add frontmatter to all spec files
 
 Add YAML frontmatter to all existing spec files to enable governance validation.
 
@@ -480,8 +480,8 @@ Validation:
 - All domains match paths
 - All statuses match features.yaml
 
-Feature: GOV_V1_CORE
-Spec: spec/governance/GOV_V1_CORE.md
+Feature: GOV_CORE
+Spec: spec/governance/GOV_CORE.md
 ```
 
 3. **Verification**:
@@ -506,7 +506,7 @@ Spec: spec/governance/GOV_V1_CORE.md
 
 1. **Load Context**:
 
-   - Read `spec/governance/GOV_V1_CORE.md` for frontmatter schema
+   - Read `spec/governance/GOV_CORE.md` for frontmatter schema
 
    - Read `internal/tools/specschema/validator.go` to understand validation rules
 
@@ -518,7 +518,7 @@ Spec: spec/governance/GOV_V1_CORE.md
 
    - Task: Add frontmatter to existing specs
 
-   - Create feature branch: `feature/GOV_V1_CORE-frontmatter` (or continue on existing branch)
+   - Create feature branch: `feature/GOV_CORE-frontmatter` (or continue on existing branch)
 
    - Start by identifying specs without frontmatter
 
@@ -552,7 +552,7 @@ Spec: spec/governance/GOV_V1_CORE.md
 
 Before starting work:
 
-- [ ] Feature ID identified: `GOV_V1_CORE` (continuing Phase 1 → Phase 2/3)
+- [ ] Feature ID identified: `GOV_CORE` (continuing Phase 1 → Phase 2/3)
 
 - [ ] Git hooks verified
 
@@ -560,7 +560,7 @@ Before starting work:
 
 - [ ] On feature branch: `feature/governance-core-v1` (or new branch)
 
-- [ ] Spec located: `spec/governance/GOV_V1_CORE.md`
+- [ ] Spec located: `spec/governance/GOV_CORE.md`
 
 - [ ] Validation tools tested: `go run ./cmd/spec-validate`
 

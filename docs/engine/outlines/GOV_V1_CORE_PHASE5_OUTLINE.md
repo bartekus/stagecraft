@@ -1,4 +1,4 @@
-# GOV_V1_CORE — Phase 5 Implementation Outline
+# GOV_CORE — Phase 5 Implementation Outline
 
 Repository Stabilization and Governance Golden Tests
 
@@ -6,7 +6,7 @@ Repository Stabilization and Governance Golden Tests
 
 ## 1. Summary and v1 Scope
 
-**Feature ID:** `GOV_V1_CORE` (Phase 5 is part of GOV_V1_CORE, not a separate feature)
+**Feature ID:** `GOV_CORE` (Phase 5 is part of GOV_CORE, not a separate feature)
 
 **Phase:** 5 - Repository stabilization and governance golden tests  
 
@@ -38,7 +38,7 @@ This leaves governance in a "tooling enforced but not fully stabilized" state.
 
 ### 1.2 v1 Goal
 
-Use the GOV_V1_CORE toolchain to fully stabilize the repository and pin governance outputs in tests.
+Use the GOV_CORE toolchain to fully stabilize the repository and pin governance outputs in tests.
 
 > After Phase 5, governance should report zero violations on the real repo and governance output formats should be protected by golden tests.
 
@@ -54,7 +54,7 @@ Use the GOV_V1_CORE toolchain to fully stabilize the repository and pin governan
 
 - Adding a golden test for the Feature Mapping report.
 
-- Minor documentation updates for GOV_V1_CORE and implementation status.
+- Minor documentation updates for GOV_CORE and implementation status.
 
 ### 2.2 Out of Scope
 
@@ -304,9 +304,9 @@ Phase 5 is complete when:
 
 - CI Governance workflow passes.
 
-- `spec/governance/GOV_V1_CORE.md` documents Phase 5 and its status as complete.
+- `spec/governance/GOV_CORE.md` documents Phase 5 and its status as complete.
 
-- `docs/engine/status/implementation-status.md` marks GOV_V1_CORE as done.
+- `docs/engine/status/implementation-status.md` marks GOV_CORE as done.
 
 ---
 

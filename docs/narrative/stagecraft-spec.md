@@ -87,7 +87,7 @@ Stagecraft is a Go-based orchestration CLI for local development and deployment 
 
 ## Governance
 
-- [GOV_V1_CORE](../spec/governance/GOV_V1_CORE.md) - Governance Core for v1
+- [GOV_CORE](../spec/governance/GOV_CORE.md) - Governance Core for v1
 
 ## Scaffold
 

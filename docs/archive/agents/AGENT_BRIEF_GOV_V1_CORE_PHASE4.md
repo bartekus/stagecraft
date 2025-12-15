@@ -1,14 +1,14 @@
-> **Superseded by** `docs/engine/agents/AGENT_BRIEF_GOV_V1_CORE.md` section "Phase 4: Feature Mapping Invariant Enforcement". Kept for historical reference. New GOV_V1_CORE execution notes MUST go into the merged agent brief.
+> **Superseded by** `docs/engine/agents/AGENT_BRIEF_GOV_CORE.md` section "Phase 4: Feature Mapping Invariant Enforcement". Kept for historical reference. New GOV_CORE execution notes MUST go into the merged agent brief.
 
-# AGENT BRIEF — GOV_V1_CORE — Phase 4
+# AGENT BRIEF — GOV_CORE — Phase 4
 
 ## Multi-Feature Cross-Validation & Feature Mapping Invariant Enforcement
 
 **Status:** In progress — Scaffold complete, enforcement pending
 
-**Feature ID:** GOV_V1_CORE
+**Feature ID:** GOV_CORE
 
-**Spec:** spec/governance/GOV_V1_CORE.md
+**Spec:** spec/governance/GOV_CORE.md
 
 **Current Phase:** Scaffold implemented — `cmd/feature-map-check` and `internal/tools/features` package are functional. Enforcement and CI integration are tracked in follow-up work.
 
@@ -16,7 +16,7 @@
 
 ## 🎯 Mission
 
-Implement **Phase 4** of GOV_V1_CORE governance hardening:
+Implement **Phase 4** of GOV_CORE governance hardening:
 
 > Enforce the **Feature Mapping Invariant** across specs, features.yaml, implementation code, and tests — deterministically and in CI.
 
@@ -192,11 +192,11 @@ The phase is complete when:
 
 ### Pre-work
 
-- [x] Confirm Feature ID: `GOV_V1_CORE`
+- [x] Confirm Feature ID: `GOV_CORE`
 
 - [x] Clean branch under:
 
-  `feature/GOV_V1_CORE-phase4-feature-mapping`
+  `feature/GOV_CORE-phase4-feature-mapping`
 
 - [x] Hook verification
 
@@ -234,7 +234,7 @@ The phase is complete when:
 
 ### Follow-up Work (Enforcement & Rollout)
 
-See follow-up issue: **[GOV_V1_CORE][Phase 4] Feature Mapping Invariant enforcement & rollout**
+See follow-up issue: **[GOV_CORE][Phase 4] Feature Mapping Invariant enforcement & rollout**
 
 - [ ] CI integration into `scripts/run-all-checks.sh`
 

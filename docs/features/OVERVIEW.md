@@ -16,7 +16,7 @@ go run ./cmd/gen-features-overview
 | CLI_BUILD | commands | done | stagecraft build command | - |
 | CLI_CI_INIT | commands | todo | stagecraft ci init command | - |
 | CLI_CI_RUN | commands | todo | stagecraft ci run command | - |
-| CLI_COMMIT_SUGGEST | commands | done | stagecraft commit suggest command | GOV_V1_CORE |
+| CLI_COMMIT_SUGGEST | commands | done | stagecraft commit suggest command | GOV_CORE |
 | CLI_DEPLOY | commands | done | Deploy command | - |
 | CLI_DEV | commands | done | stagecraft dev command (full feature set) | - |
 | CLI_DEV_BASIC | commands | done | Basic stagecraft dev command that delegates to backend provider | - |
@@ -34,7 +34,7 @@ go run ./cmd/gen-features-overview
 | CLI_SECRETS_SYNC | commands | todo | stagecraft secrets sync command | - |
 | CLI_SSH | commands | todo | stagecraft ssh command | - |
 | CLI_STATUS | commands | todo | stagecraft status command | - |
-| GOV_STATUS_ROADMAP | commands | done | stagecraft status roadmap command | GOV_V1_CORE |
+| GOV_STATUS_ROADMAP | commands | done | stagecraft status roadmap command | GOV_CORE |
 | CLI_GLOBAL_FLAGS | core | done | Global flags (--env, --config, --verbose, --dry-run) | - |
 | CLI_PHASE_EXECUTION_COMMON | core | done | Shared phase execution semantics for deploy and rollback | - |
 | CORE_BACKEND_PROVIDER_CONFIG_SCHEMA | core | done | Provider-scoped backend configuration schema | - |
@@ -58,8 +58,8 @@ go run ./cmd/gen-features-overview
 | DEV_PROCESS_MGMT | dev | done | Process lifecycle management | - |
 | DEV_TRAEFIK | dev | done | Traefik dev config generation | - |
 | ENGINE_PLAN_ACTIONS | engine | draft | Engine Plan Actions and Inputs Schema | CORE_PLAN |
-| GOV_CLI_EXIT_CODES | governance | todo | CLI exit code governance and standardization | GOV_V1_CORE |
-| GOV_V1_CORE | governance | done | Governance Core for v1 | CORE_STATE, CLI_PHASE_EXECUTION_COMMON |
+| GOV_CLI_EXIT_CODES | governance | todo | CLI exit code governance and standardization | GOV_CORE |
+| GOV_CORE | governance | done | Governance Core for v1 | CORE_STATE, CLI_PHASE_EXECUTION_COMMON |
 | INFRA_FIREWALL | infra | todo | Firewall configuration | - |
 | INFRA_HOST_BOOTSTRAP | infra | done | Host bootstrap (Docker, Tailscale, etc.) | - |
 | INFRA_VOLUME_MGMT | infra | todo | Volume management | - |
@@ -147,7 +147,7 @@ digraph feature_dependencies {
   "ENGINE_PLAN_ACTIONS" [label="ENGINE_PLAN_ACTIONS\\n[draft]" fillcolor="white" style=filled];
   "GOV_CLI_EXIT_CODES" [label="GOV_CLI_EXIT_CODES\\n[todo]" fillcolor="lightgray" style=filled];
   "GOV_STATUS_ROADMAP" [label="GOV_STATUS_ROADMAP\\n[done]" fillcolor="lightgreen" style=filled];
-  "GOV_V1_CORE" [label="GOV_V1_CORE\\n[done]" fillcolor="lightgreen" style=filled];
+  "GOV_CORE" [label="GOV_CORE\\n[done]" fillcolor="lightgreen" style=filled];
   "INFRA_FIREWALL" [label="INFRA_FIREWALL\\n[todo]" fillcolor="lightgray" style=filled];
   "INFRA_HOST_BOOTSTRAP" [label="INFRA_HOST_BOOTSTRAP\\n[done]" fillcolor="lightgreen" style=filled];
   "INFRA_VOLUME_MGMT" [label="INFRA_VOLUME_MGMT\\n[todo]" fillcolor="lightgray" style=filled];
@@ -174,16 +174,16 @@ digraph feature_dependencies {
   "SCAFFOLD_STAGECRAFT_DIR" [label="SCAFFOLD_STAGECRAFT_DIR\\n[todo]" fillcolor="lightgray" style=filled];
   "TEMPLATE_PLATFORM" [label="TEMPLATE_PLATFORM\\n[todo]" fillcolor="lightgray" style=filled];
 
-  "GOV_V1_CORE" -> "CLI_COMMIT_SUGGEST";
+  "GOV_CORE" -> "CLI_COMMIT_SUGGEST";
   "CLI_BUILD" -> "CLI_PLAN";
   "CLI_DEPLOY" -> "CLI_PLAN";
   "CORE_CONFIG" -> "CLI_PLAN";
   "CORE_PLAN" -> "CLI_PLAN";
   "CORE_PLAN" -> "ENGINE_PLAN_ACTIONS";
-  "GOV_V1_CORE" -> "GOV_CLI_EXIT_CODES";
-  "GOV_V1_CORE" -> "GOV_STATUS_ROADMAP";
-  "CLI_PHASE_EXECUTION_COMMON" -> "GOV_V1_CORE";
-  "CORE_STATE" -> "GOV_V1_CORE";
+  "GOV_CORE" -> "GOV_CLI_EXIT_CODES";
+  "GOV_CORE" -> "GOV_STATUS_ROADMAP";
+  "CLI_PHASE_EXECUTION_COMMON" -> "GOV_CORE";
+  "CORE_STATE" -> "GOV_CORE";
 }
 ```
 

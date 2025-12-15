@@ -134,4 +134,4 @@ docs(CLI_INFRA_UP): fix spec frontmatter exit codes
 
 - Spec Schema: `internal/tools/specschema/model.go` (line 39: `ExitCodes map[string]int`)
 - Example: `spec/commands/build.md` (multi-exit-code pattern)
-- Governance: `spec/governance/GOV_V1_CORE.md` (section 4.1)
+- Governance: `spec/governance/GOV_CORE.md` (section 4.1)

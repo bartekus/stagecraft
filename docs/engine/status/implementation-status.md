@@ -102,7 +102,7 @@ This document tracks the implementation status of Stagecraft features. It should
 | ENGINE_PLAN_ACTIONS | Engine Plan Actions and Inputs Schema | draft | bart | [plan-actions.md](../../../spec/engine/plan-actions.md) | [common_test.go](../../../pkg/engine/inputs/common_test.go), [build_test.go](../../../pkg/engine/inputs/build_test.go), [apply_compose_test.go](../../../pkg/engine/inputs/apply_compose_test.go), [health_check_test.go](../../../pkg/engine/inputs/health_check_test.go), [unmarshal_test.go](../../../pkg/engine/inputs/unmarshal_test.go) |
 | GOV_CLI_EXIT_CODES | CLI exit code governance and standardization | todo | bart | [GOV_CLI_EXIT_CODES.md](../../../spec/governance/GOV_CLI_EXIT_CODES.md) | - |
 | GOV_STATUS_ROADMAP | stagecraft status roadmap command | done | bart | [status-roadmap.md](../../../spec/commands/status-roadmap.md) | [status_test.go](../../../internal/cli/commands/status_test.go), [phase_test.go](../../../internal/tools/roadmap/phase_test.go), [stats_test.go](../../../internal/tools/roadmap/stats_test.go), [generator_test.go](../../../internal/tools/roadmap/generator_test.go) |
-| GOV_V1_CORE | Governance Core for v1 | done | bart | [GOV_V1_CORE.md](../../../spec/governance/GOV_V1_CORE.md) | [specschema_test.go](../../../internal/tools/specschema/specschema_test.go), [cliintrospect_test.go](../../../internal/tools/cliintrospect/cliintrospect_test.go), [features_test.go](../../../internal/tools/features/features_test.go), [mapping_test.go](../../../internal/governance/mapping/mapping_test.go), [docs_test.go](../../../internal/tools/docs/docs_test.go), [diff_test.go](../../../internal/tools/specvscli/diff_test.go) |
+| GOV_CORE | Governance Core for v1 | done | bart | [GOV_CORE.md](../../../spec/governance/GOV_CORE.md) | [specschema_test.go](../../../internal/tools/specschema/specschema_test.go), [cliintrospect_test.go](../../../internal/tools/cliintrospect/cliintrospect_test.go), [features_test.go](../../../internal/tools/features/features_test.go), [mapping_test.go](../../../internal/governance/mapping/mapping_test.go), [docs_test.go](../../../internal/tools/docs/docs_test.go), [diff_test.go](../../../internal/tools/specvscli/diff_test.go) |
 | INFRA_FIREWALL | Firewall configuration | todo | bart | [firewall.md](../../../spec/infra/firewall.md) | [firewall_test.go](../../../internal/infra/firewall_test.go) |
 | INFRA_HOST_BOOTSTRAP | Host bootstrap (Docker, Tailscale, etc.) | done | bart | [bootstrap.md](../../../spec/infra/bootstrap.md) | [bootstrap_test.go](../../../internal/infra/bootstrap/bootstrap_test.go), [executor_ssh_test.go](../../../internal/infra/bootstrap/executor_ssh_test.go) |
 | INFRA_VOLUME_MGMT | Volume management | todo | bart | [volumes.md](../../../spec/infra/volumes.md) | [volumes_test.go](../../../internal/infra/volumes_test.go) |
@@ -163,7 +163,7 @@ This document tracks the implementation status of Stagecraft features. It should
 - **DEV_PROCESS_MGMT**: Process lifecycle management
 - **DEV_TRAEFIK**: Traefik dev config generation
 - **GOV_STATUS_ROADMAP**: stagecraft status roadmap command
-- **GOV_V1_CORE**: Governance Core for v1
+- **GOV_CORE**: Governance Core for v1
 - **INFRA_HOST_BOOTSTRAP**: Host bootstrap (Docker, Tailscale, etc.)
 - **MIGRATION_ENGINE_RAW**: Raw SQL migration engine implementation
 - **PROVIDER_BACKEND_ENCORE**: Encore.ts BackendProvider implementation

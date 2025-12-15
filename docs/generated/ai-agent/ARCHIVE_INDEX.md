@@ -8,9 +8,9 @@ Visibility into archived and historical documents.
 |------|--------|----------------|
 | `docs/archive/agents/AGENT_BRIEF_COVERAGE_PHASE1.md` | 11 | 1. Fix 4 Failing Tests, 2. Improve `pkg/config` Coverage from 66.7% → ≥ 80%, 3. Add Missing Test Files for "done" Features, Agent Brief: Test Coverage Compliance - Phase 1, Constraints |
 | `docs/archive/agents/AGENT_BRIEF_COVERAGE_PHASE2.md` | 19 | 1. `internal/git` (Target ≥ 70%), 2. `internal/tools/docs` (Target ≥ 60%), 3. `internal/providers/migration/raw` (Target ≥ 70%), Agent Brief: Test Coverage Quality Lift - Phase 2, Common Setup |
-| `docs/archive/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE3.md` | 20 | Agent Brief: Spec Reference Checker Hardening - Phase 3, Alternative: Shell Script Hardening, Approach, Constraints (From Agent.md & GOV_V1_CORE), Current Problem |
-| `docs/archive/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE4.md` | 20 | AGENT BRIEF — GOV_V1_CORE — Phase 4, Follow-up Work (Enforcement & Rollout), Golden Tests (optional but recommended), Implementation (Scaffold — Complete), Integration Tests (via run-all-checks.sh) |
-| `docs/archive/agents/AGENT_BRIEF_GOV_V1_CORE_PHASE5.md` | 18 | AGENT BRIEF — GOV_V1_CORE — Phase 5, Behavior, Governance Golden Tests, Must do, Pre work |
+| `docs/archive/agents/AGENT_BRIEF_GOV_CORE_PHASE3.md` | 20 | Agent Brief: Spec Reference Checker Hardening - Phase 3, Alternative: Shell Script Hardening, Approach, Constraints (From Agent.md & GOV_CORE), Current Problem |
+| `docs/archive/agents/AGENT_BRIEF_GOV_CORE_PHASE4.md` | 20 | AGENT BRIEF — GOV_CORE — Phase 4, Follow-up Work (Enforcement & Rollout), Golden Tests (optional but recommended), Implementation (Scaffold — Complete), Integration Tests (via run-all-checks.sh) |
+| `docs/archive/agents/AGENT_BRIEF_GOV_CORE_PHASE5.md` | 18 | AGENT BRIEF — GOV_CORE — Phase 5, Behavior, Governance Golden Tests, Must do, Pre work |
 | `docs/archive/agents/PROVIDER_NETWORK_TAILSCALE_SLICE1_AGENT.md` | 13 | 1. Extract Pure Helpers, 2. Refactor Existing Code to Use Helpers, 3. Add Unit Tests for Helpers, 4. Add `parseStatus` Edge-Case Tests, 5. Run Verification Commands |
 | `docs/archive/agents/PROVIDER_NETWORK_TAILSCALE_SLICE2_AGENT.md` | 20 | 1. Implement Version Parsing Helper, 2. Update EnsureInstalled Version Logic, 3. Add Config Validation Tests, 4. Add OS Compatibility Tests, 5. Add Version Parsing and Enforcement Tests |
 | `docs/archive/context-handoff/CLI_DEPLOY-to-CLI_RELEASES.md` | 16 | CLI_ROLLBACK, Feature Complete: CLI_DEPLOY, Implement CLI_RELEASES, What Now Exists, ⚡ Quick Start for Next Agent |
@@ -26,7 +26,7 @@ Visibility into archived and historical documents.
 | `docs/archive/context-handoff/CORE_STATE_TEST_ISOLATION-to-CORE_STATE_CONSISTENCY.md` | 1 | General |
 | `docs/archive/context-handoff/CORE_STATE-to-CLI_DEPLOY.md` | 17 | CLI_RELEASES, CLI_ROLLBACK (Design Only), Feature Complete: CORE_STATE, Implement CLI_DEPLOY, What Now Exists |
 | `docs/archive/context-handoff/GOV_STATUS_ROADMAP_COMPLETE.md` | 14 | 1. GOV_STATUS_ROADMAP Enhancements (v2), 2. PROVIDER_FRONTEND_GENERIC Coverage Phase 2, 3. DEV_PROCESS_MGMT Feature Mapping Issue, Code Quality Fixes, Coverage Improvements |
-| `docs/archive/context-handoff/GOV_V1_CORE-to-FRONTMATTER.md` | 16 | Add Frontmatter to All Existing Spec Files, Complete GOV_V1_CORE (Phase 2 & 3), Feature Complete: GOV_V1_CORE (Phase 1), What Now Exists, ⚡ Quick Start for Next Agent |
+| `docs/archive/context-handoff/GOV_CORE-to-FRONTMATTER.md` | 16 | Add Frontmatter to All Existing Spec Files, Complete GOV_CORE (Phase 2 & 3), Feature Complete: GOV_CORE (Phase 1), What Now Exists, ⚡ Quick Start for Next Agent |
 | `docs/archive/coverage/CLI_DEV_COMPLETE_PHASE3_PR_DESCRIPTION.md` | 12 | 1. DEV_HOSTS planning and spec, 2. DEV_HOSTS implementation, 3. DEV_HOSTS tests, 4. CLI_DEV integration, 5. CLI_DEV tests |
 | `docs/archive/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` | 21 | Constraints, Coverage Requirements, Execution Order, Implementation Notes, In Scope |
 | `docs/archive/coverage/COVERAGE_COMPLIANCE_PLAN.md` | 17 | 1. `PROVIDER_BACKEND_INTERFACE`, 1.1 `internal/tools/cliintrospect` Tests, 1.2 `internal/cli/commands` Build Tests, 2. `CLI_DEPLOY`, Constraints |
@@ -44,10 +44,10 @@ Visibility into archived and historical documents.
 | `docs/archive/governance/COMMIT_GUIDANCE_PROVIDER_GOVERNANCE.md` | 11 | 1. Provider governance check, 2. Coverage planner (visual check), 3. Full validation suite (optional but recommended), Commit Guidance: Provider Coverage Governance, Core Scripts |
 | `docs/archive/governance/COMMIT_MESSAGE_ANALYSIS.md` | 20 | 1. Always Install Hooks, 2. Verify Hook Installation, 3. Test Hook Before Committing, 4. AI Workflow (Mandatory Rules), 5. Feature Lifecycle Integration |
 | `docs/archive/governance/COMMIT_READY_SUMMARY.md` | 6 | 1. Quick Follow-Up: infra-up Spec Fix, 2. Provider Coverage Improvements, Commit, Governance Commit - Ready Summary, Next Steps After Commit |
-| `docs/archive/governance/GOV_V1_CORE_PHASE3_PLAN.md` | 28 | Alternative: Shell Script Hardening, Approach: Go-Based Validator, Comment Pattern, Current Implementation, False Positive Scenarios |
+| `docs/archive/governance/GOV_CORE_PHASE3_PLAN.md` | 28 | Alternative: Shell Script Hardening, Approach: Go-Based Validator, Comment Pattern, Current Implementation, False Positive Scenarios |
 | `docs/archive/governance/GOV_V1_TEST_REQUIREMENTS.md` | 22 | 1. Determinism First, 2. Separation of Concerns, 3. No Test Seams, 4. Coverage Targets, Anti-Patterns to Avoid |
 | `docs/archive/governance/INFRA_UP_SPEC_FIX.md` | 10 | CLI_INFRA_UP - Spec Frontmatter Fix, Commit Message, Exit Codes, Full validation, Implementation |
-| `docs/archive/governance/PHASE5_VIOLATION_FIX_CHECKLIST.md` | 22 | 1.1 GOV_V1_CORE → Wrong Spec Path (4 files), 1.2 MIGRATION_INTERFACE → Wrong Spec Path (1 file), 1.3 PROVIDER_FRONTEND_GENERIC → Wrong Spec Path (2 files), 2.1 CLI_GLOBAL_FLAGS, 2.2 CORE_STATE_TEST_ISOLATION |
+| `docs/archive/governance/PHASE5_VIOLATION_FIX_CHECKLIST.md` | 22 | 1.1 GOV_CORE → Wrong Spec Path (4 files), 1.2 MIGRATION_INTERFACE → Wrong Spec Path (1 file), 1.3 PROVIDER_FRONTEND_GENERIC → Wrong Spec Path (2 files), 2.1 CLI_GLOBAL_FLAGS, 2.2 CORE_STATE_TEST_ISOLATION |
 | `docs/archive/governance/PR_TEMPLATE_PROVIDER_COVERAGE.md` | 16 | Added, Alignment with Governance, Changes, Check coverage, Checklist |
 | `docs/archive/governance/PROVIDER_BACKEND_ENCORE_COVERAGE_PLAN.md` | 15 | 1. Flakiness Patterns, 2. Deterministic Design, 3. Test Organization, Current State, Estimated Effort |
 | `docs/archive/governance/PROVIDER_BACKEND_GENERIC_COVERAGE_PLAN.md` | 15 | 1. Flakiness Patterns, 2. Deterministic Design, 3. Test Organization, Current State, Estimated Effort |

@@ -6,7 +6,7 @@
 
 **Feature IDs:**
 - `PROVIDER_FRONTEND_GENERIC`
-- `GOV_V1_CORE`
+- `GOV_CORE`
 
 **Prerequisites:**
 - Phase 1 and Phase 2 completed and documented
@@ -117,7 +117,7 @@ The agent MUST:
 
 ## 🧱 AI MUST Follow Standard Development Flow
 
-1. Verify Feature IDs (`PROVIDER_FRONTEND_GENERIC`, `GOV_V1_CORE`)
+1. Verify Feature IDs (`PROVIDER_FRONTEND_GENERIC`, `GOV_CORE`)
 2. Use feature branch: `feature/PROVIDER_FRONTEND_GENERIC-commit-discipline-phase3`
 3. Read:
    - `docs/COMMIT_MESSAGE_ANALYSIS.md`
@@ -144,7 +144,7 @@ The agent MUST:
 
 **Body:**
 - Feature: PROVIDER_FRONTEND_GENERIC
-- Governance: GOV_V1_CORE
+- Governance: GOV_CORE
 - Summary
 - Spec / docs references
 - Tests

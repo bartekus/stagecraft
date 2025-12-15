@@ -52,7 +52,7 @@ Completes PROVIDER_FRONTEND_GENERIC test coverage to v1 standards by replacing f
 ## Alignment with Governance
 
 This PR:
-- ✅ Meets GOV_V1_CORE test requirements
+- ✅ Meets GOV_CORE test requirements
 - ✅ Aligns with AATSE principles (deterministic primitives, no test seams)
 - ✅ Serves as reference model for future providers (see `docs/governance/GOV_V1_TEST_REQUIREMENTS.md`)
 

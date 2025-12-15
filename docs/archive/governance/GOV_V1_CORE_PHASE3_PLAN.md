@@ -1,6 +1,6 @@
 # Spec Reference Checker Hardening - Phase 3 Plan
 
-**Feature**: GOV_V1_CORE  
+**Feature**: GOV_CORE  
 **Status**: Phase 3 - Governance Tooling Hardening  
 **Date**: 2025-12-08
 
@@ -327,7 +327,7 @@ fi
 
 ## Related Documents
 
-- `spec/governance/GOV_V1_CORE.md` – Governance feature specification
+- `spec/governance/GOV_CORE.md` – Governance feature specification
 - `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Phase 2 plan (Phase 3 section)
 - `scripts/run-all-checks.sh` – Current implementation
 - `Agent.md` – Development protocol

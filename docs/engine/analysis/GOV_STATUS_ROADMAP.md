@@ -25,7 +25,7 @@ This creates governance risk: strategic planning decisions may be based on stale
 
 ### Governance Compliance
 
-- **GOV_V1_CORE Requirement**: The governance core now references `feature-completion-analysis.md` as the authoritative implementation audit. This document must be automatically generated to maintain governance integrity.
+- **GOV_CORE Requirement**: The governance core now references `feature-completion-analysis.md` as the authoritative implementation audit. This document must be automatically generated to maintain governance integrity.
 - **Deterministic State**: Governance tools must operate on machine-readable, always-current data, not manual snapshots.
 - **CI Integration**: CI workflows need programmatic access to completion metrics for blocking merges, generating reports, and tracking progress.
 
@@ -75,8 +75,8 @@ Provide a deterministic CLI command (`stagecraft status roadmap`) that:
 
 ### Governance Constraints
 
-- **GOV_V1_CORE Alignment**: Must align with governance core requirements for implementation tracking
-- **File Location**: Output must be written to `docs/engine/status/feature-completion-analysis.md` (referenced by GOV_V1_CORE)
+- **GOV_CORE Alignment**: Must align with governance core requirements for implementation tracking
+- **File Location**: Output must be written to `docs/engine/status/feature-completion-analysis.md` (referenced by GOV_CORE)
 - **No Breaking Changes**: Generated document must maintain same structure as current manual version
 
 ### Operational Constraints
@@ -109,7 +109,7 @@ Provide a deterministic CLI command (`stagecraft status roadmap`) that:
 ### Governance Success
 
 1. ✅ Command can be integrated into CI workflows
-2. ✅ Generated document is referenced correctly by GOV_V1_CORE
+2. ✅ Generated document is referenced correctly by GOV_CORE
 3. ✅ Dev agents can use output for feature prioritization
 4. ✅ Manual analysis document can be replaced by generated version
 
@@ -130,7 +130,7 @@ Provide a deterministic CLI command (`stagecraft status roadmap`) that:
 
 ### Required Features
 
-- **GOV_V1_CORE**: Governance core provides the framework for this tool
+- **GOV_CORE**: Governance core provides the framework for this tool
 - **CORE_CONFIG**: Config loading utilities may be used (if needed)
 - **Internal Tools**: `internal/tools/features` provides YAML parsing utilities
 
@@ -159,7 +159,7 @@ None. This feature can be implemented independently and enhances governance tool
 
 - **Output Format Drift**: If manual analysis document structure changes, generated version may not match
   - **Mitigation**: Use golden tests to lock output format, update tests when structure changes intentionally
-- **Stale References**: If GOV_V1_CORE references change, this tool may generate incorrect paths
+- **Stale References**: If GOV_CORE references change, this tool may generate incorrect paths
   - **Mitigation**: Validate file paths exist, fail fast with clear errors
 
 ⸻

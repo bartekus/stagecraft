@@ -3,7 +3,7 @@
 # TODO: Phase 1 – Commit Message Discipline Enforcement
 
 - **Link:** `docs/COMMIT_MESSAGE_ANALYSIS.md`
-- **Feature IDs:** `PROVIDER_FRONTEND_GENERIC`, `GOV_V1_CORE`
+- **Feature IDs:** `PROVIDER_FRONTEND_GENERIC`, `GOV_CORE`
 - **Status:** todo → wip
 
 ## Scope

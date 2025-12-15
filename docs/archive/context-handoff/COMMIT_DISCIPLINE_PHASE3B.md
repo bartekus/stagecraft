@@ -8,7 +8,7 @@
 
 - `PROVIDER_FRONTEND_GENERIC`
 
-- `GOV_V1_CORE`
+- `GOV_CORE`
 
 **Prerequisites:**
 
@@ -360,7 +360,7 @@ The agent MUST:
 
 1. **Feature & branch setup**
 
-   - Confirm Feature IDs: `PROVIDER_FRONTEND_GENERIC`, `GOV_V1_CORE`
+   - Confirm Feature IDs: `PROVIDER_FRONTEND_GENERIC`, `GOV_CORE`
 
    - Use a feature branch, e.g.:
 
@@ -437,7 +437,7 @@ The agent MUST:
 
      - Feature: `PROVIDER_FRONTEND_GENERIC`
 
-     - Governance: `GOV_V1_CORE`
+     - Governance: `GOV_CORE`
 
      - Summary of implemented generators + CLI integration
 

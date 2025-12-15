@@ -6,7 +6,7 @@
 
 **Feature IDs:**
 
-- `GOV_V1_CORE` (governance & commit discipline)
+- `GOV_CORE` (governance & commit discipline)
 
 - `CLI_VALIDATE_COMMIT` (telemetry consumer / integration point, future)
 
@@ -251,7 +251,7 @@ The agent MUST:
 
 1. Identify Feature ID:
 
-   - `GOV_V1_CORE` (governance / reporting)
+   - `GOV_CORE` (governance / reporting)
 
    - Use `CLI_VALIDATE_COMMIT` only as a consumer, not as a primary feature for this task.
 
@@ -259,7 +259,7 @@ The agent MUST:
 
    ```bash
    git branch --show-current
-   # Expected: feature/GOV_V1_CORE-commit-report-types
+   # Expected: feature/GOV_CORE-commit-report-types
    ```
 
 3. Read:
@@ -288,7 +288,7 @@ The agent MUST:
 6. Commit with:
 
    ```
-   feat(GOV_V1_CORE): add commit report Go types
+   feat(GOV_CORE): add commit report Go types
    ```
 
 7. Provide PR title and body:
@@ -296,12 +296,12 @@ The agent MUST:
    - Title:
 
      ```
-     [GOV_V1_CORE] Add commit report Go types and golden roundtrip tests
+     [GOV_CORE] Add commit report Go types and golden roundtrip tests
      ```
 
    - Body:
 
-     - Feature: `GOV_V1_CORE`
+     - Feature: `GOV_CORE`
 
      - Spec / docs: `docs/design/commit-reports-go-types.md`
 

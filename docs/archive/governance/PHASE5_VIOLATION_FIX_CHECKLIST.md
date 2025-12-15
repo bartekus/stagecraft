@@ -25,17 +25,17 @@ This checklist organizes the 15 current mapping violations into a prioritized, a
 **Impact:** High - These are simple header fixes that will immediately reduce violation count.  
 **Effort:** Low - Just update `// Spec:` comments.
 
-### 1.1 GOV_V1_CORE → Wrong Spec Path (4 files)
+### 1.1 GOV_CORE → Wrong Spec Path (4 files)
 
-**Issue:** Files declare `spec/commands/commit-suggest.md` but canonical path is `spec/governance/GOV_V1_CORE.md`.
+**Issue:** Files declare `spec/commands/commit-suggest.md` but canonical path is `spec/governance/GOV_CORE.md`.
 
-**Root Cause:** These files are actually implementing `CLI_COMMIT_SUGGEST` but have the wrong Feature ID. They should have `CLI_COMMIT_SUGGEST` as the Feature, not `GOV_V1_CORE`.
+**Root Cause:** These files are actually implementing `CLI_COMMIT_SUGGEST` but have the wrong Feature ID. They should have `CLI_COMMIT_SUGGEST` as the Feature, not `GOV_CORE`.
 
 **Files to Fix:**
-- [ ] `internal/cli/commands/commit_suggest.go` - Change `Feature: GOV_V1_CORE` → `Feature: CLI_COMMIT_SUGGEST` and `Spec: spec/commands/commit-suggest.md` (keep spec path)
-- [ ] `internal/cli/commands/commit_suggest_test.go` - Change `Feature: GOV_V1_CORE` → `Feature: CLI_COMMIT_SUGGEST` and `Spec: spec/commands/commit-suggest.md` (keep spec path)
-- [ ] `internal/reports/suggestions/suggestions.go` - Change `Feature: GOV_V1_CORE` → `Feature: CLI_COMMIT_SUGGEST` and `Spec: spec/commands/commit-suggest.md` (keep spec path)
-- [ ] `internal/reports/suggestions/suggestions_test.go` - Change `Feature: GOV_V1_CORE` → `Feature: CLI_COMMIT_SUGGEST` and `Spec: spec/commands/commit-suggest.md` (keep spec path)
+- [ ] `internal/cli/commands/commit_suggest.go` - Change `Feature: GOV_CORE` → `Feature: CLI_COMMIT_SUGGEST` and `Spec: spec/commands/commit-suggest.md` (keep spec path)
+- [ ] `internal/cli/commands/commit_suggest_test.go` - Change `Feature: GOV_CORE` → `Feature: CLI_COMMIT_SUGGEST` and `Spec: spec/commands/commit-suggest.md` (keep spec path)
+- [ ] `internal/reports/suggestions/suggestions.go` - Change `Feature: GOV_CORE` → `Feature: CLI_COMMIT_SUGGEST` and `Spec: spec/commands/commit-suggest.md` (keep spec path)
+- [ ] `internal/reports/suggestions/suggestions_test.go` - Change `Feature: GOV_CORE` → `Feature: CLI_COMMIT_SUGGEST` and `Spec: spec/commands/commit-suggest.md` (keep spec path)
 
 **Note:** This will also fix the `MISSING_IMPL` violation for `CLI_COMMIT_SUGGEST` since the files will then be correctly attributed.
 
@@ -101,10 +101,10 @@ This checklist organizes the 15 current mapping violations into a prioritized, a
 
 **Current State:**
 - ✅ Has header in `internal/providers/migration/raw/raw.go` (line 32)
-- ❌ Test file `raw_test.go` has `// Feature: GOV_V1_CORE` instead of `MIGRATION_ENGINE_RAW`
+- ❌ Test file `raw_test.go` has `// Feature: GOV_CORE` instead of `MIGRATION_ENGINE_RAW`
 
 **Action:**
-- [ ] Update `internal/providers/migration/raw/raw_test.go` - Change `Feature: GOV_V1_CORE` → `Feature: MIGRATION_ENGINE_RAW`
+- [ ] Update `internal/providers/migration/raw/raw_test.go` - Change `Feature: GOV_CORE` → `Feature: MIGRATION_ENGINE_RAW`
 - [ ] Re-run mapping to confirm fix
 
 **Verification:**
@@ -124,7 +124,7 @@ This checklist organizes the 15 current mapping violations into a prioritized, a
 
 **Issue:** Feature is `done` but mapping reports no implementation.
 
-**Root Cause:** Files exist but have wrong Feature ID (`GOV_V1_CORE` instead of `CLI_COMMIT_SUGGEST`).
+**Root Cause:** Files exist but have wrong Feature ID (`GOV_CORE` instead of `CLI_COMMIT_SUGGEST`).
 
 **Action:**
 - [ ] **Already covered in Priority 1.1** - Fixing SPEC_PATH_MISMATCH will also fix this
@@ -230,7 +230,7 @@ This checklist organizes the 15 current mapping violations into a prioritized, a
 1. **Commit changes:**
    ```bash
    git add -A
-   git commit -m "fix(GOV_V1_CORE): resolve SPEC_PATH_MISMATCH violations"
+   git commit -m "fix(GOV_CORE): resolve SPEC_PATH_MISMATCH violations"
    ```
 
 2. **Verify fixes:**
@@ -269,6 +269,6 @@ After all fixes:
 Once all violations are fixed:
 
 1. **Workstream B:** Cross-check `spec/features.yaml` statuses against reality
-2. **Workstream D:** Update GOV_V1_CORE spec and implementation status
+2. **Workstream D:** Update GOV_CORE spec and implementation status
 3. **Final:** Mark Phase 5 complete
 

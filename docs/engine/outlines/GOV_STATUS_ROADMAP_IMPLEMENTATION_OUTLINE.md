@@ -399,7 +399,7 @@ This feature should not introduce new external dependencies beyond what's alread
 
 ### Governance Metrics
 
-- ✅ Generated document referenced by GOV_V1_CORE
+- ✅ Generated document referenced by GOV_CORE
 - ✅ Can be integrated into CI workflows
 - ✅ Dev agents can use output for prioritization
 

@@ -19,8 +19,8 @@ import (
 	"testing"
 )
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 func TestNewGraph(t *testing.T) {
 	g := NewGraph()
