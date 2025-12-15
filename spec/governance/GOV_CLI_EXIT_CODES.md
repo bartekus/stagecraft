@@ -130,5 +130,41 @@ GOV_CLI_EXIT_CODES is primarily a documentation and governance feature. Tests ar
     - Success path
     - Representative failure paths
 
-These tests will be introduced as part of follow up features once this governance spec is approved.
+
+## Failure Classification and Exit Code Mapping
+
+> **Note**: This mapping is authoritative for all new skills and commands (DECISION-002).
+
+### Taxonomy
+
+Systems MUST classify failures into one of these semantic classes:
+
+1. **`user_input`**: The user provided invalid arguments/flags/input.
+2. **`config_invalid`**: The configuration is malformed or invalid.
+3. **`external_dependency`**: A required external tool (Docker, go, etc) is missing.
+4. **`provider_failure`**: An external API (AWS, DO, Tailscale) returned an error.
+5. **`transient_environment`**: Network flake, timeout, resource exhaustion.
+6. **`internal_invariant`**: A code logic invariant was violated (bug).
+7. **`unclassified`**: Catch-all for unknown errors.
+
+### Exit Code Mapping
+
+| Failure Class | Exit Code | Description |
+|---|---|---|
+| `success` | 0 | Success |
+| `user_input` | 1 | Invalid input |
+| `config_invalid` | 1 | Invalid config |
+| `external_dependency` | 2 | Dependency missing |
+| `provider_failure` | 2 | External API error |
+| `transient_environment` | 2 | Transient error |
+| `internal_invariant` | 3 | Internal bug |
+| `unclassified` | 3 | Unknown error |
+
+### Determinism Rules
+
+When multiple errors occur or classification is ambiguous:
+1. **Most specific wins**: A specific provider error beats generic external error.
+2. **Internal overrides**: If ANY `internal_invariant` violation occurs, the exit code MUST be 3.
+3. **Unclassified last**: Use `unclassified` (3) only as a last resort.
+
 

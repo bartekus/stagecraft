@@ -97,7 +97,7 @@ features:
     depends_on:
       - TAXONOMY_CORE_TYPES
       - TAXONOMY_EXECUTION_LOCAL
-    spec: "spec/providers/integration/terraform.md"
+    spec: "providers/integration/terraform.md"
     description: "Run Terraform deterministically via ExecutionProvider and normalize outputs into HostRefs + Facts; does not parse/own Terraform resource graphs."
 
   - id: PROVIDER_INTEGRATION_TERRAFORM_OUTPUTS_CONTRACT
@@ -106,7 +106,7 @@ features:
     group: providers
     depends_on:
       - PROVIDER_INTEGRATION_TERRAFORM
-    spec: "spec/providers/integration/terraform.md"
+    spec: "providers/integration/terraform.md"
     description: "Define and enforce the canonical Terraform output `stagecraft_hosts`; deterministic sorting and schema validation."
 
   - id: PROVIDER_INTEGRATION_TERRAFORM_DETERMINISTIC_RUNNER
@@ -115,7 +115,7 @@ features:
     group: providers
     depends_on:
       - PROVIDER_INTEGRATION_TERRAFORM
-    spec: "spec/providers/integration/terraform.md"
+    spec: "providers/integration/terraform.md"
     description: "Terraform init/workspace/plan/apply/output via ExecutionProvider with pinned terraform version, sandbox workspace, redaction, and structured result capture."
 
   - id: PROVIDER_INTEGRATION_TERRAFORM_FACTS_HOSTREFS
@@ -125,7 +125,7 @@ features:
     depends_on:
       - PROVIDER_INTEGRATION_TERRAFORM_OUTPUTS_CONTRACT
       - TAXONOMY_CORE_TYPES
-    spec: "spec/providers/integration/terraform.md"
+    spec: "providers/integration/terraform.md"
     description: "Normalize terraform output JSON into Stagecraft HostRef inventory and Fact records with deterministic serialization."
 
   # Phase 1: Provider Interfaces
@@ -664,6 +664,15 @@ features:
     depends_on:
       - "CORE_STATE"
       - "CLI_PHASE_EXECUTION_COMMON"
+
+  - id: GOV_DECISIONS_LOG
+    title: "Governance decision log"
+    status: done
+    spec: "governance/decisions.md"
+    owner: bart
+    tests: []
+    depends_on:
+      - "GOV_CORE"
 
   - id: GOV_CLI_EXIT_CODES
     title: "CLI exit code governance and standardization"

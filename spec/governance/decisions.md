@@ -64,4 +64,36 @@ Any prior reference (for example `DRIVER_DO`) is obsolete and removed.
 - No duplicate architectural documents
 - No drift between docs and specs
 - Clear, enforceable boundaries for humans and AI agents
-- 
+
+---
+
+## DECISION-002 — Failure Classification Taxonomy
+
+### Status
+Accepted
+
+### Decision
+Adoption of the 7-class failure taxonomy and strict exit code mapping defined in `spec/governance/GOV_CLI_EXIT_CODES.md`.
+
+### Consequences
+- All active skills (e.g., `failure_lens`) must output one of the 7 defined classes.
+- CLI exit codes are now rigidly mapped: 0 (Success), 1 (User/Config), 2 (External/Transient), 3 (Internal/Bug).
+
+---
+
+## DECISION-003 — DRIVER_DO Obsolescence
+
+### Status
+Accepted
+
+### Decision
+The concept of `DRIVER_DO` is officially obsolete.
+
+### Explicit Constraints
+- No feature shall depend on `DRIVER_DO`.
+- No spec shall reference `DRIVER_DO`.
+- Implementation must use `PROVIDER_CLOUD_DO` exclusively.
+
+### Consequences
+- Any existing references must be removed.
+- Future "drivers" are rejected in favor of Providers.

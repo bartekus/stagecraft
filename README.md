@@ -64,7 +64,7 @@ See `examples/basic-node/stagecraft.yml` for the configuration.
 ## Commands
 
 > [!NOTE]
-> This is a high-level reference. See **[`docs/generated/ai-agent/COMMAND_CATALOG.md`](docs/generated/ai-agent/COMMAND_CATALOG.md)** for the authoritative list.
+> This is a high-level reference. See **[`docs/__generated__/ai-agent/COMMAND_CATALOG.md`](docs/__generated__/ai-agent/COMMAND_CATALOG.md)** for the authoritative list.
 
 - `stagecraft dev` - Start development environment
 - `stagecraft migrate` - Run database migrations
@@ -84,7 +84,7 @@ See `examples/basic-node/stagecraft.yml` for the configuration.
 
 Stagecraft includes a deterministic engine to generate AI-readable context.
 
-See **[`docs/generated/ai-agent/README.md`](docs/generated/ai-agent/README.md)** for:
+See **[`docs/__generated__/ai-agent/README.md`](docs/__generated__/ai-agent/README.md)** for:
 - Repository Index & Statistics
 - Documentation Catalogs
 - Spec & Command Indexes
@@ -100,7 +100,7 @@ stagecraft/
   pkg/             # Public libraries
   spec/            # Feature specifications (Source of Truth)
   docs/            # Documentation
-    generated/     # AI-Agent outputs
+    __generated__/ # AI-Agent outputs
     engine/        # Technical docs
     narrative/     # Planning docs
     governance/    # Process rules
