@@ -670,7 +670,8 @@ features:
     status: done
     spec: "governance/decisions.md"
     owner: bart
-    tests: []
+    tests:
+      - "internal/tools/specschema/specschema_test.go"
     depends_on:
       - "GOV_CORE"
 

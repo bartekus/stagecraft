@@ -1,23 +1,12 @@
-<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
-
-<!--
-
-Stagecraft - Stagecraft is a Go-based CLI that orchestrates local-first development and scalable single-host to multi-host deployments for multi-service applications powered by Docker Compose.
-
-Copyright (C) 2025  Bartek Kus
-
-This program is free software licensed under the terms of the GNU AGPL v3 or later.
-
-See https://www.gnu.org/licenses/ for license details.
-
--->
-
 ---
-type: decision-log
-scope: core
-status: canonical
-last_updated: 2025-12-10
-owner: bart
+feature: GOV_DECISIONS_LOG
+version: v1
+status: done
+domain: governance
+inputs:
+  flags: []
+outputs:
+  exit_codes: {}
 ---
 
 ## DECISION-001 — Architecture, Documentation Model, and Provider Boundaries
