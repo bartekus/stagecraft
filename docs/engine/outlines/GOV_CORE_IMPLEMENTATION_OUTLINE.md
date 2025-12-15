@@ -1,4 +1,4 @@
-# GOV_V1_CORE — Phase 4 Implementation Outline
+# GOV_CORE — Phase 4 Implementation Outline
 
 Multi-Feature Cross-Validation & Feature Mapping Invariant
 
@@ -6,7 +6,7 @@ Multi-Feature Cross-Validation & Feature Mapping Invariant
 
 ## 1. Summary & v1 Scope
 
-**Feature ID:** `GOV_V1_CORE`
+**Feature ID:** `GOV_CORE`
 
 **Phase:** 4 – Feature Mapping Invariant & Multi-Feature Cross-Validation
 

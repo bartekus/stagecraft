@@ -17,7 +17,7 @@ The Governance Almanac:
 
 It consolidates content that previously lived in (non exhaustive):
 
-- `docs/governance/GOV_V1_CORE_PHASE3_PLAN.md`
+- `docs/governance/GOV_CORE_PHASE3_PLAN.md`
 - `docs/governance/GOV_V1_TEST_REQUIREMENTS.md`
 - `docs/governance/COMMIT_GUIDANCE_PROVIDER_GOVERNANCE.md`
 - `docs/governance/COMMIT_MESSAGE_ANALYSIS.md`
@@ -45,7 +45,7 @@ It consolidates content that previously lived in (non exhaustive):
 
 ### 2.1 Governance Specs and ADRs
 
-- Governance spec: `spec/governance/GOV_V1_CORE.md`
+- Governance spec: `spec/governance/GOV_CORE.md`
 - ADRs:
   - `spec/adr/0002-docs-lifecycle-and-ownership.md`
   - `spec/adr/0001-architecture.md`

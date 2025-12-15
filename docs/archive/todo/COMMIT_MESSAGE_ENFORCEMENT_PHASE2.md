@@ -3,7 +3,7 @@
 # TODO: Phase 2 – Commit Message CI Validation & CLI Tooling
 
 - **Link:** `docs/COMMIT_MESSAGE_ANALYSIS.md`
-- **Feature IDs:** `PROVIDER_FRONTEND_GENERIC`, `GOV_V1_CORE`
+- **Feature IDs:** `PROVIDER_FRONTEND_GENERIC`, `GOV_CORE`
 - **Status:** todo → wip
 - **Prerequisite:** Phase 1 must be complete
 

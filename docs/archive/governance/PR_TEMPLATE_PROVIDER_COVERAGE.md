@@ -50,7 +50,7 @@ Completes test coverage for `<FEATURE_ID>` provider to v1 standards, achieving �
 ## Alignment with Governance
 
 This PR:
-- ✅ Meets GOV_V1_CORE test requirements
+- ✅ Meets GOV_CORE test requirements
 - ✅ Aligns with AATSE principles (deterministic primitives, no test seams)
 - ✅ Follows `PROVIDER_FRONTEND_GENERIC` reference model
 - ✅ Updates coverage strategy and creates status document

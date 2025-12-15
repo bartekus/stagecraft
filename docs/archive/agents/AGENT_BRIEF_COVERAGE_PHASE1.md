@@ -2,8 +2,8 @@
 
 # Agent Brief: Test Coverage Compliance - Phase 1
 
-**Feature ID**: GOV_V1_CORE  
-**Spec**: `spec/governance/GOV_V1_CORE.md`  
+**Feature ID**: GOV_CORE  
+**Spec**: `spec/governance/GOV_CORE.md`  
 **Context**: Test coverage & governance hardening. See `docs/coverage/TEST_COVERAGE_ANALYSIS.md` and `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md`.
 
 ---
@@ -108,7 +108,7 @@ Bring Stagecraft into coverage compliance by completing **Phase 1 – Compliance
 ## Constraints
 
 ### Must Follow (Agent.md)
-- **Single feature scope**: GOV_V1_CORE
+- **Single feature scope**: GOV_CORE
 - **Test-first**: Write/update failing tests first
 - **No refactors** outside direct scope of coverage/compliance
 - **No new dependencies**
@@ -150,6 +150,6 @@ Bring Stagecraft into coverage compliance by completing **Phase 1 – Compliance
 
 - `docs/coverage/TEST_COVERAGE_ANALYSIS.md` - Detailed analysis
 - `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` - Complete action plan
-- `spec/governance/GOV_V1_CORE.md` - Feature specification
+- `spec/governance/GOV_CORE.md` - Feature specification
 - `Agent.md` - Development protocol
 

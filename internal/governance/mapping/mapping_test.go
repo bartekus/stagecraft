@@ -11,8 +11,8 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 package mapping
 

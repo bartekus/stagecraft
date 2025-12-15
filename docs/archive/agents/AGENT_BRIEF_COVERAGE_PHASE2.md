@@ -2,8 +2,8 @@
 
 # Agent Brief: Test Coverage Quality Lift - Phase 2
 
-**Feature ID**: GOV_V1_CORE  
-**Spec**: `spec/governance/GOV_V1_CORE.md`  
+**Feature ID**: GOV_CORE  
+**Spec**: `spec/governance/GOV_CORE.md`  
 **Context**: Non-blocking coverage improvements for low-coverage packages. See `docs/coverage/TEST_COVERAGE_ANALYSIS.md`, `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md`, and `docs/agents/AGENT_BRIEF_COVERAGE_PHASE1.md`.
 
 ---
@@ -130,11 +130,11 @@ If a test need suggests a refactor, keep it **surgical and local**, and only whe
 
 ---
 
-## Constraints (From Agent.md & GOV_V1_CORE)
+## Constraints (From Agent.md & GOV_CORE)
 
 ### You MUST:
 
-- Treat **GOV_V1_CORE** as the single Feature ID for this work.
+- Treat **GOV_CORE** as the single Feature ID for this work.
 - Follow spec-first, test-first where any behavioural ambiguity is encountered.
 - Keep diffs **minimal and deterministic**.
 - Keep changes scoped strictly to:
@@ -174,10 +174,10 @@ Phase 2 is complete when **all** of the following hold:
 4. **Governance alignment:**
    - All new/updated test files include proper Feature ID header:
      ```go
-     // Feature: GOV_V1_CORE
-     // Spec: spec/governance/GOV_V1_CORE.md
+     // Feature: GOV_CORE
+     // Spec: spec/governance/GOV_CORE.md
      ```
-   - Changes are traceable to GOV_V1_CORE as the governance/quality feature.
+   - Changes are traceable to GOV_CORE as the governance/quality feature.
 
 ---
 
@@ -185,10 +185,10 @@ Phase 2 is complete when **all** of the following hold:
 
 ### Common Setup
 
-- [ ] Confirm Feature ID: `GOV_V1_CORE`
+- [ ] Confirm Feature ID: `GOV_CORE`
 - [ ] Verify hooks (`./scripts/install-hooks.sh` if needed)
 - [ ] Ensure clean working directory
-- [ ] On appropriate feature branch (e.g. `test/GOV_V1_CORE-coverage-phase2`)
+- [ ] On appropriate feature branch (e.g. `test/GOV_CORE-coverage-phase2`)
 
 ---
 
@@ -243,6 +243,6 @@ Phase 2 is complete when **all** of the following hold:
 - `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` – Phase 1 and Phase 2 framing
 - `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` – Detailed Phase 2 plan
 - `docs/agents/AGENT_BRIEF_COVERAGE_PHASE1.md` – Phase 1 compliance brief
-- `spec/governance/GOV_V1_CORE.md` – Governance specification
+- `spec/governance/GOV_CORE.md` – Governance specification
 - `Agent.md` – Development protocol and constraints
 

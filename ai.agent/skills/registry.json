@@ -1,0 +1,50 @@
+[
+    {
+        "id": "failure_lens",
+        "version": "1.0.0",
+        "entrypoint": "ai.agent/skills/src/failure_lens",
+        "inputs": [
+            "command",
+            "exit_code",
+            "stderr",
+            "subsystem"
+        ],
+        "outputs": [
+            "failure_class",
+            "probable_cause",
+            "next_actions",
+            "decision_refs",
+            "spec_refs"
+        ]
+    },
+    {
+        "id": "git_commit_guard",
+        "version": "0.1.0",
+        "entrypoint": "ai.agent/skills/src/git_commit_guard",
+        "inputs": [
+            "branch_name",
+            "commit_message",
+            "changed_files"
+        ],
+        "outputs": [
+            "is_valid",
+            "validation_errors",
+            "decision_refs",
+            "spec_refs"
+        ]
+    },
+    {
+        "id": "git_history_lens",
+        "version": "0.0.1",
+        "entrypoint": "ai.agent/skills/src/git_history_lens",
+        "inputs": [
+            "file_path",
+            "range"
+        ],
+        "outputs": [
+            "diff_summary",
+            "last_commits",
+            "impacted_systems"
+        ]
+    }
+]

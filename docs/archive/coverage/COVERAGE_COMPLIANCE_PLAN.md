@@ -2,7 +2,7 @@
 
 # Test Coverage Compliance Plan
 
-**Feature**: GOV_V1_CORE  
+**Feature**: GOV_CORE  
 **Status**: Phase 1 - Compliance Unblock  
 **Date**: 2025-12-07
 
@@ -229,7 +229,7 @@ This plan addresses the critical compliance blockers identified in `docs/coverag
 
 ### Must Follow
 - **Agent.md** strictly:
-  - Single feature scope: GOV_V1_CORE
+  - Single feature scope: GOV_CORE
   - Test-first: write/update failing tests first
   - No refactors outside direct scope
   - No new dependencies
@@ -300,7 +300,7 @@ See `docs/coverage/TEST_COVERAGE_ANALYSIS.md` for detailed recommendations.
 ## Related Documents
 
 - `docs/coverage/TEST_COVERAGE_ANALYSIS.md` - Detailed coverage analysis and findings
-- `spec/governance/GOV_V1_CORE.md` - Governance feature specification
+- `spec/governance/GOV_CORE.md` - Governance feature specification
 - `scripts/check-coverage.sh` - Coverage validation script
 - `Agent.md` - Development protocol
 

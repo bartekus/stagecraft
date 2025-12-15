@@ -1,6 +1,6 @@
 # GOV_V1_TEST_REQUIREMENTS — Test Strategy Standards
 
-This document defines the test strategy standards for Stagecraft providers and core components, aligned with AATSE principles and GOV_V1_CORE governance.
+This document defines the test strategy standards for Stagecraft providers and core components, aligned with AATSE principles and GOV_CORE governance.
 
 ⸻
 

@@ -195,7 +195,7 @@ func TestIdentifyBlockers_WithDependencies(t *testing.T) {
 	}
 
 	// Features with done dependencies should not be blockers
-	// GOV_STATUS_ROADMAP depends on GOV_V1_CORE (done), so should not be blocked
+	// GOV_STATUS_ROADMAP depends on GOV_CORE (done), so should not be blocked
 	for _, blocker := range blockers {
 		if blocker.FeatureID == "GOV_STATUS_ROADMAP" {
 			t.Error("GOV_STATUS_ROADMAP should not be blocked (dependency is done)")

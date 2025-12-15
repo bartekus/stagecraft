@@ -90,6 +90,44 @@ features:
     tests:
       - "pkg/config/config_test.go"
 
+  - id: PROVIDER_INTEGRATION_TERRAFORM
+    title: "Terraform Integration Provider (Terraform Island)"
+    status: todo
+    group: providers
+    depends_on:
+      - TAXONOMY_CORE_TYPES
+      - TAXONOMY_EXECUTION_LOCAL
+    spec: "providers/integration/terraform.md"
+    description: "Run Terraform deterministically via ExecutionProvider and normalize outputs into HostRefs + Facts; does not parse/own Terraform resource graphs."
+
+  - id: PROVIDER_INTEGRATION_TERRAFORM_OUTPUTS_CONTRACT
+    title: "Terraform Outputs Contract: stagecraft_hosts normalization"
+    status: todo
+    group: providers
+    depends_on:
+      - PROVIDER_INTEGRATION_TERRAFORM
+    spec: "providers/integration/terraform.md"
+    description: "Define and enforce the canonical Terraform output `stagecraft_hosts`; deterministic sorting and schema validation."
+
+  - id: PROVIDER_INTEGRATION_TERRAFORM_DETERMINISTIC_RUNNER
+    title: "Deterministic Terraform Runner (pinned version, sandbox, structured logs)"
+    status: todo
+    group: providers
+    depends_on:
+      - PROVIDER_INTEGRATION_TERRAFORM
+    spec: "providers/integration/terraform.md"
+    description: "Terraform init/workspace/plan/apply/output via ExecutionProvider with pinned terraform version, sandbox workspace, redaction, and structured result capture."
+
+  - id: PROVIDER_INTEGRATION_TERRAFORM_FACTS_HOSTREFS
+    title: "Emit HostRefs and Facts from Terraform outputs"
+    status: todo
+    group: providers
+    depends_on:
+      - PROVIDER_INTEGRATION_TERRAFORM_OUTPUTS_CONTRACT
+      - TAXONOMY_CORE_TYPES
+    spec: "providers/integration/terraform.md"
+    description: "Normalize terraform output JSON into Stagecraft HostRef inventory and Fact records with deterministic serialization."
+
   # Phase 1: Provider Interfaces
   - id: PROVIDER_BACKEND_INTERFACE
     title: "BackendProvider interface definition"
@@ -316,15 +354,6 @@ features:
     tests:
       - "internal/providers/cloud/digitalocean/do_test.go"
 
-  - id: DRIVER_DO
-    title: "DigitalOcean driver"
-    status: cancelled
-    spec: ""
-    owner: bart
-    tests:
-      - "internal/drivers/do/do_test.go"
-    notes: "Merged into PROVIDER_CLOUD_DO. No separate driver layer required. Host-level bootstrap functionality belongs in Phase 7 (INFRA_HOST_BOOTSTRAP, INFRA_VOLUME_MGMT)."
-
   # Phase 5: Build and Deploy
   - id: CLI_BUILD
     title: "stagecraft build command"
@@ -383,7 +412,7 @@ features:
   # Phase 6: Migration System
   - id: MIGRATION_CONFIG
     title: "Migration config schema in stagecraft.yml"
-    status: todo
+    status: done
     spec: "migrations/config.md"
     owner: bart
     tests:
@@ -391,11 +420,11 @@ features:
 
   - id: MIGRATION_INTERFACE
     title: "Migrator interface"
-    status: todo
+    status: done
     spec: "migrations/interface.md"
     owner: bart
     tests:
-      - "pkg/migrations/migrator_test.go"
+      - "pkg/migrations/interface_test.go"
 
   - id: MIGRATION_ENGINE_RAW
     title: "Raw SQL migration engine implementation"
@@ -620,10 +649,10 @@ features:
       - "internal/scaffold/dir_test.go"
 
   # Governance
-  - id: GOV_V1_CORE
+  - id: GOV_CORE
     title: "Governance Core for v1"
     status: done
-    spec: "governance/GOV_V1_CORE.md"
+    spec: "governance/GOV_CORE.md"
     owner: bart
     tests:
       - "internal/tools/specschema/specschema_test.go"
@@ -636,6 +665,15 @@ features:
       - "CORE_STATE"
       - "CLI_PHASE_EXECUTION_COMMON"
 
+  - id: GOV_DECISIONS_LOG
+    title: "Governance decision log"
+    status: done
+    spec: "governance/decisions.md"
+    owner: bart
+    tests: []
+    depends_on:
+      - "GOV_CORE"
+
   - id: GOV_CLI_EXIT_CODES
     title: "CLI exit code governance and standardization"
     status: todo
@@ -643,7 +681,7 @@ features:
     owner: bart
     tests: []
     depends_on:
-      - "GOV_V1_CORE"
+      - "GOV_CORE"
 
   - id: CLI_COMMIT_SUGGEST
     title: "stagecraft commit suggest command"
@@ -653,7 +691,7 @@ features:
     tests:
       - "internal/cli/commands/commit_suggest_test.go"
     depends_on:
-      - "GOV_V1_CORE"
+      - "GOV_CORE"
 
   - id: GOV_STATUS_ROADMAP
     title: "stagecraft status roadmap command"
@@ -666,4 +704,4 @@ features:
       - "internal/tools/roadmap/stats_test.go"
       - "internal/tools/roadmap/generator_test.go"
     depends_on:
-      - "GOV_V1_CORE"
+      - "GOV_CORE"

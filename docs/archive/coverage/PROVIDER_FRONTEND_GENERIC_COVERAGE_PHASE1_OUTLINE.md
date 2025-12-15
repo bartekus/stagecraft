@@ -372,7 +372,7 @@ type pipeCreator interface {
 
 ### Internal Dependencies
 - `PROVIDER_FRONTEND_GENERIC`: Implementation must exist (✅ done)
-- `GOV_V1_CORE`: Coverage governance framework (✅ done)
+- `GOV_CORE`: Coverage governance framework (✅ done)
 - `CORE_EXECUTIL`: Process execution utilities (✅ done)
 
 ### External Dependencies

@@ -21,7 +21,7 @@ outputs:
 The `stagecraft status roadmap` command reads `spec/features.yaml`, computes phase-level completion statistics, identifies critical-path blockers, and generates a deterministic markdown document at `docs/engine/status/feature-completion-analysis.md`.
 
 This command enables:
-- Governance oversight (referenced by GOV_V1_CORE)
+- Governance oversight (referenced by GOV_CORE)
 - Strategic planning (phase completion visibility)
 - Dev-agent prioritization (blocker identification)
 - CI integration (programmatic progress tracking)
@@ -249,5 +249,5 @@ The blocker detection must traverse the dependency graph to identify all blocked
 
 - **Analysis Brief**: `docs/engine/analysis/GOV_STATUS_ROADMAP.md`
 - **Implementation Outline**: `docs/engine/outlines/GOV_STATUS_ROADMAP_IMPLEMENTATION_OUTLINE.md`
-- **Governance Reference**: `spec/governance/GOV_V1_CORE.md` (section 4.5)
+- **Governance Reference**: `spec/governance/GOV_CORE.md` (section 4.5)
 - **Feature Tracking**: `spec/features.yaml`

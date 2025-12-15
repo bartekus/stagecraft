@@ -2,7 +2,7 @@
 
 # Test Coverage Quality Lift - Phase 2 Plan
 
-**Feature**: GOV_V1_CORE  
+**Feature**: GOV_CORE  
 **Status**: Phase 2 - Quality Lift (Non-Blocking)  
 **Date**: 2025-12-07
 
@@ -277,7 +277,7 @@ Phase 2 focuses on raising coverage for low-coverage, non-core packages to stabl
 
 ### Must Follow
 - **Agent.md** strictly:
-  - Single feature scope: GOV_V1_CORE
+  - Single feature scope: GOV_CORE
   - Test-first: write tests before implementation changes
   - No refactors outside direct scope
   - No new dependencies
@@ -334,7 +334,7 @@ See `TEST_COVERAGE_ANALYSIS.md` for detailed recommendations.
 - `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` - Phase 1 and overall plan
 - `docs/agents/AGENT_BRIEF_COVERAGE_PHASE1.md` - Phase 1 agent brief
 - `docs/agents/AGENT_BRIEF_COVERAGE_PHASE2.md` - Phase 2 agent brief (ready-to-paste)
-- `spec/governance/GOV_V1_CORE.md` - Governance feature specification
+- `spec/governance/GOV_CORE.md` - Governance feature specification
 - `Agent.md` - Development protocol
 
 ---

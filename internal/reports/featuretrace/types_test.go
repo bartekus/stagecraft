@@ -11,7 +11,7 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
-// Feature: GOV_V1_CORE
+// Feature: GOV_CORE
 // Docs: docs/design/commit-reports-go-types.md
 package featuretrace
 

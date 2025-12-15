@@ -3,7 +3,7 @@
 Role: Provider Coverage Improvement Agent  
 Scope: Bringing provider implementations from "V1 Plan" to "V1 Complete" coverage status.
 
-This agent helps systematically improve provider test coverage to meet GOV_V1_CORE and GOV_V1_TEST_REQUIREMENTS standards.
+This agent helps systematically improve provider test coverage to meet GOV_CORE and GOV_V1_TEST_REQUIREMENTS standards.
 
 ---
 

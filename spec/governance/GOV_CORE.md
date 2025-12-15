@@ -1,5 +1,5 @@
 ---
-feature: GOV_V1_CORE
+feature: GOV_CORE
 version: v1
 status: done
 domain: governance
@@ -54,7 +54,7 @@ json_schema:
   # For v1, only structural shape is enforced by Go code, not by a public JSON schema.
 ---
 
-# GOV_V1_CORE — Governance Core for v1
+# GOV_CORE — Governance Core for v1
 
 ## 1. Summary
 
@@ -136,7 +136,7 @@ The validator MUST:
 
 - Ensure required keys are present.
 
-- Ensure `feature` matches the filename (e.g. `GOV_V1_CORE.md`).
+- Ensure `feature` matches the filename (e.g. `GOV_CORE.md`).
 
 - Ensure `status` is one of the allowed values.
 

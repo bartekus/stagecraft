@@ -264,8 +264,8 @@ environments:
 	}
 }
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 // Tests for frontend validation (currently 0% coverage)
 
 func TestLoad_ValidatesFrontend_WithGenericProvider(t *testing.T) {
@@ -602,8 +602,8 @@ func TestBackendConfig_GetProviderConfig_MissingConfig(t *testing.T) {
 	}
 }
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 // Tests for FrontendConfig.GetProviderConfig (second overload)
 
 func TestFrontendConfig_GetProviderConfig(t *testing.T) {
@@ -676,8 +676,8 @@ func TestFrontendConfig_GetProviderConfig_MissingConfig(t *testing.T) {
 	}
 }
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 // Additional error path tests for Load
 
 func TestLoad_InvalidYAML(t *testing.T) {
@@ -753,8 +753,8 @@ func TestLoad_ReadError(t *testing.T) {
 	}
 }
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 // Additional edge case tests for Exists
 
 func TestExists_Directory(t *testing.T) {

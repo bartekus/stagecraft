@@ -3,7 +3,7 @@
 # PR Description: Test Hardening and Scanner Error Test Debt Documentation
 
 **Feature**: PROVIDER_FRONTEND_GENERIC  
-**Related Governance Feature**: GOV_V1_CORE  
+**Related Governance Feature**: GOV_CORE  
 **Branch**: `feat/provider-frontend-generic-test-hardening`
 
 ---

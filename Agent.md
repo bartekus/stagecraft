@@ -15,7 +15,7 @@
 **Before executing ANY tool call**, verify this state:
 
 ### Pre-Flight Checklist
-- [ ] **Context Loaded**: Have you read `docs/generated/ai-agent/README.md`?
+- [ ] **Context Loaded**: Have you read `docs/__generated__/ai-agent/README.md`?
 - [ ] **Feature ID**: Do you know the `FEATURE_ID` you are working on? (If not, STOP).
 - [ ] **Clean State**: Is `git status` clean?
 - [ ] **Correct Branch**: Are you on `type/FEATURE_ID-...`?
@@ -36,7 +36,7 @@ You must resolve conflicts using this precedence order:
 1.  **`Agent.md`** (This file - Rules of Engagement)
 2.  **`spec/`** (Feature Specifications - Behavioral Truth)
 3.  **`docs/governance/`** (Process Rules)
-4.  **`docs/generated/ai-agent/`** (Read-Only Context Maps)
+4.  **`docs/__generated__/ai-agent/`** (Read-Only Context Maps)
 5.  **Code** (Implementation - Mutable)
 
 **Conflict Definition**: A conflict exists if two documents give differing instructions for the same action or define the same entity differently. If a rule in `Agent.md` conflicts with `spec/`, `Agent.md` wins on *process*, but `spec/` wins on *behavior*.
@@ -76,10 +76,10 @@ All work must be tracked against a Feature ID from `spec/features.yaml`.
 
 ## 3. Context & Navigation
 
-Do not scan the entire repository blindly. Use the **Generated Context Maps**.
+Do not scan the entire repository blindly. Use the **__generated__ Context Maps**.
 
 ### 3.1 Read-Only Canonical Inputs
-Refer to `docs/generated/ai-agent/` for the authoritative maps of the codebase:
+Refer to `docs/__generated__/ai-agent/` for the authoritative maps of the codebase:
 
 *   **`REPO_INDEX.md`**: High-level structure and stats.
 *   **`DOCS_CATALOG.md`**: Complete list of all documentation files.
@@ -87,7 +87,7 @@ Refer to `docs/generated/ai-agent/` for the authoritative maps of the codebase:
 *   **`COMMAND_CATALOG.md`**: CLI command definitions.
 *   **`CORE_SPEC_INDEX.md`**: Core engine architecture specs.
 
-These files are **generated**. Do not edit them. Use them to find where to read next.
+These files are **__generated__**. Do not edit them. Use them to find where to read next.
 
 ---
 
@@ -104,7 +104,7 @@ These files are **generated**. Do not edit them. Use them to find where to read 
 *   **Headers**: SPDX License Header (AGPL-3.0) required on ALL files.
 
 ### 4.3 Governance
-*   **No Magic**: Do not invent new "Patterns" or "Architectures" without an ADR.
+*   **No Magic**: Do not invent new ‘Patterns’ or ‘Architectures’ without a Decision entry in spec/governance/decisions… (or cortex-backed decision log).
 *   **Provider Boundaries**: Core (`internal/core`) MUST NOT import Providers (`internal/providers`).
 *   **No Hardcoding**: Never hardcode a provider name (e.g. "encore") in Core logic.
 

@@ -52,6 +52,7 @@ type Config struct {
 	Dev          *DevConfig                   `yaml:"dev,omitempty"`
 	Cloud        *CloudConfig                 `yaml:"cloud,omitempty"`
 	Network      *NetworkConfig               `yaml:"network,omitempty"`
+	Migrations   *MigrationsRootConfig        `yaml:"migrations,omitempty"`
 	Databases    map[string]DatabaseConfig    `yaml:"databases,omitempty"`
 	Environments map[string]EnvironmentConfig `yaml:"environments"`
 	Infra        *InfraConfig                 `yaml:"infra,omitempty"`
@@ -249,6 +250,13 @@ func validate(cfg *Config) error {
 	// Validate frontend configuration (if present)
 	if cfg.Frontend != nil {
 		if err := validateFrontend(cfg.Frontend); err != nil {
+			return err
+		}
+	}
+
+	// Validate migrations configuration (if present)
+	if cfg.Migrations != nil {
+		if err := validateMigrations(cfg.Migrations); err != nil {
 			return err
 		}
 	}

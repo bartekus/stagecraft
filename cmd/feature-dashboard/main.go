@@ -12,8 +12,8 @@
 // Command feature-dashboard prints a high-level governance summary of feature health.
 package main
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 import (
 	"context"

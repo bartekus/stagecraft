@@ -40,7 +40,7 @@ The agent treats these files as sources of truth:
    - Source of truth for feature IDs, specs, status, and tests.
 
 4. Governance docs (reference only)  
-   - `spec/governance/GOV_V1_CORE.md`  
+   - `spec/governance/GOV_CORE.md`  
    - `docs/coverage/*.md`  
    - Other docs under `docs/engine/` as needed.
 
@@ -53,7 +53,7 @@ The agent treats these files as sources of truth:
 The agent must:
 
 - Work in **small, reviewable slices**.  
-- Respect the existing **GOV_V1_CORE** rules.  
+- Respect the existing **GOV_CORE** rules.  
 - Prefer **docs and specs catching up to reality**, rather than changing behavior implicitly.  
 - Avoid large refactors in a single step.  
 
@@ -81,7 +81,7 @@ On each invocation, the agent should:
    - `./scripts/check-orphan-specs.sh`
    - `go test -cover ./pkg/config ./internal/core`
 5. Suggest a commit message, for example:
-   - `docs(GOV_V1_CORE): align commit-suggest spec frontmatter`
+   - `docs(GOV_CORE): align commit-suggest spec frontmatter`
 
 The agent should keep track mentally of which items are done, but the user is responsible for actually ticking the checkboxes in `GOV_FIX_PHASE_PLAN.md`.
 
@@ -190,7 +190,7 @@ A typical agent run should roughly follow this narrative:
    - `./bin/stagecraft gov feature-mapping`
    - `./scripts/check-orphan-specs.sh`
 5. **Suggested commit message**
-   - `docs(GOV_V1_CORE): align spec status with features.yaml`
+   - `docs(GOV_CORE): align spec status with features.yaml`
 
 ---
 
@@ -212,13 +212,13 @@ If a separate agent file is needed, it can directly embed the detailed instructi
 
 ---
 
-## 8. Relationship to GOV_V1_CORE
+## 8. Relationship to GOV_CORE
 
-GOV_V1_CORE describes:
+GOV_CORE describes:
 - How specs, features, and implementation relate.
 - How tools like specschema, specvscli, and feature-mapping enforce invariants.
 
-The STAGECRAFT_VALIDATION_AGENT sits on top of GOV_V1_CORE and:
+The STAGECRAFT_VALIDATION_AGENT sits on top of GOV_CORE and:
 - Uses these tools to detect drift.
 - Applies small patches to restore invariants.
 

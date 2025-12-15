@@ -24,8 +24,8 @@ import (
 	"stagecraft/internal/tools/specschema"
 )
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 func TestGenerateFeatureOverview_CreatesFile(t *testing.T) {
 	tmpDir := t.TempDir()

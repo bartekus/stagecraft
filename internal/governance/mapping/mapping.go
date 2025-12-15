@@ -11,10 +11,10 @@ See https://www.gnu.org/licenses/ for license details.
 
 */
 
-// Package mapping implements the Feature Mapping Invariant validator for GOV_V1_CORE Phase 4.
+// Package mapping implements the Feature Mapping Invariant validator for GOV_CORE Phase 4.
 //
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 package mapping
 
 import (

@@ -64,7 +64,7 @@ For each feature:
 
      - `spec/core/*.md`
 
-     - `spec/governance/GOV_V1_CORE.md`
+     - `spec/governance/GOV_CORE.md`
 
    - Ask the model to *summarize and confirm understanding*.
 
@@ -122,7 +122,7 @@ Open only the files you are actively editing for this feature:
 
   - `spec/core/*.md`
 
-  - `spec/governance/GOV_V1_CORE.md`
+  - `spec/governance/GOV_CORE.md`
 
 - **Code**
 

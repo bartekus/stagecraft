@@ -83,8 +83,8 @@ Context handoff documents ensure:
 
 ### Governance Handoffs
 
-#### `GOV_V1_CORE-to-FRONTMATTER.md`
-- **From**: GOV_V1_CORE (Governance Core for v1)
+#### `GOV_CORE-to-FRONTMATTER.md`
+- **From**: GOV_CORE (Governance Core for v1)
 - **To**: FRONTMATTER (Spec frontmatter implementation)
 - **Use when**: Starting work on spec frontmatter after governance core is complete
 

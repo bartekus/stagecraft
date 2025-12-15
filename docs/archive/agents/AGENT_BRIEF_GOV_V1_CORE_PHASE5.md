@@ -1,14 +1,14 @@
-> **Superseded by** `docs/engine/agents/AGENT_BRIEF_GOV_V1_CORE.md` section "Phase 5: Repository Stabilization and Governance Golden Tests". Kept for historical reference. New GOV_V1_CORE execution notes MUST go into the merged agent brief.
+> **Superseded by** `docs/engine/agents/AGENT_BRIEF_GOV_CORE.md` section "Phase 5: Repository Stabilization and Governance Golden Tests". Kept for historical reference. New GOV_CORE execution notes MUST go into the merged agent brief.
 
-# AGENT BRIEF — GOV_V1_CORE — Phase 5
+# AGENT BRIEF — GOV_CORE — Phase 5
 
 ## Repository Stabilization and Governance Golden Tests
 
 **Status:** Planned - ready for implementation  
 
-**Feature ID:** GOV_V1_CORE  
+**Feature ID:** GOV_CORE  
 
-**Spec:** spec/governance/GOV_V1_CORE.md  
+**Spec:** spec/governance/GOV_CORE.md  
 
 **Phase:** 5 - Repository stabilization and governance golden tests
 
@@ -16,7 +16,7 @@
 
 ## 🎯 Mission
 
-Phase 5 turns GOV_V1_CORE from "enforced tooling" into a fully stabilized, authoritative governance layer.
+Phase 5 turns GOV_CORE from "enforced tooling" into a fully stabilized, authoritative governance layer.
 
 > Use the existing governance tools (feature mapping, spec validation, graph checks, spec vs CLI) to clean up all remaining violations, align metadata, and add golden tests for the governance reports themselves.
 
@@ -28,7 +28,7 @@ After Phase 5:
 
 - Governance reports have **golden tests**, so their shape and content are stable and refactor safe.
 
-- GOV_V1_CORE can safely be considered **v1 complete**.
+- GOV_CORE can safely be considered **v1 complete**.
 
 ---
 
@@ -70,17 +70,17 @@ After Phase 5:
 
    - Add a Go test that runs the mapping analysis on the fixture and compares the result to the golden JSON.
 
-4. **Mark GOV_V1_CORE as Phase 5 complete**
+4. **Mark GOV_CORE as Phase 5 complete**
 
-   - Update `spec/governance/GOV_V1_CORE.md` to document Phase 5 stabilization and golden tests.
+   - Update `spec/governance/GOV_CORE.md` to document Phase 5 stabilization and golden tests.
 
-   - Update `docs/engine/status/implementation-status.md` to reflect final GOV_V1_CORE status (done) once work is complete.
+   - Update `docs/engine/status/implementation-status.md` to reflect final GOV_CORE status (done) once work is complete.
 
 ---
 
 ## 🚫 Out of Scope
 
-- Introducing new governance tools beyond GOV_V1_CORE.
+- Introducing new governance tools beyond GOV_CORE.
 
 - Changing core business behavior (deploy, dev, infra, providers).
 
@@ -144,9 +144,9 @@ Phase 5 is complete when:
 
 - Golden tests for mapping reports pass.
 
-- GOV_V1_CORE is marked as done in:
+- GOV_CORE is marked as done in:
 
-  - `spec/governance/GOV_V1_CORE.md`
+  - `spec/governance/GOV_CORE.md`
 
   - `docs/engine/status/implementation-status.md`
 
@@ -158,9 +158,9 @@ Phase 5 is complete when:
 
 ### Pre work
 
-- [ ] Confirm Feature ID: `GOV_V1_CORE`
+- [ ] Confirm Feature ID: `GOV_CORE`
 
-- [ ] Create branch: `feature/GOV_V1_CORE-phase5-repo-stabilization`
+- [ ] Create branch: `feature/GOV_CORE-phase5-repo-stabilization`
 
 - [ ] Verify hooks: `./scripts/install-hooks.sh`
 
@@ -204,9 +204,9 @@ Phase 5 is complete when:
 
 ### Workstream D - Documentation and status
 
-- [ ] Update GOV_V1_CORE spec with a short Phase 5 section (stabilization and golden tests).
+- [ ] Update GOV_CORE spec with a short Phase 5 section (stabilization and golden tests).
 
-- [ ] Update implementation status to reflect GOV_V1_CORE as done when complete.
+- [ ] Update implementation status to reflect GOV_CORE as done when complete.
 
 - [ ] Run `./scripts/run-all-checks.sh` and ensure CI passes.
 
@@ -216,7 +216,7 @@ Phase 5 is complete when:
 
 - Do not guess mapping behavior. If something about the mapping tool is unclear, STOP and request clarification.
 
-- Keep changes tightly scoped to GOV_V1_CORE and governance files.
+- Keep changes tightly scoped to GOV_CORE and governance files.
 
 - Use small, focused commits (e.g. "fix mapping violations for CLI commands").
 

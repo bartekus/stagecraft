@@ -138,7 +138,7 @@ All new context handoff notes should be added here as dated entries.
 **Related features:**
 
 - `PROVIDER_FRONTEND_GENERIC`
-- `GOV_V1_CORE`
+- `GOV_CORE`
 
 **Source docs:**
 
@@ -232,7 +232,7 @@ The following sections contain references to previously scattered context handof
 - **CLI_PHASE_EXECUTION_COMMON to CORE_STATE_TEST_ISOLATION**: `docs/context-handoff/CLI_PHASE_EXECUTION_COMMON-to-CORE_STATE_TEST_ISOLATION.md` → `docs/archive/context-handoff/`
 - **CLI_ROLLBACK-CLI_RELEASES-CORE_STATE_CONSISTENCY to CLI_DEPLOY**: `docs/context-handoff/CLI_ROLLBACK-CLI_RELEASES-CORE_STATE_CONSISTENCY-to-CLI_DEPLOY.md` → `docs/archive/context-handoff/`
 - **GOV_STATUS_ROADMAP Complete**: `docs/context-handoff/GOV_STATUS_ROADMAP_COMPLETE.md` → `docs/archive/context-handoff/`
-- **GOV_V1_CORE to FRONTMATTER**: `docs/context-handoff/GOV_V1_CORE-to-FRONTMATTER.md` → `docs/archive/context-handoff/`
+- **GOV_CORE to FRONTMATTER**: `docs/context-handoff/GOV_CORE-to-FRONTMATTER.md` → `docs/archive/context-handoff/`
 
 [Full content preserved in archived files - see relevant sections above for summaries]
 

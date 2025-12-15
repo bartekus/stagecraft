@@ -1,6 +1,6 @@
 # Future Enhancements: Next-Level Feature Pipeline
 
-> **Status**: Mixed - Thin slice implemented (GOV_V1_CORE), full enhancements remain future work
+> **Status**: Mixed - Thin slice implemented (GOV_CORE), full enhancements remain future work
 > **Purpose**: Document advanced enhancements that would bring Stagecraft's feature pipeline to "Google-grade" governance levels
 > **Last Updated**: 2025-12-07
 
@@ -8,7 +8,7 @@
 
 ## Overview
 
-Stagecraft now has a **thin-slice governance core** (GOV_V1_CORE) that provides:
+Stagecraft now has a **thin-slice governance core** (GOV_CORE) that provides:
 - ✅ Machine-verifiable spec schema (YAML frontmatter)
 - ✅ Structural diff for CLI flags (spec vs implementation)
 - ✅ Feature dependency graph with cycle detection and impact analysis
@@ -16,7 +16,7 @@ Stagecraft now has a **thin-slice governance core** (GOV_V1_CORE) that provides:
 
 The following enhancements represent natural next steps that would further strengthen governance, automation, and traceability beyond the current thin slice.
 
-**Note**: The thin slice (GOV_V1_CORE) is **implemented and required for v1**. The enhancements below are **optional** and can be implemented incrementally as the project grows.
+**Note**: The thin slice (GOV_CORE) is **implemented and required for v1**. The enhancements below are **optional** and can be implemented incrementally as the project grows.
 
 ---
 
@@ -24,7 +24,7 @@ The following enhancements represent natural next steps that would further stren
 
 ### Status
 
-**✅ Thin Slice Implemented (GOV_V1_CORE)**: YAML frontmatter with validation for feature, version, status, domain, flags, and exit codes. Full schema with data structures and JSON schema remains future work.
+**✅ Thin Slice Implemented (GOV_CORE)**: YAML frontmatter with validation for feature, version, status, domain, flags, and exit codes. Full schema with data structures and JSON schema remains future work.
 
 ### Goal
 
@@ -89,7 +89,7 @@ json_schema:
 
 ### Implementation Notes
 
-- ✅ **Done**: YAML frontmatter in markdown specs (GOV_V1_CORE)
+- ✅ **Done**: YAML frontmatter in markdown specs (GOV_CORE)
 - ✅ **Done**: Validation script (`cmd/spec-validate`) parses schema and validates
 - 🔄 **Future**: Test generator from schema
 - 🔄 **Future**: Full JSON schema support for output contracts
@@ -101,7 +101,7 @@ json_schema:
 
 ### Status
 
-**✅ Thin Slice Implemented (GOV_V1_CORE)**: Flag comparison (spec vs CLI) with type, default, and missing/extra flag detection. Exit code alignment and JSON schema comparison remain future work.
+**✅ Thin Slice Implemented (GOV_CORE)**: Flag comparison (spec vs CLI) with type, default, and missing/extra flag detection. Exit code alignment and JSON schema comparison remain future work.
 
 ### Goal
 
@@ -131,7 +131,7 @@ The thin slice supports:
 3. **Compare and report**:
    - ✅ Flag mismatches (done)
    - 🔄 JSON schema mismatches (future)
-   - 🔄 Exit code mismatches (future - see GOV_V1_CORE_EXITCODES)
+   - 🔄 Exit code mismatches (future - see GOV_CORE_EXITCODES)
 
 ### Benefits
 
@@ -145,7 +145,7 @@ The thin slice supports:
 - ✅ **Done**: Flag comparison via Cobra command introspection (`cmd/spec-vs-cli`)
 - 🔄 **Future**: Go AST parsing for JSON struct tag extraction
 - 🔄 **Future**: JSON schema comparison using existing libraries
-- 🔄 **Future**: Exit code constants package and alignment (see GOV_V1_CORE_EXITCODES)
+- 🔄 **Future**: Exit code constants package and alignment (see GOV_CORE_EXITCODES)
 - Similar to OpenAPI code generation validation
 
 ---
@@ -154,7 +154,7 @@ The thin slice supports:
 
 ### Status
 
-**✅ Implemented (GOV_V1_CORE)**: Dependency graph from `spec/features.yaml` with cycle detection, impact analysis, and DOT visualization. Header comment parsing remains future work.
+**✅ Implemented (GOV_CORE)**: Dependency graph from `spec/features.yaml` with cycle detection, impact analysis, and DOT visualization. Header comment parsing remains future work.
 
 ### Goal
 
@@ -174,7 +174,7 @@ The thin slice supports:
 
 1. **Dependency Extraction**:
    - ✅ Extract dependencies from `spec/features.yaml` (done)
-   - 🔄 Parse `// Feature:` comments in code (future - see GOV_V1_CORE_HEADERS)
+   - 🔄 Parse `// Feature:` comments in code (future - see GOV_CORE_HEADERS)
    - 🔄 Extract dependencies from spec frontmatter (future)
 
 2. **Visualization**:
@@ -200,7 +200,7 @@ The thin slice supports:
 - ✅ **Done**: DOT file generation (`features.ToDOT()`)
 - ✅ **Done**: Impact analysis (`features.Impact()`)
 - 🔄 **Future**: GitHub API for PR comments
-- 🔄 **Future**: Header comment parsing (see GOV_V1_CORE_HEADERS)
+- 🔄 **Future**: Header comment parsing (see GOV_CORE_HEADERS)
 - Similar to Bazel's dependency graph system
 
 ---
@@ -209,7 +209,7 @@ The thin slice supports:
 
 ### Status
 
-**✅ Minimal Implementation (GOV_V1_CORE)**: Auto-generated markdown overview (`docs/features/OVERVIEW.md`) with feature table, dependency graph, and status summary. Full interactive dashboard remains future work.
+**✅ Minimal Implementation (GOV_CORE)**: Auto-generated markdown overview (`docs/features/OVERVIEW.md`) with feature table, dependency graph, and status summary. Full interactive dashboard remains future work.
 
 ### Goal
 
@@ -371,14 +371,14 @@ Track feature completion metrics and generate reports for planning and accountab
 
 ## Implementation Priority
 
-**Current Status**: Thin slice (GOV_V1_CORE) is **implemented and required for v1**. The following represent natural evolution beyond the thin slice:
+**Current Status**: Thin slice (GOV_CORE) is **implemented and required for v1**. The following represent natural evolution beyond the thin slice:
 
 1. **✅ Implemented**: Feature Dependency Graph (#3) - thin slice complete
 2. **✅ Partially Implemented**: Machine-Verifiable Spec Schema (#1) - thin slice complete, full schema future
 3. **✅ Partially Implemented**: Structural Diff Tool (#2) - flags done, exit codes future
 4. **✅ Minimal Implementation**: Feature Overview (#4) - markdown overview done, full portal future
-5. **🔄 Future Work**: Exit Code Alignment (GOV_V1_CORE_EXITCODES)
-6. **🔄 Future Work**: Header Comment Validation (GOV_V1_CORE_HEADERS)
+5. **🔄 Future Work**: Exit Code Alignment (GOV_CORE_EXITCODES)
+6. **🔄 Future Work**: Header Comment Validation (GOV_CORE_HEADERS)
 7. **🔄 Future Work**: Automated Changelog (#5), Behavioral Diff (#6), Completion Dashboard (#7)
 
 ---
@@ -394,7 +394,7 @@ Track feature completion metrics and generate reports for planning and accountab
 
 ## Notes
 
-**GOV_V1_CORE (Implemented)** provides:
+**GOV_CORE (Implemented)** provides:
 
 - ✅ Machine-readable spec schemas (YAML frontmatter)
 - ✅ Automated structural diffs (flags: spec vs CLI)
@@ -406,16 +406,16 @@ Track feature completion metrics and generate reports for planning and accountab
 **Future Enhancements** (beyond thin slice):
 
 - 🔄 Full JSON schema support for output contracts
-- 🔄 Exit code alignment (requires centralized constants - see GOV_V1_CORE_EXITCODES)
-- 🔄 Header comment validation (see GOV_V1_CORE_HEADERS)
+- 🔄 Exit code alignment (requires centralized constants - see GOV_CORE_EXITCODES)
+- 🔄 Header comment validation (see GOV_CORE_HEADERS)
 - 🔄 Interactive feature dashboard (beyond markdown overview)
 - 🔄 Automated changelog generation
 - 🔄 Behavioral diff tool
 - 🔄 Completion metrics dashboard
 
 **Related Features**:
-- `GOV_V1_CORE_EXITCODES`: Exit code constants and alignment (future)
-- `GOV_V1_CORE_HEADERS`: Header comment validation (future)
+- `GOV_CORE_EXITCODES`: Exit code constants and alignment (future)
+- `GOV_CORE_HEADERS`: Header comment validation (future)
 
 All future enhancements are **optional** and can be implemented incrementally as the project grows.
 

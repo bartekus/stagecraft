@@ -10,14 +10,14 @@
 // See https://www.gnu.org/licenses/ for license details.
 
 // Command feature-map-check runs governance validation for the Feature Mapping
-// Invariant defined by GOV_V1_CORE Phase 4.
+// Invariant defined by GOV_CORE Phase 4.
 //
 // It is intended to be invoked from scripts/run-all-checks.sh and CI; it should
 // not introduce non-deterministic behavior.
 package main
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 import (
 	"context"

@@ -21,8 +21,8 @@ import (
 	"stagecraft/internal/tools/specschema"
 )
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 func TestCompareFlags_MissingFlagInCLI(t *testing.T) {
 	specFlags := []specschema.CliFlag{

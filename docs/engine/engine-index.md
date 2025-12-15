@@ -37,7 +37,7 @@ This document enumerates the **AI-critical** technical documentation that should
 ### Required Specs
 - `spec/commands/<command>.md` (e.g., `build.md`, `deploy.md`, `plan.md`)
 - `spec/core/global-flags.md` (for any command)
-- `spec/governance/GOV_V1_CORE.md` (for commands that interact with state)
+- `spec/governance/GOV_CORE.md` (for commands that interact with state)
 
 ### Required Code Files
 - `internal/cli/root.go` (command registration)
@@ -71,7 +71,7 @@ Open:
 
 ### Required Specs
 - `spec/core/<feature>.md` (e.g., `state.md`, `plan.md`, `config.md`)
-- `spec/governance/GOV_V1_CORE.md` (for state-related features)
+- `spec/governance/GOV_CORE.md` (for state-related features)
 
 ### Required Code Files
 - `internal/core/<feature>.go` (or subdirectory)
@@ -90,7 +90,7 @@ Open:
 - spec/core/state.md
 - spec/core/state-consistency.md
 - spec/core/state-test-isolation.md
-- spec/governance/GOV_V1_CORE.md
+- spec/governance/GOV_CORE.md
 - internal/core/state/state.go
 - internal/core/state/state_test.go
 ```
@@ -163,15 +163,15 @@ Open:
 ## Feature Type: Governance / Spec Compliance
 
 ### Required Specs
-- `spec/governance/GOV_V1_CORE.md`
+- `spec/governance/GOV_CORE.md`
 - All relevant specs being governed
 
 ### Required Code Files
 - Files implementing the governed features
 
 ### Related Docs
-- `docs/engine/analysis/GOV_V1_CORE_IMPLEMENTATION_ANALYSIS.md` (if exists)
-- `docs/context-handoff/GOV_V1_CORE-to-*.md` (if exists)
+- `docs/engine/analysis/GOV_CORE_IMPLEMENTATION_ANALYSIS.md` (if exists)
+- `docs/context-handoff/GOV_CORE-to-*.md` (if exists)
 
 ---
 

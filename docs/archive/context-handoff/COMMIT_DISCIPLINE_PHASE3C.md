@@ -8,7 +8,7 @@
 
 - `PROVIDER_FRONTEND_GENERIC`
 
-- `GOV_V1_CORE`
+- `GOV_CORE`
 
 **Prerequisites:**
 

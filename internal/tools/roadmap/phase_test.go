@@ -83,7 +83,7 @@ func TestDetectPhases_MapsFeaturesToPhases(t *testing.T) {
 		{"CLI_DEPLOY", "Phase 2: Core Orchestration"},
 		{"CLI_DEV", "Phase 3: Local Development"},
 		{"DEV_HOSTS", "Phase 3: Local Development"},
-		{"GOV_V1_CORE", "Governance"},
+		{"GOV_CORE", "Governance"},
 		{"GOV_STATUS_ROADMAP", "Governance"},
 	}
 

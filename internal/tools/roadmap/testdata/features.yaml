@@ -114,10 +114,10 @@ features:
     tests: []
 
   # Governance
-  - id: GOV_V1_CORE
+  - id: GOV_CORE
     title: "Governance core"
     status: done
-    spec: "governance/GOV_V1_CORE.md"
+    spec: "governance/GOV_CORE.md"
     owner: bart
     tests:
       - "internal/governance/mapping/mapping_test.go"
@@ -128,5 +128,5 @@ features:
     spec: "commands/status-roadmap.md"
     owner: bart
     depends_on:
-      - GOV_V1_CORE
+      - GOV_CORE
     tests: []

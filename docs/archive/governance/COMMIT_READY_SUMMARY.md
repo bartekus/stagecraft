@@ -3,7 +3,7 @@
 # Governance Commit - Ready Summary
 
 **Status**: ✅ All files ready for commit  
-**Commit Type**: `chore(GOV_V1_CORE)`  
+**Commit Type**: `chore(GOV_CORE)`  
 **Scope**: Provider coverage governance enforcement
 
 ---
@@ -42,7 +42,7 @@ git add \
 ./scripts/run-all-checks.sh
 
 # Commit
-git commit -m "chore(GOV_V1_CORE): enforce provider coverage governance
+git commit -m "chore(GOV_CORE): enforce provider coverage governance
 
 - Add provider coverage strategy validation script
 - Add provider coverage completion planner

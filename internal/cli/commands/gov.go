@@ -24,8 +24,8 @@ import (
 	"stagecraft/internal/governance/mapping"
 )
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 // NewGovCommand returns the `stagecraft gov` command.
 func NewGovCommand() *cobra.Command {

@@ -47,7 +47,7 @@ This catalog focuses on specification files in `spec/**`.
 | `spec/dev/traefik.md` | 10 | Behaviour, DEV_TRAEFIK, Determinism, Excluded (future), Included |
 | `spec/engine/plan-actions.md` | 22 | 1. Wire Format, 2. Determinism Rules (apply to all actions), 3. Validation Rules (apply to all actions), 4. Defaults Rules, 5. Forward Compatibility Rules |
 | `spec/governance/GOV_CLI_EXIT_CODES.md` | 14 | Common Exit Code Semantics, Determinism, Excluded (v1), Exit Code Documentation Rules, Exit Codes |
-| `spec/governance/GOV_V1_CORE.md` | 15 | 1. Summary, 2. Goals, 3. Non-Goals, 4. Design, 4.1 Spec Schema (Frontmatter) |
+| `spec/governance/GOV_CORE.md` | 15 | 1. Summary, 2. Goals, 3. Non-Goals, 4. Design, 4.1 Spec Schema (Frontmatter) |
 | `spec/infra/bootstrap.md` | 28 | 1. Overview, 2. Responsibilities and Non-Goals, 2.1 Responsibilities (v1), 2.2 Non-Goals (v1), 3. Invocation and Execution Semantics |
 | `spec/overview.md` | 5 | Command Surface (Initial), Core Concepts, High-Level Goals, Non-Goals (for v0), Stagecraft – Project Overview |
 | `spec/providers/backend/encore-ts.md` | 11 | 1. Goals and Non-Goals, 1.1 Goals, 1.2 Non-Goals, 2. Relationship to Core Backend Abstraction, 2.1 BackendProvider Interface |

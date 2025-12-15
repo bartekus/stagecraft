@@ -1,7 +1,7 @@
 # [PROVIDER_FRONTEND_GENERIC] Phase 2 – Commit message CI validation & CLI tooling
 
 **Feature:** PROVIDER_FRONTEND_GENERIC  
-**Governance:** GOV_V1_CORE
+**Governance:** GOV_CORE
 
 ## Spec / Docs
 

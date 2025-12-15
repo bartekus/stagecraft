@@ -1,7 +1,7 @@
 # Agent Brief: Test Coverage Compliance
 
-**Feature ID**: GOV_V1_CORE  
-**Spec**: `spec/governance/GOV_V1_CORE.md`  
+**Feature ID**: GOV_CORE  
+**Spec**: `spec/governance/GOV_CORE.md`  
 **Canonical Coverage**: `docs/coverage/COVERAGE_LEDGER.md`  
 **Governance**: `docs/governance/GOVERNANCE_ALMANAC.md`
 
@@ -9,7 +9,7 @@
 
 ## Purpose
 
-This brief provides execution playbooks for implementing test coverage compliance phases under GOV_V1_CORE. These phases bring Stagecraft into coverage compliance and improve coverage quality for low-coverage packages.
+This brief provides execution playbooks for implementing test coverage compliance phases under GOV_CORE. These phases bring Stagecraft into coverage compliance and improve coverage quality for low-coverage packages.
 
 **This document is an execution guide, not a canonical source of truth.** For authoritative coverage history and snapshots, see `docs/coverage/COVERAGE_LEDGER.md`. For governance rules, see `docs/governance/GOVERNANCE_ALMANAC.md`.
 
@@ -17,7 +17,7 @@ This brief provides execution playbooks for implementing test coverage complianc
 
 ## Invariants (Never Changes)
 
-- **Single Feature ID**: All coverage work uses `GOV_V1_CORE` as the Feature ID
+- **Single Feature ID**: All coverage work uses `GOV_CORE` as the Feature ID
 - **Test-first**: Write/update failing tests first, then implement fixes
 - **No refactors**: Keep changes surgical and scoped to coverage/compliance only
 - **No threshold changes**: Do not modify coverage thresholds or scripts
@@ -29,10 +29,10 @@ This brief provides execution playbooks for implementing test coverage complianc
 
 ### Pre-Work Checklist
 
-- [ ] Confirm Feature ID: `GOV_V1_CORE`
+- [ ] Confirm Feature ID: `GOV_CORE`
 - [ ] Verify hooks: `./scripts/install-hooks.sh`
 - [ ] Ensure clean working directory: `git status`
-- [ ] Create feature branch: `test/GOV_V1_CORE-coverage-<phase>`
+- [ ] Create feature branch: `test/GOV_CORE-coverage-<phase>`
 - [ ] Read relevant phase section below
 - [ ] Review `docs/coverage/COVERAGE_LEDGER.md` for current coverage state
 
@@ -49,7 +49,7 @@ This brief provides execution playbooks for implementing test coverage complianc
 - [ ] Run `./scripts/goformat.sh`
 - [ ] Run `./scripts/run-all-checks.sh` (must pass)
 - [ ] Run `./scripts/check-coverage.sh --fail-on-warning` (must pass)
-- [ ] Commit with format: `test(GOV_V1_CORE): <summary>`
+- [ ] Commit with format: `test(GOV_CORE): <summary>`
 - [ ] Create PR with coverage delta summary
 - [ ] Update phase section below (append-only) with implementation notes
 - [ ] Update `docs/coverage/COVERAGE_LEDGER.md` with new snapshot (if significant change)
@@ -87,7 +87,7 @@ This brief provides execution playbooks for implementing test coverage complianc
 - E2E tests must use existing smoke test patterns
 
 **Links**:
-- Spec: `spec/governance/GOV_V1_CORE.md`
+- Spec: `spec/governance/GOV_CORE.md`
 - Coverage Analysis: `docs/coverage/TEST_COVERAGE_ANALYSIS.md` (superseded by COVERAGE_LEDGER.md)
 - Coverage Plan: `docs/coverage/COVERAGE_COMPLIANCE_PLAN.md` (superseded by COVERAGE_LEDGER.md)
 - Coverage Ledger: `docs/coverage/COVERAGE_LEDGER.md` section 4.1
@@ -126,7 +126,7 @@ This brief provides execution playbooks for implementing test coverage complianc
 - Migration tests should avoid real database connections
 
 **Links**:
-- Spec: `spec/governance/GOV_V1_CORE.md`
+- Spec: `spec/governance/GOV_CORE.md`
 - Coverage Analysis: `docs/coverage/TEST_COVERAGE_ANALYSIS.md` (superseded by COVERAGE_LEDGER.md)
 - Coverage Plan: `docs/coverage/COVERAGE_COMPLIANCE_PLAN_PHASE2.md` (superseded by COVERAGE_LEDGER.md)
 - Coverage Ledger: `docs/coverage/COVERAGE_LEDGER.md` section 4.2

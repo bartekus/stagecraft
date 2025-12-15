@@ -20,8 +20,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Feature: GOV_V1_CORE
-// Spec: spec/governance/GOV_V1_CORE.md
+// Feature: GOV_CORE
+// Spec: spec/governance/GOV_CORE.md
 
 func TestIntrospect_RootCommand(t *testing.T) {
 	root := &cobra.Command{
