@@ -69,20 +69,14 @@ func NewRootCommand() *cobra.Command {
 	// to ensure deterministic help output (see Agent.md determinism rules).
 	cmd.AddCommand(commands.NewAgentCommand())
 	cmd.AddCommand(commands.NewBuildCommand())
-	cmd.AddCommand(commands.NewCommitReportCommand())
-	cmd.AddCommand(commands.NewCommitSuggestCommand())
-	cmd.AddCommand(commands.NewContextCommand())
 	cmd.AddCommand(commands.NewDeployCommand())
 	cmd.AddCommand(commands.NewDevCommand())
-	cmd.AddCommand(commands.NewFeatureTraceabilityCommand())
-	cmd.AddCommand(commands.NewGovCommand())
 	cmd.AddCommand(commands.NewInfraCommand())
 	cmd.AddCommand(commands.NewInitCommand())
 	cmd.AddCommand(commands.NewMigrateCommand())
 	cmd.AddCommand(commands.NewPlanCommand())
 	cmd.AddCommand(commands.NewReleasesCommand())
 	cmd.AddCommand(commands.NewRollbackCommand())
-	cmd.AddCommand(commands.NewStatusCommand())
 
 	return cmd
 }

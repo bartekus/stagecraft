@@ -27,11 +27,11 @@ echo
 # 1. Feature mapping and spec alignment
 echo "[1/4] Checking feature mapping and governance invariants..."
 if [[ -x ./bin/stagecraft ]]; then
-  ./bin/stagecraft gov feature-mapping
+  go run ./ai.agent/cmd/cortex gov feature-mapping
 else
   echo "stagecraft binary not found, building..."
   go build -o ./bin/stagecraft ./cmd/stagecraft
-  ./bin/stagecraft gov feature-mapping
+  go run ./ai.agent/cmd/cortex gov feature-mapping
 fi
 echo
 

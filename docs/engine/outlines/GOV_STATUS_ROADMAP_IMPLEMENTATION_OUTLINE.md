@@ -18,7 +18,7 @@ Provide a deterministic CLI command (`stagecraft status roadmap`) that generates
 
 **v1 Scope:**
 
-- CLI command: `stagecraft status roadmap`
+- CLI command: `cortex status roadmap`
 - Reads `spec/features.yaml` as source of truth
 - Computes phase completion statistics (done/wip/todo counts per phase)
 - Identifies critical-path blockers (features with incomplete dependencies)

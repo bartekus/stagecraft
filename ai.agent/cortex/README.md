@@ -1,34 +1,27 @@
-# Cortex Primitives
+# Cortex Library
 
-> **CONTRACT DEFINITIONS**
+Core primitives for Stagecraft's developer and governance tooling.
 
-This directory defines the core "Cortex Primitives" — the fundamental cognitive structures the AI Agent uses to reason about the repository.
+## API Surface
 
-## 1. Decision Log Primitive
-**Backed by**: `spec/governance/decisions.md`
+### `projectroot`
 
-The authoritative log of architectural and governance decisions.
-- **Contract**: Agents must cite `DECISION-###` when justifying non-obvious actions.
-- **Invariant**: No ADRs as separate files. All decisions are appended to the log.
+Resolves the repository root based on strict priority markers.
 
-## 2. Failure Classification Primitive
-**Backed by**: `spec/governance/GOV_CLI_EXIT_CODES.md` (and enforced by `failure_lens`)
+*   `Find(startPath string) (string, error)`
 
-The taxonomy for understanding system failure.
-- **Classes**: `user_input`, `config_invalid`, `external_dependency`, `provider_failure`, `transient_environment`, `internal_invariant`, `unclassified`.
-- **Contract**: All errors must ideally map to one of these classes.
-- **Mapping**: Maps deterministically to Exit Codes (0, 1, 2, 3).
+### `featureindex`
 
-## 3. Skill Registry Primitive
-**Backed by**: `ai.agent/skills/registry.json`
+Loads the feature registry from the repository contract.
 
-The catalog of executable capabilities available to the agent.
-- **Contract**: A skill exists IF AND ONLY IF it is present in `registry.json`.
-- **Invariant**: The registry is sorted lexicographically by ID and is purely deterministic (no timestamps).
+*   `Load(rootPath string) (Registry, error)`
 
-## 4. Context Lenses
-**Backed by**: `ai.agent/skills/src/**` (Source code)
+### `projectmeta`
 
-Deterministic analyzers that project repository state into structured context.
-- **Examples**: `git_history_lens`, `failure_lens`.
-- **Contract**: Lenses accept defined inputs and produce rigid, schema-compliant outputs without side effects.
+Determines repository metadata.
+
+*   `DetermineRepoName(rootPath string) string`
+
+## Rules
+*   **Pure Go**: No dependencies on `stagecraft/internal/...`.
+*   **Reusable**: Can be used by other tools/projects.
