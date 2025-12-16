@@ -2,17 +2,18 @@
 
 ## 1. Overview
 
-**Cortex** (`ai.agent/cmd/cortex`) is the canonical, systems-level orchestration CLI for Stagecraft's AI context engine. It is the **only** supported entry point for generating AI context, running governance checks, and managing repository insights.
+**Cortex** is the canonical, systems-level orchestration CLI for Stagecraft's AI context engine. It is the **only** supported entry point for generating AI context, running governance checks, and managing repository insights.
 
 ### Strategic Role
 - **Orchestrator**: Cortex manages the workflow. It does not reinvent the wheel; it delegates compute-heavy scanning to **XRAY**.
-- **Canonical Entry Point**: Human and CI workflows must invoke `cortex`, never `xray` directly (unless debugging) and **never** the deprecated `tools/context-compiler`.
+- **Canonical Entry Point**: Human and CI workflows must invoke `cortex` (via `scripts/run-cortex.sh`), never `xray` directly (unless debugging) and **never** the deprecated `tools/context-compiler`.
 - **Determinism Enforcer**: Cortex ensures all outputs are byte-for-byte identical across environments (local vs CI) by enforcing strict input processing and sorting.
 
 ### Architecture
 - **Language**: Go (Standard Library + `spf13/cobra`).
 - **Integration**: Cortex shells out to the `xray` binary (Rust) for high-performance file indexing and static analysis.
-- **Location**: `ai.agent/cmd/cortex`.
+- **Location**: External Repository (`github.com/bartekus/cortex`).
+- **Entry Point**: `scripts/run-cortex.sh`.
 
 ### Ownership Rules
 - Cortex is the sole writer of `.ai-context/`.

@@ -26,12 +26,11 @@ echo
 
 # 1. Feature mapping and spec alignment
 echo "[1/4] Checking feature mapping and governance invariants..."
-if [[ -x ./bin/stagecraft ]]; then
-  go run ./ai.agent/cmd/cortex gov feature-mapping
+if [[ -x ./scripts/run-cortex.sh ]]; then
+  ./scripts/run-cortex.sh gov feature-mapping
 else
-  echo "stagecraft binary not found, building..."
-  go build -o ./bin/stagecraft ./cmd/stagecraft
-  go run ./ai.agent/cmd/cortex gov feature-mapping
+  echo "Error: scripts/run-cortex.sh not found"
+  exit 1
 fi
 echo
 

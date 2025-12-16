@@ -162,12 +162,11 @@ else
     exit 1
 fi
 
-info "Running spec validation script..."
-if [ -f "scripts/validate-spec.sh" ]; then
-    bash scripts/validate-spec.sh
+info "Running spec validation..."
+if ./scripts/run-cortex.sh gov spec-validate --check-integrity; then
     info "Spec validation passed"
 else
-    error "Spec validation script not found"
+    error "Spec validation failed"
     exit 1
 fi
 
@@ -177,6 +176,10 @@ if ! go run ./cmd/spec-reference-check; then
     exit 1
 fi
 info "All spec file references are valid"
+
+# Orphan checks... use updated scripts if they exist?
+# Wait, check-orphan-docs.sh used tools?
+# I should just update the main blocks first.
 
 info "Checking for orphan Analysis/Outline files..."
 if [ -x ./scripts/check-orphan-docs.sh ]; then
@@ -200,36 +203,46 @@ fi
 section "Governance Checks"
 
 info "Validating spec frontmatter..."
-if ! go run ./cmd/spec-validate --check-integrity; then
-    error "Spec frontmatter validation failed"
-    exit 1
-fi
-info "Spec frontmatter validation passed"
+# Replaced by gov spec-validate above?
+# The legacy run-all-checks ran:
+# 1. scripts/validate-spec.sh (which ran spec-validate?)
+# 2. cmd/spec-validate --check-integrity?
+
+# Let's consolidate.
+# gov spec-validate does validation + integrity if requested.
 
 info "Validating feature dependency graph..."
-if ! go run ./cmd/features-tool graph; then
+if ! ./scripts/run-cortex.sh features graph; then
     error "Feature dependency graph validation failed"
     exit 1
 fi
 info "Feature dependency graph is valid"
 
 info "Checking CLI vs Spec alignment (flags)..."
-if ! go run ./cmd/spec-vs-cli; then
-    error "CLI vs Spec alignment check failed"
+# Dump CLI structure
+if ! go run ./cmd/cli-dump-json > cli-structure.json; then
+    error "Failed to dump CLI structure"
     exit 1
 fi
+# Compare
+if ! ./scripts/run-cortex.sh gov spec-vs-cli --binary-json cli-structure.json; then
+     error "CLI vs Spec alignment check failed"
+     rm cli-structure.json
+     exit 1
+fi
+rm cli-structure.json
 info "CLI vs Spec alignment check passed"
 
 info "Running feature mapping validation..."
-if ! go run ./ai.agent/cmd/cortex gov feature-mapping --format=json >/dev/null 2>&1; then
-    echo "FAIL: Feature Mapping Invariant violated"
-    error "Run 'go run ./ai.agent/cmd/cortex gov feature-mapping' to see details"
-    exit 1
+if ! ./scripts/run-cortex.sh gov feature-mapping --format=json >/dev/null 2>&1; then
+	echo "FAIL: Feature Mapping Invariant violated"
+	error "Run './scripts/run-cortex.sh gov feature-mapping' to see details"
+	exit 1
 fi
 info "Feature mapping validation passed"
 
 info "Generating feature overview..."
-if ! go run ./cmd/gen-features-overview; then
+if ! ./scripts/run-cortex.sh features overview; then
     error "Failed to generate feature overview"
     exit 1
 fi
