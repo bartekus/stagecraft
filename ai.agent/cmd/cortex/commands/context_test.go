@@ -17,14 +17,17 @@ package commands
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"stagecraft/ai.agent/cortex/projectroot"
 )
 
 func TestFindRepoRoot(t *testing.T) {
 	// Test from current directory (should find repo root)
-	repoRoot, err := FindRepoRoot(".")
+	repoRoot, err := projectroot.Find(".")
 	if err != nil {
-		t.Fatalf("FindRepoRoot failed: %v", err)
+		t.Fatalf("projectroot.Find failed: %v", err)
 	}
 
 	// Verify it's actually the repo root by checking for markers
@@ -44,27 +47,27 @@ func TestFindRepoRoot(t *testing.T) {
 	}
 
 	if !found {
-		t.Errorf("FindRepoRoot returned %q but no markers found", repoRoot)
+		t.Errorf("projectroot.Find returned %q but no markers found", repoRoot)
 	}
 
 	// Test from a subdirectory
-	subDir := filepath.Join(repoRoot, "internal", "cli", "commands")
-	repoRoot2, err := FindRepoRoot(subDir)
+	subDir := filepath.Join(repoRoot, "ai.agent/cmd/cortex/commands")
+	repoRoot2, err := projectroot.Find(subDir)
 	if err != nil {
-		t.Fatalf("FindRepoRoot from subdirectory failed: %v", err)
+		t.Fatalf("projectroot.Find from subdirectory failed: %v", err)
 	}
 
 	if repoRoot != repoRoot2 {
-		t.Errorf("FindRepoRoot from subdirectory returned %q, expected %q", repoRoot2, repoRoot)
+		t.Errorf("projectroot.Find from subdirectory returned %q, expected %q", repoRoot2, repoRoot)
 	}
 }
 
 func TestFindRepoRoot_NotFound(t *testing.T) {
 	// Test from a temp directory (should fail)
 	tmpDir := t.TempDir()
-	_, err := FindRepoRoot(tmpDir)
+	_, err := projectroot.Find(tmpDir)
 	if err == nil {
-		t.Error("FindRepoRoot should fail when no repo root is found")
+		t.Error("projectroot.Find should fail when no repo root is found")
 	}
 }
 
@@ -87,8 +90,9 @@ func TestNewContextCommand(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected to find 'xray' subcommand, got error: %v", err)
 	}
-	if xrayCmd.Use != "xray" {
-		t.Errorf("expected 'xray' command Use to be 'xray', got %q", xrayCmd.Use)
+	// Match prefix or full string
+	if !strings.HasPrefix(xrayCmd.Use, "xray") {
+		t.Errorf("expected 'xray' command Use to start with 'xray', got %q", xrayCmd.Use)
 	}
 
 	docsCmd, _, err := cmd.Find([]string{"docs"})

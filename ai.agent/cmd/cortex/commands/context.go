@@ -16,11 +16,15 @@ package commands
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 
+	"stagecraft/ai.agent/cortex/builder"
 	"stagecraft/ai.agent/cortex/projectroot"
+	"stagecraft/ai.agent/cortex/xray"
 
 	"github.com/spf13/cobra"
 )
@@ -35,6 +39,10 @@ func NewContextCommand() *cobra.Command {
 
 	cmd.AddCommand(NewContextBuildCommand())
 	cmd.AddCommand(NewContextDocsCommand())
+	cmd.AddCommand(NewContextXrayCommand())
+
+	// Shared flag for all context commands (needed by build and xray)
+	cmd.PersistentFlags().String("xray-bin", "", "Path to xray binary")
 
 	return cmd
 }
@@ -51,13 +59,67 @@ func NewContextBuildCommand() *cobra.Command {
 
 // NewContextXrayCommand returns the `stagecraft context xray` command.
 func NewContextXrayCommand() *cobra.Command {
-	return &cobra.Command{
-		Use:   "xray",
+	cmd := &cobra.Command{
+		Use:   "xray [subcommand] [flags]",
 		Short: "Run XRAY scan",
-		Long:  "Runs XRAY scan (always against repository root) to analyze repository structure and dependencies",
+		Long:  "Runs XRAY scan (always against repository root) to analyze repository structure and dependencies.",
 		RunE:  runContextXray,
-		Args:  cobra.NoArgs,
 	}
+
+	// Flag moved to parent
+	// cmd.PersistentFlags().String("xray-bin", "", "Path to xray binary")
+
+	scanCmd := &cobra.Command{
+		Use:   "scan [target]",
+		Short: "Run XRAY scan",
+		Long:  "Runs XRAY scan against the specified target (default: .) and writes index.json to the output directory.",
+		Args:  cobra.RangeArgs(0, 1),
+		RunE: func(c *cobra.Command, args []string) error {
+			// Parse target
+			target := "."
+			if len(args) == 1 {
+				target = args[0]
+			}
+
+			out, err := c.Flags().GetString("output")
+			if err != nil {
+				return fmt.Errorf("reading --output: %w", err)
+			}
+			if out == "" {
+				// Enforce explicit output per contract
+				repoRoot, err := projectroot.Find(".")
+				if err != nil {
+					return fmt.Errorf("finding repo root: %w", err)
+				}
+				slug := filepath.Base(repoRoot)
+				out = filepath.Join(repoRoot, ".xraycache", slug, "data")
+			}
+
+			// Forward args in the Rust CLI order: scan <target> --output <dir>
+			xrayArgs := []string{target, "--output", out}
+			return runXraySubcommand(c, "scan", xrayArgs)
+		},
+	}
+	scanCmd.Flags().String("output", "", "Output directory for index.json (default: .xraycache/<slug>/data)")
+	cmd.AddCommand(scanCmd)
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "docs",
+		Short: "Run XRAY docs",
+		RunE: func(c *cobra.Command, args []string) error {
+			return runXraySubcommand(c, "docs", args)
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "all",
+		Short: "Run XRAY all",
+		RunE: func(c *cobra.Command, args []string) error {
+			return runXraySubcommand(c, "all", args)
+		},
+	})
+
+	return cmd
 }
 
 // NewContextDocsCommand returns the `stagecraft context docs` command.
@@ -80,18 +142,32 @@ func runContextBuild(cmd *cobra.Command, _ []string) error {
 
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] building AI context...\n")
 
-	ctx := cmd.Context()
-	if ctx == nil {
-		ctx = context.Background()
+	// 1. Run XRAY scan (Rust)
+	slug := filepath.Base(repoRoot)
+	outputDir := filepath.Join(repoRoot, ".xraycache", slug, "data")
+
+	// Rust CLI order: scan <target> --output <dir>
+	xrayArgs := []string{".", "--output", outputDir}
+
+	if err := runXraySubcommand(cmd, "scan", xrayArgs); err != nil {
+		return fmt.Errorf("xray scan pre-build failed: %w", err)
 	}
 
-	npmCmd := exec.CommandContext(ctx, "npm", "run", "context:build")
-	npmCmd.Dir = filepath.Join(repoRoot, "tools", "context-compiler")
-	npmCmd.Stdout = cmd.OutOrStdout()
-	npmCmd.Stderr = cmd.ErrOrStderr()
+	// 2. Read XRAY Index
+	indexPath := filepath.Join(outputDir, "index.json")
+	indexData, err := os.ReadFile(indexPath)
+	if err != nil {
+		return fmt.Errorf("failed to read xray index at %s: %w", indexPath, err)
+	}
 
-	if err := npmCmd.Run(); err != nil {
-		return fmt.Errorf("context build failed: %w", err)
+	var index xray.Index
+	if err := json.Unmarshal(indexData, &index); err != nil {
+		return fmt.Errorf("unmarshaling xray index: %w", err)
+	}
+
+	// 3. Build .ai-context structure
+	if err := builder.BuildContext(repoRoot, &index); err != nil {
+		return fmt.Errorf("building .ai-context: %w", err)
 	}
 
 	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] AI context ready → .ai-context/\n")
@@ -99,70 +175,95 @@ func runContextBuild(cmd *cobra.Command, _ []string) error {
 	return nil
 }
 
-// runContextXray executes the xray:scan npm script.
+// runContextXray acts as a fallback if no subcommand given?
+// Or we force subcommands.
 func runContextXray(cmd *cobra.Command, args []string) error {
+	return cmd.Help()
+}
+
+func resolveXrayBin(cmd *cobra.Command) (string, error) {
+	// 1. Flag
+	bin, _ := cmd.Flags().GetString("xray-bin")
+	if bin != "" {
+		return bin, nil
+	}
+
+	// 2. Env
+	if bin = os.Getenv("XRAY_BIN"); bin != "" {
+		return bin, nil
+	}
+
+	// 3. Default (Repo Relative)
+	// We need repo root.
+	repoRoot, err := projectroot.Find(".")
+	if err != nil {
+		return "", fmt.Errorf("finding repo root: %w", err)
+	}
+
+	// Try release first, then debug
+	releasePath := filepath.Join(repoRoot, "ai.agent/rust/xray/target/release/xray")
+	if _, err := os.Stat(releasePath); err == nil {
+		return releasePath, nil
+	}
+
+	debugPath := filepath.Join(repoRoot, "ai.agent/rust/xray/target/debug/xray")
+	if _, err := os.Stat(debugPath); err == nil {
+		return debugPath, nil
+	}
+
+	return "", fmt.Errorf("xray binary not found. Build it with `cargo build` in ai.agent/rust/xray/ or specify --xray-bin")
+}
+
+func runXraySubcommand(cmd *cobra.Command, sub string, args []string) error {
 	repoRoot, err := projectroot.Find(".")
 	if err != nil {
 		return fmt.Errorf("finding repo root: %w", err)
 	}
 
-	if len(args) != 0 {
-		return fmt.Errorf("xray does not accept a scan target; it always scans the repository root to avoid overwriting .ai-context/xray outputs")
+	bin, err := resolveXrayBin(cmd)
+	if err != nil {
+		return err
 	}
-
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] running XRAY scan...\n")
 
 	ctx := cmd.Context()
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	// Always scan the repository root.
-	// XRAY writes to a stable location under .ai-context/, so scanning subdirectories
-	// would overwrite the primary scan output.
-	scanTarget := repoRoot
+	// User Req: "Cortex wrappers must pass --output explicitly"
+	// For 'context build', caller must provide these args.
+	// For 'xray scan' (CLI), user provides them or we rely on defaults?
+	// If we want constraints, caller handles them.
 
-	// Run XRAY from tools/context-compiler, but scan the chosen target.
-	// `npm run <script> -- <args>` forwards args to the underlying command.
-	// #nosec G204 - scanTarget is repoRoot derived from FindRepoRoot and not user-controlled
-	npmCmd := exec.CommandContext(ctx, "npm", "run", "xray:scan", "--", scanTarget)
-	npmCmd.Dir = filepath.Join(repoRoot, "tools", "context-compiler")
-	npmCmd.Stdout = cmd.OutOrStdout()
-	npmCmd.Stderr = cmd.ErrOrStderr()
+	// Construct final args: [subcommand, ...args]
+	// Filter out subcommand if it's already in args? No, args from cobra exclude command name.
+	xrayArgs := []string{sub}
+	xrayArgs = append(xrayArgs, args...)
 
-	if err := npmCmd.Run(); err != nil {
-		return fmt.Errorf("xray scan failed: %w", err)
+	fmt.Fprintf(cmd.OutOrStdout(), "[cortex] Invoking XRAY: %s %v\n", bin, xrayArgs)
+
+	execCmd := exec.CommandContext(ctx, bin, xrayArgs...)
+	execCmd.Dir = repoRoot
+	execCmd.Stdout = cmd.OutOrStdout()
+	execCmd.Stderr = cmd.ErrOrStderr()
+
+	if err := execCmd.Run(); err != nil {
+		return fmt.Errorf("xray %s failed: %w", sub, err)
 	}
-
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] XRAY scan complete → .ai-context/xray/\n")
 
 	return nil
 }
 
 // runContextDocs executes the context:docs npm script.
 func runContextDocs(cmd *cobra.Command, _ []string) error {
-	repoRoot, err := projectroot.Find(".")
+	_, err := projectroot.Find(".")
 	if err != nil {
 		return fmt.Errorf("finding repo root: %w", err)
 	}
 
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] generating AI-Agent docs...\n")
+	// Deprecation Notice (Option A)
+	return fmt.Errorf("context docs generation via Node is deprecated. Docs projection will be reimplemented in Go in Phase 4.")
 
-	ctx := cmd.Context()
-	if ctx == nil {
-		ctx = context.Background()
-	}
-
-	npmCmd := exec.CommandContext(ctx, "npm", "run", "context:docs")
-	npmCmd.Dir = filepath.Join(repoRoot, "tools", "context-compiler")
-	npmCmd.Stdout = cmd.OutOrStdout()
-	npmCmd.Stderr = cmd.ErrOrStderr()
-
-	if err := npmCmd.Run(); err != nil {
-		return fmt.Errorf("context docs generation failed: %w", err)
-	}
-
-	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] AI-Agent docs ready → docs/generated/ai-agent/\n")
-
-	return nil
+	// _, _ = fmt.Fprintf(cmd.OutOrStdout(), "[stagecraft] generating AI-Agent docs...\n")
+	// ... removed ...
 }

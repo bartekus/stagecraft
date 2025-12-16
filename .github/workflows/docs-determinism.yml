@@ -20,11 +20,6 @@ jobs:
         with:
           go-version: "1.24"
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Build stagecraft binary
         run: go build -o stagecraft ./cmd/stagecraft
 
@@ -32,9 +27,15 @@ jobs:
         run: |
           echo "$(pwd)" >> $GITHUB_PATH
 
-      - name: Install context-compiler dependencies
-        working-directory: tools/context-compiler
-        run: npm ci
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build XRAY (debug)
+        working-directory: ai.agent/rust/xray
+        run: cargo build
+
+      - name: Build AI context (Cortex)
+        run: go run ./ai.agent/cmd/cortex context build --xray-bin ./ai.agent/rust/xray/target/debug/xray
 
       - name: Generate AI-Agent docs
         run: go run ./ai.agent/cmd/cortex context docs
