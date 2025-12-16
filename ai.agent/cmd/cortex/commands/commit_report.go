@@ -15,7 +15,9 @@ package commands
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -99,4 +101,46 @@ func runCommitReport(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+// loadFeatureRegistry loads `spec/features.yaml` from the given repo root and returns a set of feature IDs.
+//
+// This is intentionally lightweight and dependency-free (no YAML parser) because the only field we need
+// for CLI validation and reporting is the `id` value.
+//
+// Supported patterns (after TrimSpace):
+// - "- id: FOO"
+// - "id: FOO"
+func loadFeatureRegistry(root string) (map[string]bool, error) {
+	path := filepath.Join(root, "spec", "features.yaml")
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make(map[string]bool)
+	lines := strings.Split(string(b), "\n")
+	for _, raw := range lines {
+		line := strings.TrimSpace(raw)
+
+		// Match either "- id:" or "id:".
+		var v string
+		switch {
+		case strings.HasPrefix(line, "- id:"):
+			v = strings.TrimSpace(strings.TrimPrefix(line, "- id:"))
+		case strings.HasPrefix(line, "id:"):
+			v = strings.TrimSpace(strings.TrimPrefix(line, "id:"))
+		default:
+			continue
+		}
+
+		// Strip optional quotes
+		v = strings.Trim(v, "\"'")
+		if v == "" {
+			continue
+		}
+		out[v] = true
+	}
+
+	return out, nil
 }

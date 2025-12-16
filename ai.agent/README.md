@@ -8,6 +8,9 @@
 
 The `ai.agent/` directory establishes the operational mechanics of the repository's AI agents. It bridges the gap between:
 - **Behavioral Truth**: `spec/` (What the system must do)
+  - [Cortex Architecture](../../spec/ai/cortex.md)
+  - [XRAY Scanner](../../spec/ai/xray.md)
+  - [Contracts & Determinism](../../spec/ai/contracts.md)
 - **Execution Truth**: `code/` (How the system does it)
 - **Human Projections**: `docs/__generated__/` (Read-only maps for humans and context loading)
 

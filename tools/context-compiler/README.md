@@ -1,4 +1,16 @@
+> [!WARNING]
+> **DEPRECATED / FORBIDDEN**
+>
+> `tools/context-compiler` is deprecated and must not be used.
+>
+> The authoritative pipeline is now:
+> - `ai.agent/rust/xray` (Rust) -> `.xraycache/`
+> - `ai.agent/cmd/cortex context build` (Go) -> `.ai-context/`
+>
+> Do not add new references to `npm run context:*`, `tsx`, or this directory in docs/specs.
+
 # Context Compiler
+
 
 Local-only deterministic repo context builder for Stagecraft. Builds a searchable context snapshot from your repository documentation and specifications.
 
