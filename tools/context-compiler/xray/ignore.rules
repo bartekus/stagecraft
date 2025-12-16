@@ -1,9 +1,0 @@
-# add project-specific heavy dirs/globs here
-*.lock
-pnpm-*.yaml
-**/*.gen.*
-**/__generated__/**
-tools/**
-.ai-context/**
-**/context-compiler/**
-.xraycache/**

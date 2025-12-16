@@ -57,3 +57,5 @@ coverage.out
 .xraycache/
 node_modules/
 ai.agent/rust/xray/target/
+go.work
+go.work.sum

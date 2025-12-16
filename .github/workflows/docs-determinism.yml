@@ -15,6 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout Cortex
+        uses: actions/checkout@v4
+        with:
+          repository: bartekus/cortex
+          path: cortex
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -31,14 +37,14 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build XRAY (debug)
-        working-directory: ai.agent/rust/xray
+        working-directory: cortex/rust/xray
         run: cargo build
 
       - name: Build AI context (Cortex)
-        run: go run ./ai.agent/cmd/cortex context build --xray-bin ./ai.agent/rust/xray/target/debug/xray
+        run: ./scripts/run-cortex.sh context build --xray-bin ./cortex/rust/xray/target/debug/xray
 
-      - name: Generate AI-Agent docs
-        run: go run ./ai.agent/cmd/cortex context docs
+      # - name: Generate AI Context Docs (Deprecated Phase 4)
+      #   run: ./scripts/run-cortex.sh context docs
 
       - name: Verify checksums
         run: |
