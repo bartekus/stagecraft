@@ -56,3 +56,4 @@ coverage.out
 .ai-context/
 .xraycache/
 node_modules/
+ai.agent/rust/xray/target/
