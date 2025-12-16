@@ -110,7 +110,7 @@ All new context handoff notes should be added here as dated entries.
 
 - GOV_STATUS_ROADMAP feature implemented and complete (PR #21)
 - Roadmap analysis engine in `internal/tools/roadmap/` with comprehensive tests
-- CLI command `stagecraft status roadmap` functional
+- CLI command `cortex status roadmap` functional
 - PROVIDER_FRONTEND_GENERIC coverage improved from 70.2% → 80.2%
 - All tests passing, linting clean
 

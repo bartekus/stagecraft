@@ -706,3 +706,11 @@ features:
       - "internal/tools/roadmap/generator_test.go"
     depends_on:
       - "GOV_CORE"
+
+  - id: CORTEX_CLI
+    title: "Cortex CLI for developer and governance tooling"
+    status: done
+    spec: "governance/GOV_CORE.md"
+    owner: bart
+    tests:
+      - "ai.agent/cmd/cortex/main_test.go"

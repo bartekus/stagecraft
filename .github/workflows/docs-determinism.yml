@@ -37,7 +37,7 @@ jobs:
         run: npm ci
 
       - name: Generate AI-Agent docs
-        run: stagecraft context docs
+        run: go run ./ai.agent/cmd/cortex context docs
 
       - name: Verify checksums
         run: |
