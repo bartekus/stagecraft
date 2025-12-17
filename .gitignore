@@ -53,6 +53,7 @@ stagecraft
 coverage.out
 
 # Context compiler outputs
+.cortex
 .ai-context/
 .xraycache/
 node_modules/

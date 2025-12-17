@@ -1,3 +1,11 @@
+---
+id: SPEC_AI_CORTEX
+title: Cortex (Go) Specification
+status: approved
+type: spec
+group: ai
+---
+
 # Cortex (Go) Specification
 
 ## 1. Overview

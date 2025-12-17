@@ -13,8 +13,13 @@
 #
 # Usage:
 #   ./scripts/run-all-checks.sh
+#
+# DEPRECATED: Use scripts/run.sh or cortex instead.
 
-set -euo pipefail
+echo "WARNING: This script is deprecated. Please use 'scripts/run.sh' or 'cortex' directly." >&2
+# minimal forward or exit? User said: "mark... deprecated... Stop calling them... Keep them for one release... make them forward"
+# I'll make it forward to scripts/run.sh all
+exec ./scripts/run.sh all
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
