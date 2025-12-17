@@ -61,8 +61,16 @@ jobs:
     needs: lint
 
     steps:
-      - name: Checkout
+      - name: Checkout Stagecraft
         uses: actions/checkout@v4
+        with:
+          path: stagecraft
+
+      - name: Checkout Cortex
+        uses: actions/checkout@v4
+        with:
+          repository: bartekus/cortex
+          path: cortex
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -70,28 +78,38 @@ jobs:
           go-version: "1.24"
 
       - name: Build all packages
+        working-directory: stagecraft
         run: go build ./...
 
       - name: Build stagecraft binary
+        working-directory: stagecraft
         run: go build -o stagecraft ./cmd/stagecraft
 
       - name: Add stagecraft to PATH
+        working-directory: stagecraft
         run: |
           echo "$(pwd)" >> $GITHUB_PATH
 
       - name: Run tests with coverage
+        working-directory: stagecraft
         run: go test ./... -coverprofile=coverage.out -covermode=atomic
 
+      - name: Build Cortex
+        run: |
+          cd cortex
+          go build -o ../stagecraft/bin/cortex ./cmd/cortex
+
       - name: Enforce coverage threshold
+        working-directory: stagecraft
         run: |
           # Install bc if not available (for floating point comparisons)
           sudo apt-get update && sudo apt-get install -y bc || true
 
-          # Use the coverage check script
-          if [ -x ./scripts/check-coverage.sh ]; then
-            ./scripts/check-coverage.sh --fail-on-warning
+          # Use Cortex for coverage check
+          if [ -f "./bin/stagecraft" ]; then
+             ./bin/cortex run test:coverage --fail-on-warning
           else
-            echo "scripts/check-coverage.sh not found; skipping coverage threshold enforcement"
+             ./scripts/run.sh test:coverage
           fi
 
       - name: Upload coverage to Codecov
@@ -99,7 +117,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.out
+          files: stagecraft/coverage.out
           fail_ci_if_error: false
 
   docs-and-spec:
@@ -108,75 +126,32 @@ jobs:
     needs: test
 
     steps:
-      - name: Checkout
+      - name: Checkout Stagecraft
         uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          path: stagecraft
 
-      - name: Install PyYAML
-        run: |
-          python3 -m pip install --quiet --upgrade pip
-          python3 -m pip install --quiet pyyaml
+      - name: Checkout Cortex
+        uses: actions/checkout@v4
+        with:
+          repository: bartekus/cortex
+          path: cortex
 
-      - name: Validate spec/features.yaml
-        run: |
-          if [ -f spec/features.yaml ]; then
-            python3 -c "import yaml; yaml.safe_load(open('spec/features.yaml'))" || {
-              echo 'ERROR: spec/features.yaml is not valid YAML'
-              exit 1
-            }
-            echo '✓ spec/features.yaml is valid YAML'
-          else
-            echo 'spec/features.yaml not found, skipping YAML validation'
-          fi
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
 
-      - name: Run spec validation script
+      - name: Build Cortex
         run: |
-          if [ -f "scripts/validate-spec.sh" ]; then
-            bash scripts/validate-spec.sh
-          else
-            echo "Spec validation script not found, skipping detailed checks"
-            exit 1
-          fi
+          cd cortex
+          go build -o ../stagecraft/bin/cortex ./cmd/cortex
 
-      - name: Validate feature integrity
-        run: |
-          if [ -f "scripts/validate-feature-integrity.sh" ]; then
-            bash scripts/validate-feature-integrity.sh
-          else
-            echo "Feature integrity validation script not found"
-            exit 1
-          fi
-
-      - name: Check spec synchronization
-        run: |
-          if [ -f "scripts/spec-sync-check.sh" ]; then
-            bash scripts/spec-sync-check.sh
-          else
-            echo "Spec sync check script not found"
-            exit 1
-          fi
-
-      - name: Check header comments
-        run: |
-          if [ -f "scripts/check-header-comments.sh" ]; then
-            bash scripts/check-header-comments.sh
-          else
-            echo "Header comment check script not found"
-            exit 1
-          fi
-
-      - name: Check required tests
-        run: |
-          if [ -f "scripts/check-required-tests.sh" ]; then
-            bash scripts/check-required-tests.sh
-          else
-            echo "Required tests check script not found"
-            exit 1
-          fi
+      - name: Run Checks
+        working-directory: stagecraft
+        env:
+          CORTEX_HEADER_COMMENTS_PACKAGE: warn
+        run: ./bin/cortex run docs:all
 
   commit-message:
     name: Commit Message Validation

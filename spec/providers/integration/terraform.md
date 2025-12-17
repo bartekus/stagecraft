@@ -1,12 +1,3 @@
-Cool - here’s the first-pass, approval-ready spec you can paste into your repo as:
-
-spec/providers/integration/terraform.md
-
-It is written to match the “Terraform Island” stance: Stagecraft runs Terraform deterministically and normalizes outputs into Facts + HostRefs; Stagecraft does not interpret Terraform’s resource graph.
-
-⸻
-
-
 ---
 id: PROVIDER_INTEGRATION_TERRAFORM
 title: Terraform Integration Provider (Terraform Island)
